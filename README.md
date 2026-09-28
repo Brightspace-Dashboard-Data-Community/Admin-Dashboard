@@ -1,6 +1,6 @@
 # Admin Dashboard
 
-Browser-based Brightspace admin dashboard for user and course lookups, enrollments, reports, and faculty onboarding widgets.
+Browser-based Brightspace admin dashboard for user and course lookups, enrollments, and reports.
 
 Values that identify a single college are placeholders in this copy:
 

@@ -19,5 +19,6 @@ This log starts on September 28, 2026, when the project was prepared for GitHub.
 
 ### Removed
 
+- The GitHub copy leaves out `D2L Widgets`. Those homepage widgets are separate from the admin dashboard.
 - The GitHub copy leaves out `extras`. Those legacy pages, notes, and the doc builder are not used by the dashboard.
 - Removed Faculty Feedback Check and the Supabase client. The dashboard no longer stores follow-up flags or other data in Supabase.
