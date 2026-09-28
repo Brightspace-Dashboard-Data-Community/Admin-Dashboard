@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligent Agent Email Checker - D2L Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Styles (match Search Courses) -->
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/forms.css">
+    <link rel="stylesheet" href="../css/tables.css">
+
+    <!-- PapaParse -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            margin-left: 0;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            overflow: visible;
+        }
+
+        .back-link:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-2px);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .controls {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+            align-items: center;
+            margin: var(--spacing-sm) 0 var(--spacing-md);
+        }
+
+        .controls select,
+        .controls input[type="text"],
+        .controls input[type="file"] {
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+        }
+
+        .controls label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: var(--font-size-sm);
+            color: var(--text-primary);
+        }
+
+        .chipbar {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+            margin: var(--spacing-sm) 0;
+        }
+
+        .chip {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 999px;
+            padding: 2px 8px;
+            font-size: var(--font-size-xs);
+        }
+
+        .mono {
+            font-family: ui-monospace, Menlo, Consolas, monospace;
+        }
+
+        .ok {
+            color: var(--success-color);
+            font-weight: 600;
+        }
+
+        .warn {
+            color: #b26a00;
+            font-weight: 600;
+        }
+
+        .err {
+            color: var(--error-color);
+            font-weight: 600;
+        }
+
+        .statbar {
+            display: flex;
+            gap: var(--spacing-md);
+            flex-wrap: wrap;
+            margin: var(--spacing-sm) 0;
+        }
+
+        .pill {
+            display: inline-block;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 999px;
+            padding: 2px 10px;
+            font-size: var(--font-size-xs);
+            color: var(--text-primary);
+        }
+
+        .table-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: flex-end;
+            margin: var(--spacing-sm) 0;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Card spacing - consistent spacing between cards */
+        .card {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .card:last-child {
+            margin-bottom: 0;
+        }
+
+        /* IA table monospace IDs/codes (on top of shared tables.css) */
+        .ia-table td:nth-child(1),
+        .ia-table td:nth-child(2),
+        .ia-table td:nth-child(3) {
+            font-family: ui-monospace, Menlo, Consolas, monospace;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation (injected via js/sidebar.js) -->
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports & Tools
+                    </a>
+                    <h1 class="page-title">Intelligent Agent Reply-To Audit — CSV-First</h1>
+                    <p class="page-subtitle">
+                        Choose a semester → load offerings (excludes <span class="mono">MERGED</span>/<span class="mono">CXLD</span>) → upload IA CSV → we audit only courses whose agents are <strong>Enabled</strong>.
+                        If Reply-To is empty/default, we pull instructor emails from Classlist for outreach.
+                    </p>
+                </div>
+            </header>
+
+            <div class="form-container">
+
+            <!-- Documentation Section (mirrors old dashboard, new theme) -->
+            <div class="card">
+                <h2><i class="fas fa-info-circle"></i> How to Use This Tool</h2>
+                <h3 style="color: var(--primary-color); margin-top: var(--spacing-lg);">Step 1: Load Semester Courses</h3>
+                <ol style="margin-left: 1.5rem;">
+                    <li><strong>Select Semester:</strong> Choose the semester from the dropdown.</li>
+                    <li><strong>Click "Load Semester":</strong> The tool will:
+                        <ul style="margin-top: 0.5rem;">
+                            <li>Load all course offerings in the semester.</li>
+                            <li>Exclude courses with "MERGED" or "CXLD" in the code.</li>
+                            <li>Display the count of courses found.</li>
+                        </ul>
+                    </li>
+                </ol>
+
+                <h3 style="color: var(--primary-color); margin-top: var(--spacing-lg);">Step 2: Upload IA CSV</h3>
+                <p>Upload a CSV file containing Intelligent Agent settings for courses.</p>
+                <div style="background-color: var(--bg-color); padding: var(--spacing-md); border-radius: var(--radius-sm); margin: var(--spacing-md) 0; border-left: 4px solid var(--primary-color);">
+                    <p style="margin: 0;"><strong>CSV Requirements:</strong></p>
+                    <ul style="margin: 0.5rem 0 0 1.5rem;">
+                        <li>Must contain <code>OrgUnitId</code> column (or will auto-detect).</li>
+                        <li>Must contain <code>Enabled</code> column (or will auto-detect).</li>
+                        <li>Only courses with <code>Enabled=TRUE</code> will be audited.</li>
+                        <li>The CSV should be exported from your Intelligent Agent reporting system.</li>
+                    </ul>
+                </div>
+
+                <h3 style="color: var(--primary-color); margin-top: var(--spacing-lg);">Step 3: Build Target List</h3>
+                <p>After uploading the CSV, click "Build Target List" to:</p>
+                <ul style="margin-left: 1.5rem;">
+                    <li>Match CSV rows with semester courses by OrgUnitId.</li>
+                    <li>Filter to only courses where Intelligent Agents are Enabled.</li>
+                    <li>Display the count of target courses to be audited.</li>
+                </ul>
+
+                <h3 style="color: var(--primary-color); margin-top: var(--spacing-lg);">Step 4: Run Audit</h3>
+                <p>Click "Run Audit" to check Reply-To settings:</p>
+                <ul style="margin-left: 1.5rem;">
+                    <li>For each enabled course, checks the Intelligent Agent Reply-To field.</li>
+                    <li>Compares against optional default email (if provided).</li>
+                    <li>If Reply-To is empty or matches default, pulls instructor emails from Classlist.</li>
+                    <li>Displays results showing which courses need Reply-To updates.</li>
+                </ul>
+
+                <h3 style="color: var(--primary-color); margin-top: var(--spacing-lg);">Step 5: Review and Download</h3>
+                <p>The results table shows:</p>
+                <ul style="margin-left: 1.5rem;">
+                    <li><strong>Status:</strong> Custom (overridden), Default (unchanged), or Empty.</li>
+                    <li><strong>Instructor Emails:</strong> Shown for courses with empty/default Reply-To.</li>
+                    <li><strong>Fix:</strong> Action needed for each course.</li>
+                </ul>
+                <p style="margin-top: 1rem;">You can download results as CSV for further processing or outreach.</p>
+
+                <div style="background-color: #fff3cd; border: 1px solid #ffc107; border-radius: var(--radius-sm); padding: var(--spacing-md); margin-top: var(--spacing-lg);">
+                    <p style="margin: 0;"><strong>⚠️ Important Notes:</strong></p>
+                    <ul style="margin: 0.5rem 0 0 1.5rem;">
+                        <li>Only courses with Enabled=TRUE in the CSV are audited.</li>
+                        <li>The audit may take several minutes for large datasets – watch the progress bar.</li>
+                        <li>Instructor emails are pulled from classlist for courses needing Reply-To updates.</li>
+                        <li>You can provide a default email for comparison (optional).</li>
+                        <li>Download results for outreach to instructors about Reply-To settings.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Tool Interface -->
+            <div class="card">
+                <div class="controls">
+                    <label>
+                        <i class="fas fa-calendar-alt"></i> Semester:
+                        <select id="semesterSelect" disabled>
+                            <option>Loading...</option>
+                        </select>
+                    </label>
+                    <button id="loadSemesterBtn" class="btn btn-primary" disabled>
+                        <i class="fas fa-download"></i> Load Semester
+                    </button>
+                </div>
+
+                <div class="controls">
+                    <label>
+                        <i class="fas fa-file-csv"></i> IA CSV:
+                        <input type="file" id="csvUpload" accept=".csv">
+                    </label>
+                    <select id="ouIdColumn" disabled>
+                        <option value="">(auto-detect OrgUnitId)</option>
+                    </select>
+                    <select id="enabledColumn" disabled>
+                        <option value="">(auto-detect Enabled)</option>
+                    </select>
+                    <input id="defaultEmail" type="text" placeholder="Optional: default Reply-To for comparison" size="28">
+                    <label>
+                        <input id="blankIsDefault" type="checkbox" checked>
+                        Treat blank as default
+                    </label>
+                    <button id="buildBtn" class="btn btn-outline" disabled>Build Target List</button>
+                    <button id="auditBtn" class="btn btn-primary" disabled>Run Audit</button>
+                </div>
+
+                <div class="chipbar">
+                    <span class="chip">Join: Semester courses ⨝ CSV on OrgUnitId</span>
+                    <span class="chip">Only Enabled=TRUE go to Reply-To + Classlist checks</span>
+                </div>
+
+                <div class="statbar">
+                    <span class="pill" id="statSemester">Semester courses: 0</span>
+                    <span class="pill" id="statSemesterFiltered">After MERGED/CXLD: 0</span>
+                    <span class="pill" id="statCsv">CSV rows: 0</span>
+                    <span class="pill" id="statTargets">Enabled targets: 0</span>
+                </div>
+
+                <div class="table-actions">
+                    <button id="downloadAll" class="btn btn-outline hidden">Download CSV (All)</button>
+                    <button id="downloadEmails" class="btn btn-outline hidden">Download Emails (Flagged)</button>
+                </div>
+                
+                <div id="loadingContainer"></div>
+                <div id="phaseLabel" style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--spacing-sm);"></div>
+                <div id="status" style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-left: var(--spacing-sm);"></div>
+
+                <div class="table-container">
+                    <table id="iaTable" class="table ia-table">
+                        <thead>
+                            <tr>
+                                <th>OrgUnitId</th>
+                                <th>Course Code</th>
+                                <th>Reply-To (field value)</th>
+                                <th>Status</th>
+                                <th>Instructor Emails (if flagged)</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            </div> <!-- /.form-container -->
+
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <!-- D2L API - Must be loaded first -->
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/semester-config.js"></script>
+    <script src="../js/loading-utils.js"></script>
+    <script src="../js/IA-email-checker.js"></script>
+</body>
+
+</html>

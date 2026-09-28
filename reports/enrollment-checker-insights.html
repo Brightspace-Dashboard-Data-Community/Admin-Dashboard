@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Adds & Drops Audit (Insights) - D2L Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/forms.css">
+    <link rel="stylesheet" href="../css/tables.css">
+
+    <!-- PapaParse -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            margin-left: 0;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            overflow: visible;
+        }
+
+        .back-link:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-2px);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .info-section {
+            background-color: var(--surface-color);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .info-section h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: var(--spacing-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .info-section h3 {
+            color: var(--primary-color);
+            margin-top: var(--spacing-lg);
+        }
+
+        .info-box {
+            background-color: var(--bg-color);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-sm);
+            margin: var(--spacing-md) 0;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .warning-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: var(--radius-sm);
+            padding: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+        }
+
+        .input-row {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            flex-wrap: wrap;
+        }
+
+        .input-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .input-group input[type="file"],
+        .input-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-base);
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+        }
+
+        .stats {
+            background-color: var(--surface-color);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .audit-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: var(--spacing-sm);
+            margin-top: var(--spacing-sm);
+        }
+
+        .audit-summary-item {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 10px 12px;
+        }
+
+        .audit-summary-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .audit-summary-value {
+            font-size: 18px;
+            color: var(--text-primary);
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .status-message {
+            margin: var(--spacing-md) 0;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            background-color: #e8f4fd;
+            border: 1px solid #c5e0fa;
+            color: #0366d6;
+            display: none;
+        }
+
+        /* Button Styles - Consistent with design system */
+        .btn-primary,
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: var(--bg-color);
+            border-color: var(--text-primary);
+        }
+
+        .btn-secondary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        #resultsTable_wrapper .dataTables_length,
+        #resultsTable_wrapper .dataTables_filter {
+            margin-bottom: 10px;
+        }
+
+        #resultsTable_wrapper .dataTables_filter input,
+        #resultsTable_wrapper .dataTables_length select {
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 6px 10px;
+            background: #fff;
+            color: var(--text-primary);
+        }
+
+        #resultsTable_wrapper .dataTables_info,
+        #resultsTable_wrapper .dataTables_paginate {
+            margin-top: 12px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-md);
+            flex-wrap: wrap;
+        }
+
+        /* Card spacing - consistent spacing between cards */
+        .card {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .card:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation (injected via js/sidebar.js) -->
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports & Tools
+                    </a>
+                    <h1 class="page-title">User Adds &amp; Drops Audit (Insights)</h1>
+                    <p class="page-subtitle">Upload the Ellucian Insights Roster Adds and Drops CSV to find enrollment mismatches against D2L.</p>
+                </div>
+            </header>
+
+            <!-- Documentation Section -->
+            <div class="info-section">
+                <h2><i class="fas fa-info-circle"></i> How to Use This Tool</h2>
+
+                <div class="info-box">
+                    <p style="margin: 0;"><strong>What this is:</strong> a duplicate of the original User Adds &amp; Drops Audit, rebuilt for the new <strong>Ellucian Insights</strong> report that replaces SSRS. The original tool is left untouched.</p>
+                </div>
+
+                <h3>Step 1: Prepare the CSV File</h3>
+                <p>Run the Ellucian Insights <strong>Roster Adds and Drops</strong> report and export it to CSV. Status codes <strong>A, N</strong> mean enrolled; <strong>D, X, NP, C</strong> mean dropped.</p>
+                <div class="info-box">
+                    <p style="margin: 0 0 var(--spacing-xs) 0;"><strong>Expected CSV Columns (Insights export):</strong></p>
+                    <ul style="margin: 0.5rem 0 0 1.5rem;">
+                        <li><code>term</code> - Semester/term identifier (e.g. <code>26/FA</code>, <code>26/SP</code>)</li>
+                        <li><code>person_id</code> - Student ID, same as D2L OrgDefinedId (leading zeros handled automatically)</li>
+                        <li><code>status</code> - Enrollment status (only <code>A</code> / <code>N</code> appear)</li>
+                        <li><code>stc_status_date</code> - Date of status change</li>
+                        <li><code>first_name</code>, <code>last_name</code>, <code>delta_email</code> - Student name &amp; email</li>
+                        <li><code>sec_title</code>, <code>course_name</code>, <code>section</code> - Course info</li>
+                        <li><code>sec_name</code> - Section key used to match D2L (e.g. <code>MTH-119W-SS310</code>)</li>
+                        <li><code>faculty_id</code>, <code>faculty_name</code> - Present in export but not used by this tool</li>
+                    </ul>
+                </div>
+
+                <h3>Step 2: Run the Audit</h3>
+                <p>Upload the CSV, optionally filter by term (defaults to current terms <strong>26/FA</strong> and <strong>26/SP</strong>), and click "Start Audit." Each row is compared against D2L using the same method as the original Adds &amp; Drops tool. Include both terms in the Insights export if you want Fall and Spring/Summer audited together.</p>
+
+                <h3>Step 3: Review &amp; Hand Off to OIT</h3>
+                <p>The results table shows only mismatches — students whose D2L enrollment does not match the CSV. Click "Download CSV" to export the change list to send to OIT.</p>
+
+                <div class="warning-box">
+                    <p style="margin: 0 0 var(--spacing-xs) 0;"><strong>⚠️ Important Notes:</strong></p>
+                    <ul style="margin: 0;">
+                        <li>Status codes: <strong>A, N</strong> = should be enrolled; <strong>D, X, NP, C</strong> = should be dropped</li>
+                        <li><code>person_id</code> is the same as D2L <strong>OrgDefinedId</strong> (leading zeros handled automatically)</li>
+                        <li>Rows are deduplicated by <code>person_id</code> + <code>sec_name</code> + <code>term</code>, keeping only the most recent <code>stc_status_date</code></li>
+                        <li><code>sec_name</code> is matched against D2L course Codes (e.g. <code>MTH-119W-FA310-26/FA</code>, <code>MTH-119W-SS310-26/SP</code>)</li>
+                        <li>Only Student role (RoleId 101) enrollments in Course Offerings are checked</li>
+                        <li>This tool is <strong>evaluation only</strong> — it does not enroll or drop anyone in D2L</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Tool Interface -->
+            <div class="card">
+                <h2 style="margin-top: 0; color: var(--primary-color);">Tool Interface</h2>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="csvFile">
+                            <i class="fas fa-file-csv"></i> Upload Insights CSV File:
+                        </label>
+                        <input type="file" id="csvFile" accept=".csv">
+                    </div>
+                    <div class="input-group">
+                        <label for="termFilter">
+                            <i class="fas fa-filter"></i> Term:
+                        </label>
+                        <select id="termFilter">
+                            <option value="__current__">Current terms (26/FA, 26/SP)</option>
+                            <option value="">All Terms</option>
+                            <option value="26/FA">26/FA</option>
+                            <option value="26/SP">26/SP</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button id="startAuditBtn" class="btn-primary">
+                        <i class="fas fa-play"></i> Start Audit
+                    </button>
+                    <button id="downloadBtn" class="btn-secondary" style="display:none;">
+                        <i class="fas fa-download"></i> Download CSV
+                    </button>
+                </div>
+
+                <div id="status" class="status-message"></div>
+            </div>
+
+            <div class="stats">
+                <p style="margin: 0.5rem 0;"><strong>Total Mismatches:</strong> <span id="totalStudents">0</span></p>
+                <p style="margin: 0.5rem 0;"><strong>Sections With Mismatches:</strong> <span id="coursesScanned">0</span></p>
+                <div id="auditSummary" class="audit-summary-grid" style="display:none;"></div>
+            </div>
+
+            <div class="card">
+                <h2 style="margin-top: 0; color: var(--primary-color);">Audit Results (send to OIT)</h2>
+                <div class="table-container">
+                    <table id="resultsTable" class="display data-table" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>OrgDefinedId</th>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>Email</th>
+                                <th>Term</th>
+                                <th>Section</th>
+                                <th>Course</th>
+                                <th>Status (Found)</th>
+                                <th>Status (Expected)</th>
+                                <th>Action</th>
+                                <th>Date Change</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <!-- D2L API - Must be loaded first -->
+    <script src="../js/d2l-api.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <script src="../js/loading-utils.js"></script>
+    <script src="../js/enrollment-checker-insights.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enrollments Debug Report - D2L Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
+
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            margin-left: 0;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            overflow: visible;
+        }
+
+        .back-link:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-2px);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .controls-row {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .field label {
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .field input[type="number"],
+        .field input[type="text"],
+        .field select {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-base);
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+        }
+
+        .status-message {
+            margin: var(--spacing-md) 0;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-sm);
+            display: none;
+            font-size: var(--font-size-sm);
+        }
+
+        .status-info {
+            background-color: #e8f4fd;
+            border: 1px solid #c5e0fa;
+            color: #0366d6;
+            display: flex;
+            gap: var(--spacing-sm);
+            align-items: flex-start;
+        }
+
+        .muted-text {
+            color: var(--text-secondary);
+            font-size: var(--font-size-sm);
+            margin-top: var(--spacing-sm);
+        }
+
+        .mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        }
+
+        /* Button Styles - Consistent with design system */
+        .btn-primary,
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: var(--bg-color);
+            border-color: var(--text-primary);
+        }
+
+        .btn-secondary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        /* Card spacing - consistent spacing between cards */
+        .card {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .card:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Table styling - better organization and readability */
+        #summaryTable,
+        #usersTable,
+        #semesterCoursesTable,
+        #randomRolesTable {
+            width: 100% !important;
+        }
+
+        #summaryTable thead th,
+        #usersTable thead th,
+        #semesterCoursesTable thead th,
+        #randomRolesTable thead th {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-weight: 600;
+            padding: 12px 8px;
+            border-bottom: 2px solid var(--border-color);
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        #summaryTable tbody td,
+        #usersTable tbody td,
+        #semesterCoursesTable tbody td,
+        #randomRolesTable tbody td {
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: top;
+        }
+
+        #summaryTable tbody tr,
+        #usersTable tbody tr,
+        #semesterCoursesTable tbody tr,
+        #randomRolesTable tbody tr {
+            background-color: var(--surface-color);
+        }
+
+        #summaryTable tbody tr:hover,
+        #usersTable tbody tr:hover,
+        #semesterCoursesTable tbody tr:hover,
+        #randomRolesTable tbody tr:hover {
+            background-color: var(--bg-color);
+        }
+
+        #summaryTable tbody tr:nth-child(even),
+        #usersTable tbody tr:nth-child(even),
+        #semesterCoursesTable tbody tr:nth-child(even),
+        #randomRolesTable tbody tr:nth-child(even) {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        #summaryTable tbody tr:nth-child(even):hover,
+        #usersTable tbody tr:nth-child(even):hover,
+        #semesterCoursesTable tbody tr:nth-child(even):hover,
+        #randomRolesTable tbody tr:nth-child(even):hover {
+            background-color: var(--bg-color);
+        }
+
+        /* DataTables pagination styling */
+        .dataTables_wrapper .dataTables_paginate {
+            margin-top: var(--spacing-md);
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            padding: 6px 12px;
+            margin: 0 2px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background-color: var(--surface-color);
+            color: var(--text-primary) !important;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background-color: var(--bg-color);
+            border-color: var(--text-primary);
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background-color: var(--primary-color);
+            color: white !important;
+            border-color: var(--primary-color);
+        }
+
+        .dataTables_wrapper .dataTables_length select,
+        .dataTables_wrapper .dataTables_filter input {
+            padding: 6px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+        }
+
+        .dataTables_wrapper .dataTables_info {
+            color: var(--text-secondary);
+            padding-top: var(--spacing-sm);
+        }
+
+        /* Tabs */
+        .debug-tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .debug-tab {
+            padding: 10px 20px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .debug-tab:hover {
+            color: var(--text-primary);
+        }
+        .debug-tab.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+        .debug-panel {
+            margin-top: 0;
+        }
+        #semesterStatus {
+            display: flex;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation (injected via js/sidebar.js) -->
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports & Tools
+                    </a>
+                    <h1 class="page-title">Enrollments Debug Report</h1>
+                    <p class="page-subtitle">Inspect enrollments by course or review all courses in a semester and find random/unusual roles.</p>
+                </div>
+            </header>
+
+            <!-- Tabs -->
+            <div class="card">
+                <div class="debug-tabs">
+                    <button type="button" class="debug-tab active" data-tab="single">Single course</button>
+                    <button type="button" class="debug-tab" data-tab="semester">Semester review &amp; random roles</button>
+                </div>
+            </div>
+
+            <!-- Tab: Single course -->
+            <div id="panel-single" class="debug-panel">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fa-solid fa-filter"></i> Filters &amp; Actions
+                        </h2>
+                    </div>
+                    <div class="controls-row">
+                        <div class="field">
+                            <label for="orgUnitId">Course OrgUnitId</label>
+                            <input type="number" id="orgUnitId" placeholder="e.g., 2854588">
+                        </div>
+                        <div class="field" style="flex: 1 1 auto;">
+                            <label>&nbsp;</label>
+                            <div style="display: flex; gap: var(--spacing-sm);">
+                                <button id="runBtn" class="btn-primary">
+                                    <i class="fa-solid fa-rotate-right"></i> Fetch Enrollments
+                                </button>
+                                <button id="downloadCsvBtn" class="btn-secondary" disabled>
+                                    <i class="fa-solid fa-download"></i> Download CSV
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="status" class="status-message status-info">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <div><strong>Status:</strong> <span id="statusText">Ready.</span></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fa-solid fa-table-cells"></i> Summary by Role
+                        </h2>
+                    </div>
+                    <table id="summaryTable" class="display" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Role ID</th>
+                                <th>Role Name</th>
+                                <th>Category</th>
+                                <th>User Count</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                    <p class="muted-text">Category rules: 101 = STUDENT, 102 = FACULTY, configured ignored roles → IGNORED, everything else → OTHER.</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fa-solid fa-users"></i> Detailed Users
+                        </h2>
+                    </div>
+                    <table id="usersTable" class="display" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Role ID</th>
+                                <th>Role Name</th>
+                                <th>Category</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab: Semester review & random roles -->
+            <div id="panel-semester" class="debug-panel" hidden>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fa-solid fa-calendar-alt"></i> Semester &amp; Actions
+                        </h2>
+                    </div>
+                    <div class="controls-row">
+                        <div class="field">
+                            <label for="semesterSelect">Semester</label>
+                            <select id="semesterSelect">
+                                <option value="">Select a semester</option>
+                            </select>
+                        </div>
+                        <div class="field" style="flex: 1 1 auto;">
+                            <label>&nbsp;</label>
+                            <div style="display: flex; gap: var(--spacing-sm); flex-wrap: wrap;">
+                                <button id="runSemesterBtn" class="btn-primary">
+                                    <i class="fa-solid fa-rotate-right"></i> Run semester report
+                                </button>
+                                <button id="downloadSemesterCsvBtn" class="btn-secondary" disabled>
+                                    <i class="fa-solid fa-download"></i> Download courses CSV
+                                </button>
+                                <button id="downloadRandomRolesCsvBtn" class="btn-secondary" disabled>
+                                    <i class="fa-solid fa-download"></i> Download random roles CSV
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="semesterStatus" class="status-message status-info">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <div><strong>Status:</strong> <span id="semesterStatusText">Select a semester and click Run.</span></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fa-solid fa-list"></i> All courses in semester (enrollment summary)
+                        </h2>
+                    </div>
+                    <table id="semesterCoursesTable" class="display" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Course Id</th>
+                                <th>Course Name</th>
+                                <th>Code</th>
+                                <th>Students</th>
+                                <th>Faculty</th>
+                                <th>Other</th>
+                                <th>Ignored</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fa-solid fa-user-shield"></i> Random roles (OTHER — non‑student, non‑faculty, non‑ignored)
+                        </h2>
+                    </div>
+                    <p class="muted-text">Enrollments with role category OTHER across all courses in the selected semester. Use this to find unexpected or random roles.</p>
+                    <table id="randomRolesTable" class="display" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Course Id</th>
+                                <th>Course Name</th>
+                                <th>User Name</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Role ID</th>
+                                <th>Role Name</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <!-- D2L API - Must be loaded first -->
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/semester-config.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <script src="../js/loading-utils.js"></script>
+    <script src="../js/debug-enrollments.js"></script>
+</body>
+
+</html>

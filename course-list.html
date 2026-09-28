@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Management - D2L Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <link rel="stylesheet" href="css/tables.css">
+
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .back-link:hover {
+            background-color: #e5e5e5;
+        }
+
+        .action-link {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .action-link:hover {
+            text-decoration: underline;
+        }
+
+        .info-bar {
+            padding: 10px;
+            background: #e3fae3;
+            /* Light green to match theme */
+            color: var(--primary-dark);
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation (injected via js/sidebar.js) -->
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+                    <h1 class="page-title">Course Management</h1>
+                    <p class="page-subtitle">View and manage course offerings in D2L Brightspace</p>
+                </div>
+            </header>
+
+            <div id="error-container"></div>
+            <div id="info-container"></div>
+
+            <div class="form-container">
+
+                <div class="controls-row" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <label class="form-label" for="semester-filter">Filter by Semester:</label>
+                        <select id="semester-filter" class="form-control" style="width: 200px;" disabled>
+                            <option value="">Loading semesters...</option>
+                        </select>
+                        <button type="button" id="refresh-btn" class="btn btn-primary">
+                            <i class="fa-solid fa-rotate"></i> Refresh Data
+                        </button>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 8px; margin-left: auto;">
+                        <input id="course-search-input" type="text" class="form-control" placeholder="Search courses by code, name, or ID..." style="min-width: 220px;">
+                        <button type="button" id="course-search-clear" class="btn btn-outline">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                        <button type="button" id="download-csv-btn" class="btn btn-outline">
+                            <i class="fa-solid fa-file-csv"></i> Download CSV
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Data Table (populated by course-list.js from D2L API) -->
+                <div class="table-container">
+                    <table id="course-list" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>OrgUnitCode</th>
+                                <th>Course Name</th>
+                                <th>Course Code</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 1.5rem;">Initializing course data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="js/sidebar.js"></script>
+    <script src="js/d2l-api.js"></script>
+    <script src="js/semester-config.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/course-list.js"></script>
+</body>
+
+</html>

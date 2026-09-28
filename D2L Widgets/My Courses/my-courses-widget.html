@@ -1,0 +1,2251 @@
+<!--
+  Brightspace My Courses Widget
+  Paste into a D2L Custom Widget or homepage HTML widget.
+
+  Tabs (empty ones omitted): Pinned first (default when any course is pinned),
+  All, Sandbox, Other, Incompletes, then term tabs newest first.
+  Cards show start date, role, and assignment/discussion/quiz counts.
+  Sort by course code, course name, or start date. Group by division or role.
+-->
+<div id="d2l-my-courses-widget">
+  <p class="mcw-status">Loading courses…</p>
+</div>
+<p><script>
+(function () {
+  "use strict";
+
+  if (window.__deltaMyCoursesWidgetLoaded) return;
+  window.__deltaMyCoursesWidgetLoaded = true;
+
+  var CONFIG = {
+    LP_VERSION: "1.51",
+    LE_VERSION: "1.78",
+    COURSE_OFFERING_TYPE_ID: 3,
+    BRAND: "#006341",
+    /* Delta defaults — update if your org uses different role IDs / names */
+    STUDENT_ROLE_IDS: [101],
+    INCOMPLETE_ROLE_IDS: [107],
+    STUDENT_VIEW_ROLE_IDS: [112],
+    INSTRUCTOR_ROLE_IDS: [102, 160, 167, 174, 183],
+    STUDENT_ROLE_NAMES: ["student"],
+    INCOMPLETE_ROLE_NAMES: ["student2", "incomplete student", "incomplete"],
+    /* Fallback labels when ClasslistRoleName is blank (common for Instructor). */
+    ROLE_LABELS: {
+      101: "Student",
+      102: "Instructor",
+      107: "Incomplete Student",
+      108: "Teaching Assistant",
+      112: "Student View",
+      122: "Trainer",
+      127: "Mentor",
+      100: "Admin",
+      147: "Mini-Admin",
+      160: "Ghost Instructor",
+      165: "Administrator",
+      167: "Instructor - Admin",
+      174: "Instructor - Permission Test",
+      183: "Secondary Instructor"
+    },
+    /* Unread counts from LE Updates API (same source as native My Courses).
+       Types: 1 feedback, 2 unapproved discussions, 3 unattempted quizzes,
+       4 ungraded quizzes, 5 unread assignment submissions, 6 unread discussions. */
+    LOAD_ACTIVITY_INDICATORS: true,
+    UPDATES_VERSION: "1.82",
+    UPDATE_TYPES_CSV: "1,2,3,4,5,6",
+    PREVIEW_LIMIT: 20,
+    SECTION_DATES_URL: "/content/api-apps/last-loggedin/course-sec-dates-26FA.csv"
+  };
+
+  var SEASON_LABEL = { FA: "Fall", WI: "Winter", SP: "Spring", SU: "Summer", SM: "Summer", SS: "Spring/Summer" };
+  /* Newest-first among a year: FA, Summer, SP, WI → 26/FA, 26/SP, 26/WI, 25/FA… */
+  var SEASON_TAB_ORDER = { FA: 1, SU: 2, SM: 2, SS: 2, SP: 3, WI: 4 };
+  var PLACEHOLDER_COLORS = ["#006341", "#0b6e4f", "#1b4d3e", "#245c48", "#0e7c66", "#134e4a"];
+
+  var root = document.getElementById("d2l-my-courses-widget");
+  if (!root) return;
+
+  var state = {
+    courses: [],
+    rawEnrollments: [],
+    pinnedMap: {},
+    activeTab: "",
+    pinning: {},
+    activity: {},
+    sortDir: "asc",
+    sortMode: "code-asc",
+    tabChosen: false,
+    pinnedDefaulted: false,
+    groupBy: "none",
+    query: "",
+    userQuery: "",
+    lookupUser: null,
+    lookupCourses: null,
+    lookupMatches: [],
+    lookupStatus: "",
+    lookupBusy: false,
+    canLookupUsers: false,
+    roleChecked: false,
+    indicatorsBusy: false,
+    bannerLinks: {},
+    bannerMiss: {},
+    orgId: "",
+    loadingMore: false,
+    expandedTabs: {},
+    sectionDates: null,
+    userId: "",
+    prefsReady: false,
+    savedTab: "",
+    savedTabChosen: false
+  };
+
+  /* ------------------------------------------------------------------ */
+  /* CSS                                                                */
+  /* ------------------------------------------------------------------ */
+
+  var CSS = [
+    "#d2l-my-courses-widget{font-family:Lato,'Lucida Sans Unicode','Lucida Grande',sans-serif;color:#202122;box-sizing:border-box;}",
+    "#d2l-my-courses-widget *,#d2l-my-courses-widget *::before,#d2l-my-courses-widget *::after{box-sizing:border-box;}",
+    "#d2l-my-courses-widget .mcw-status{margin:0;padding:1rem 0.2rem;color:#6e7376;font-size:0.9rem;}",
+    "#d2l-my-courses-widget .mcw-loading-more{margin:0 0 10px;color:#6e7376;font-size:0.8rem;}",
+    "#d2l-my-courses-widget .mcw-view-all{display:block;width:100%;margin:14px 0 4px;padding:8px 12px;border:0;background:transparent;color:#006fbf;font-family:inherit;font-size:0.9rem;font-weight:700;cursor:pointer;text-align:center;}",
+    "#d2l-my-courses-widget .mcw-view-all:hover{text-decoration:underline;}",
+    "#d2l-my-courses-widget .mcw-view-all:focus-visible{outline:2px solid #006fbf;outline-offset:2px;}",
+    "#d2l-my-courses-widget .mcw-error{margin:0;padding:0.85rem 1rem;background:#ffebe6;border:1px solid #ffbdad;border-radius:6px;color:#bf2600;font-size:0.9rem;}",
+    "#d2l-my-courses-widget .mcw-empty{margin:0;padding:1rem;background:#f7f8fa;border:1px solid #d3d9e3;border-radius:6px;color:#6e7376;font-size:0.9rem;line-height:1.45;}",
+    "#d2l-my-courses-widget .mcw-empty a{color:#006fbf;font-weight:700;}",
+    "#d2l-my-courses-widget .mcw-tabs-wrap{position:relative;display:flex;align-items:stretch;border-bottom:1px solid #e6eaee;margin:0 0 12px;}",
+    "#d2l-my-courses-widget .mcw-tabs{display:flex;flex:1;gap:0;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none;}",
+    "#d2l-my-courses-widget .mcw-tabs::-webkit-scrollbar{display:none;}",
+    "#d2l-my-courses-widget .mcw-tab{flex:0 0 auto;appearance:none;background:transparent;border:0;border-bottom:3px solid transparent;padding:10px 14px 8px;margin-bottom:-1px;font-size:0.875rem;color:#494c4e;cursor:pointer;font-family:inherit;line-height:1.2;}",
+    "#d2l-my-courses-widget .mcw-tab:hover{color:#202122;}",
+    "#d2l-my-courses-widget .mcw-tab[aria-selected='true']{font-weight:700;color:#006fbf;border-bottom-color:#006fbf;}",
+    "#d2l-my-courses-widget .mcw-tab:focus-visible{outline:2px solid #006fbf;outline-offset:-2px;}",
+    "#d2l-my-courses-widget .mcw-tab-more{flex:0 0 36px;width:36px;border:0;background:linear-gradient(90deg,rgba(255,255,255,0),#fff 40%);color:#494c4e;cursor:pointer;font-size:1.15rem;line-height:1;padding:0;}",
+    "#d2l-my-courses-widget .mcw-tab-more[hidden]{display:none;}",
+    "#d2l-my-courses-widget .custom-course-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;}",
+    "#d2l-my-courses-widget .course-card{position:relative;background:#fff;border:1px solid #d3d9e3;border-radius:6px;overflow:hidden;display:flex;flex-direction:column;transition:box-shadow 0.15s ease;min-height:100%;}",
+    "#d2l-my-courses-widget .course-card:hover{box-shadow:0 2px 8px rgba(32,37,41,0.12);}",
+    "#d2l-my-courses-widget .card-media{position:relative;height:138px;background:#e3e9ef;display:block;text-decoration:none;color:inherit;overflow:hidden;}",
+    "#d2l-my-courses-widget .card-media img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;}",
+    "#d2l-my-courses-widget .card-media img.mcw-ready{opacity:1;}",
+    "#d2l-my-courses-widget .card-media.mcw-no-image img{display:none;}",
+    "#d2l-my-courses-widget .mcw-placeholder{position:absolute;top:0;right:0;bottom:0;left:0;display:none;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:1.6rem;letter-spacing:0.04em;}",
+    "#d2l-my-courses-widget .card-media.mcw-no-image .mcw-placeholder{display:flex;}",
+    "#d2l-my-courses-widget .pin-btn{position:absolute;top:8px;right:8px;z-index:5;width:32px;height:32px;padding:0;border:none;border-radius:4px;background:rgba(32,37,41,0.72);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;}",
+    "#d2l-my-courses-widget .pin-btn:hover,#d2l-my-courses-widget .pin-btn:focus-visible{outline:none;background:rgba(32,37,41,0.9);}",
+    "#d2l-my-courses-widget .pin-btn.active{background:rgba(32,37,41,0.82);color:#fff;}",
+    "#d2l-my-courses-widget .pin-btn[disabled]{opacity:0.6;cursor:wait;}",
+    "#d2l-my-courses-widget .pin-btn svg{width:16px;height:16px;display:block;}",
+    "#d2l-my-courses-widget .status-badge{position:absolute;top:8px;left:8px;background:#5eb3d4;color:#fff;font-size:0.7rem;font-weight:700;padding:3px 8px;border-radius:11px;letter-spacing:0.01em;line-height:1.2;}",
+    "#d2l-my-courses-widget .status-badge.upcoming{background:#006fbf;}",
+    "#d2l-my-courses-widget .card-body{padding:10px 12px 12px;display:flex;flex-direction:column;gap:0.3rem;flex:1;}",
+    "#d2l-my-courses-widget .course-title{font-size:0.95rem;font-weight:700;margin:0;color:#202122;line-height:1.3;text-decoration:none;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}",
+    "#d2l-my-courses-widget .course-title:hover{color:#006fbf;text-decoration:underline;}",
+    "#d2l-my-courses-widget .course-code{font-size:0.75rem;color:#6e7376;margin:0;line-height:1.35;word-break:break-word;}",
+    "#d2l-my-courses-widget .mcw-last-access{font-size:0.72rem;color:#6e7376;margin:0.15rem 0 0;line-height:1.35;}",
+    "#d2l-my-courses-widget .mcw-start-date{font-size:0.72rem;color:#494c4e;margin:0.15rem 0 0;line-height:1.35;}",
+    "#d2l-my-courses-widget .mcw-toolbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin:0 0 12px;padding:0 2px;}",
+    "#d2l-my-courses-widget .mcw-tool{display:flex;align-items:center;gap:6px;font-size:0.8rem;color:#494c4e;}",
+    "#d2l-my-courses-widget .mcw-tool label{font-weight:600;}",
+    "#d2l-my-courses-widget .mcw-tool select{font-family:inherit;font-size:0.8rem;color:#202122;border:1px solid #d3d9e3;border-radius:4px;background:#fff;padding:4px 8px;}",
+    "#d2l-my-courses-widget .mcw-search{flex:1 1 220px;}",
+    "#d2l-my-courses-widget .mcw-search input{flex:1;min-width:0;width:100%;font-family:inherit;font-size:0.85rem;color:#202122;border:1px solid #d3d9e3;border-radius:4px;background:#fff;padding:6px 10px;}",
+    "#d2l-my-courses-widget .mcw-user-lookup{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px;}",
+    "#d2l-my-courses-widget .mcw-user-lookup label{font-size:0.8rem;font-weight:600;color:#494c4e;}",
+    "#d2l-my-courses-widget .mcw-user-lookup input{flex:1 1 220px;min-width:0;font-family:inherit;font-size:0.85rem;color:#202122;border:1px solid #d3d9e3;border-radius:4px;background:#fff;padding:6px 10px;}",
+    "#d2l-my-courses-widget .mcw-user-lookup button,#d2l-my-courses-widget .mcw-user-banner button,#d2l-my-courses-widget .mcw-user-matches button{font-family:inherit;font-size:0.8rem;font-weight:600;color:#fff;background:#006341;border:0;border-radius:4px;padding:6px 10px;cursor:pointer;}",
+    "#d2l-my-courses-widget .mcw-user-lookup button[disabled]{opacity:0.6;cursor:wait;}",
+    "#d2l-my-courses-widget .mcw-user-banner{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:0 0 12px;padding:8px 12px;background:#e8f5ee;border-left:4px solid #006341;border-radius:4px;color:#202122;font-size:0.85rem;}",
+    "#d2l-my-courses-widget .mcw-user-banner button{background:#fff;color:#006341;border:1px solid #006341;}",
+    "#d2l-my-courses-widget .mcw-user-matches{display:flex;flex-direction:column;gap:6px;margin:0 0 12px;}",
+    "#d2l-my-courses-widget .mcw-user-matches button{text-align:left;background:#fff;color:#202122;border:1px solid #d3d9e3;}",
+    "#d2l-my-courses-widget .mcw-user-matches button:hover{border-color:#006341;color:#006341;}",
+    "#d2l-my-courses-widget .mcw-user-status{margin:0 0 12px;font-size:0.8rem;color:#494c4e;}",
+    "#d2l-my-courses-widget .mcw-group{margin:0 0 22px;}",
+    "#d2l-my-courses-widget .mcw-group-title{margin:0 0 12px;padding:8px 12px;display:flex;align-items:center;gap:10px;background:#e8f5ee;border-left:4px solid #006341;border-radius:4px;font-size:0.95rem;font-weight:800;color:#006341;letter-spacing:0.06em;text-transform:uppercase;}",
+    "#d2l-my-courses-widget .mcw-group-count{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 7px;border-radius:11px;background:#006341;color:#fff;font-size:0.72rem;font-weight:700;letter-spacing:0;line-height:1;}",
+    "#d2l-my-courses-widget .mcw-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:0.2rem;}",
+    "#d2l-my-courses-widget .mcw-chip{display:inline-block;padding:2px 8px;border-radius:12px;font-size:0.7rem;font-weight:600;background:#f1f2f3;color:#494c4e;}",
+    "#d2l-my-courses-widget .mcw-chip.incomplete{background:#e8f5ee;color:#006341;}",
+    "#d2l-my-courses-widget .mcw-alerts{display:flex;align-items:center;gap:14px;margin-top:auto;padding-top:8px;min-height:22px;}",
+    "#d2l-my-courses-widget .mcw-alert{position:relative;display:inline-flex;color:#6e7376;width:22px;height:22px;text-decoration:none;cursor:pointer;}",
+    "#d2l-my-courses-widget .mcw-alert:hover,#d2l-my-courses-widget .mcw-alert:focus-visible{color:#006fbf;outline:2px solid #006fbf;outline-offset:2px;border-radius:2px;}",
+    "#d2l-my-courses-widget .mcw-alert svg{width:22px;height:22px;display:block;}",
+    "#d2l-my-courses-widget .mcw-alert-badge{position:absolute;top:-7px;right:-9px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:#e87511;color:#fff;font-size:10px;font-weight:700;line-height:16px;text-align:center;box-sizing:border-box;}",
+    "#d2l-my-courses-widget .mcw-alert-badge[hidden]{display:none;}",
+    "@media (max-width:640px){#d2l-my-courses-widget .custom-course-grid{grid-template-columns:1fr;}#d2l-my-courses-widget .card-media{height:128px;}}"
+  ].join("");
+
+  function injectStyles() {
+    if (document.getElementById("mcw-styles")) return;
+    var style = document.createElement("style");
+    style.id = "mcw-styles";
+    style.appendChild(document.createTextNode(CSS));
+    (root.parentNode || document.head || document.body).insertBefore(style, root);
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Fetch                                                              */
+  /* ------------------------------------------------------------------ */
+
+  /* Same auth as Faculty Dashboard js/mycourses.js BrightspaceFetch:
+     X-CSRF-Token from localStorage XSRF.Token, credentials include. */
+  function xsrfToken() {
+    try {
+      var t = localStorage.getItem("XSRF.Token");
+      if (t) return t;
+    } catch (e) { /* iframe may block */ }
+    try {
+      if (window.parent && window.parent !== window) {
+        var pt = window.parent.localStorage.getItem("XSRF.Token");
+        if (pt) return pt;
+      }
+    } catch (e2) { /* ignore */ }
+    try {
+      if (window.top && window.top !== window) {
+        var tt = window.top.localStorage.getItem("XSRF.Token");
+        if (tt) return tt;
+      }
+    } catch (e3) { /* ignore */ }
+    return "";
+  }
+
+  function pageFetch() {
+    try {
+      if (window.top && window.top.fetch) return window.top.fetch.bind(window.top);
+    } catch (e) { /* ignore */ }
+    return fetch;
+  }
+
+  async function fetchJson(url, options) {
+    var opts = options || {};
+    var headers = {};
+    if (opts.headers) {
+      Object.keys(opts.headers).forEach(function (k) { headers[k] = opts.headers[k]; });
+    }
+    headers["X-CSRF-Token"] = xsrfToken();
+    if (!headers.Accept) headers.Accept = "application/json";
+    var fetchOpts = {
+      method: opts.method || "GET",
+      credentials: "include",
+      headers: headers
+    };
+    if (opts.body != null) fetchOpts.body = opts.body;
+    var res = await pageFetch()(url, fetchOpts);
+    if (res.status === 204) return null;
+    if (!res.ok) {
+      var err = new Error("HTTP " + res.status + " @ " + url);
+      err.status = res.status;
+      throw err;
+    }
+    var text = (await res.text() || "").trim();
+    if (!text) return null;
+    try {
+      return JSON.parse(text);
+    } catch (parseErr) {
+      return null;
+    }
+  }
+
+  async function fetchMyEnrollments(onProgress) {
+    /* Course offerings only. A full page with HasMoreItems false still continues
+       from the last org unit id — that flag can be wrong when orgUnitTypeId is set. */
+    var FULL_PAGE = 100;
+    var all = [];
+    var seen = {};
+    var bookmark = "";
+    var guard = 0;
+    var pages = 0;
+
+    while (guard++ < 200) {
+      var url = "/d2l/api/lp/" + CONFIG.LP_VERSION +
+        "/enrollments/myenrollments/?orgUnitTypeId=" + CONFIG.COURSE_OFFERING_TYPE_ID;
+      if (bookmark) url += "&bookmark=" + encodeURIComponent(bookmark);
+
+      var page = await fetchJson(url);
+      var items = Array.isArray(page) ? page : ((page && page.Items) || []);
+      var added = 0;
+      for (var i = 0; i < items.length; i++) {
+        var ou = items[i] && items[i].OrgUnit;
+        var key = ou && ou.Id != null ? "ou:" + ou.Id : "row:" + all.length + ":" + i;
+        if (seen[key]) continue;
+        seen[key] = true;
+        all.push(items[i]);
+        added++;
+      }
+
+      pages++;
+      if (onProgress && pages === 1) onProgress(all, false);
+      if (added === 0) break;
+
+      var pi = (page && page.PagingInfo) || {};
+      var next = pi.Bookmark || pi.bookmark || "";
+      next = next ? String(next) : "";
+      var hasMore = pi.HasMoreItems === true || pi.hasMoreItems === true;
+      if ((!next || next === bookmark) && items.length >= FULL_PAGE) {
+        var last = items[items.length - 1];
+        var lastId = last && last.OrgUnit && last.OrgUnit.Id;
+        if (lastId != null && String(lastId) !== bookmark) next = String(lastId);
+      }
+
+      if (!next || next === bookmark) break;
+      if (!hasMore && items.length < FULL_PAGE) break;
+      bookmark = next;
+    }
+
+    if (onProgress) onProgress(all, true);
+    return all;
+  }
+
+  /* Faculty Dashboard js/mycourses.js — native homepage pin list */
+  async function fetchPinnedFromWidget() {
+    try {
+      var data = await fetchJson("/d2l/le/manageCourses/api/mycourses?pinned=true");
+      var list = (data && data.Courses) || [];
+      var map = {};
+      for (var i = 0; i < list.length; i++) {
+        var c = list[i];
+        if (!c || c.OrgUnitId == null) continue;
+        map[String(c.OrgUnitId)] = {
+          pinDate: c.PinDate || true,
+          imageUrl: c.FormattedImageLink || null
+        };
+      }
+      return map;
+    } catch (e) {
+      console.warn("My Courses pinned widget endpoint unavailable", e);
+      return {};
+    }
+  }
+
+  async function fetchWhoAmIId() {
+    try {
+      var me = await fetchJson("/d2l/api/lp/" + CONFIG.LP_VERSION + "/users/whoami");
+      var id = me && (me.Identifier != null ? me.Identifier : me.UserId);
+      return id != null ? String(id) : "";
+    } catch (e) {
+      return "";
+    }
+  }
+
+  var VIEW_PREF_KEY = "deltaMyCourses.view.";
+  var SORT_MODES = { "code-asc": 1, "code-desc": 1, "name-asc": 1, "name-desc": 1, start: 1 };
+  var GROUP_MODES = { none: 1, division: 1, role: 1 };
+
+  function readViewPrefs(userId) {
+    if (!userId) return null;
+    try {
+      var raw = localStorage.getItem(VIEW_PREF_KEY + userId);
+      if (!raw) return null;
+      var data = JSON.parse(raw);
+      return data && typeof data === "object" ? data : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function applyViewPrefs(userId) {
+    state.userId = userId || "";
+    var data = readViewPrefs(state.userId);
+    if (data) {
+      if (SORT_MODES[data.sortMode]) {
+        state.sortMode = data.sortMode;
+        state.sortDir = (data.sortMode === "code-desc" || data.sortMode === "name-desc") ? "desc" : "asc";
+      }
+      if (GROUP_MODES[data.groupBy]) state.groupBy = data.groupBy;
+      if (data.tabChosen && data.activeTab) {
+        state.activeTab = String(data.activeTab);
+        state.tabChosen = true;
+        state.pinnedDefaulted = true;
+        state.savedTab = state.activeTab;
+        state.savedTabChosen = true;
+      }
+    }
+    state.prefsReady = true;
+  }
+
+  function saveViewPrefs() {
+    if (!state.prefsReady || !state.userId) return;
+    var tab = state.lookupUser ? (state.savedTab || "") : (state.activeTab || "");
+    var tabChosen = state.lookupUser ? !!state.savedTabChosen : !!state.tabChosen;
+    if (!state.lookupUser) {
+      state.savedTab = tab;
+      state.savedTabChosen = tabChosen;
+    }
+    try {
+      localStorage.setItem(VIEW_PREF_KEY + state.userId, JSON.stringify({
+        sortMode: state.sortMode,
+        groupBy: state.groupBy,
+        activeTab: tab,
+        tabChosen: tabChosen
+      }));
+    } catch (e) { /* storage blocked */ }
+  }
+
+  /* Role.Name / Role.Id are not on myenrollments; ClasslistRoleName is often blank. */
+  async function fetchRoleMap(userId) {
+    var map = {};
+    if (!userId) return map;
+    var bookmark = "";
+    var guard = 0;
+    while (guard++ < 200) {
+      var url = "/d2l/api/lp/" + CONFIG.LP_VERSION +
+        "/enrollments/users/" + encodeURIComponent(userId) +
+        "/orgUnits/?orgUnitTypeId=" + CONFIG.COURSE_OFFERING_TYPE_ID;
+      if (bookmark) url += "&bookmark=" + encodeURIComponent(bookmark);
+      var page;
+      try {
+        page = await fetchJson(url);
+      } catch (e) {
+        return map;
+      }
+      var items = Array.isArray(page) ? page : ((page && page.Items) || []);
+      for (var i = 0; i < items.length; i++) {
+        var it = items[i];
+        var ou = it && it.OrgUnit && it.OrgUnit.Id;
+        var role = it && it.Role ? it.Role : {};
+        if (ou == null) continue;
+        map[String(ou)] = {
+          id: role.Id != null ? Number(role.Id) : null,
+          name: role.Name || role.Code || ""
+        };
+      }
+      var pi = (page && page.PagingInfo) || {};
+      var next = pi.Bookmark || pi.bookmark || "";
+      next = next ? String(next) : "";
+      var hasMore = pi.HasMoreItems === true || pi.hasMoreItems === true;
+      if (!next || next === bookmark) break;
+      if (!hasMore && items.length < 100) break;
+      bookmark = next;
+    }
+    return map;
+  }
+
+  function applyRoleMap(enrollments, roleMap) {
+    (enrollments || []).forEach(function (enr) {
+      var ou = enr && enr.OrgUnit && enr.OrgUnit.Id;
+      var extra = roleMap[String(ou)];
+      if (!extra) return;
+      if (!enr.Access) enr.Access = {};
+      if (extra.id != null) enr.Access.RoleId = extra.id;
+      if (extra.name) enr.Access.RoleName = extra.name;
+    });
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Role + availability                                                */
+  /* ------------------------------------------------------------------ */
+
+  function roleNameOf(enrollment) {
+    var access = enrollment && enrollment.Access ? enrollment.Access : {};
+    return String(access.RoleName || access.ClasslistRoleName || "").toLowerCase().trim();
+  }
+
+  function roleIdOf(enrollment) {
+    var access = enrollment && enrollment.Access ? enrollment.Access : {};
+    var id = access.RoleId != null ? access.RoleId : access.ClasslistRoleId;
+    var n = Number(id);
+    return isFinite(n) ? n : null;
+  }
+
+  function idIn(list, id) {
+    return id != null && list.indexOf(id) !== -1;
+  }
+
+  function nameIn(list, name) {
+    if (!name) return false;
+    for (var i = 0; i < list.length; i++) {
+      if (name === list[i]) return true;
+    }
+    return false;
+  }
+
+  function isIncompleteEnrollment(enrollment) {
+    var id = roleIdOf(enrollment);
+    if (idIn(CONFIG.INCOMPLETE_ROLE_IDS, id)) return true;
+    var name = roleNameOf(enrollment);
+    if (nameIn(CONFIG.INCOMPLETE_ROLE_NAMES, name)) return true;
+    return name.indexOf("incomplete") !== -1;
+  }
+
+  function isStudentViewEnrollment(enrollment) {
+    var id = roleIdOf(enrollment);
+    if (idIn(CONFIG.STUDENT_VIEW_ROLE_IDS, id)) return true;
+    return roleNameOf(enrollment).indexOf("student view") !== -1;
+  }
+
+  function isStudentEnrollment(enrollment) {
+    if (isIncompleteEnrollment(enrollment) || isStudentViewEnrollment(enrollment)) return false;
+    var id = roleIdOf(enrollment);
+    if (idIn(CONFIG.STUDENT_ROLE_IDS, id)) return true;
+    var name = roleNameOf(enrollment);
+    if (nameIn(CONFIG.STUDENT_ROLE_NAMES, name)) return true;
+    return name === "student" || name === "learner";
+  }
+
+  function isInstructorEnrollment(enrollment) {
+    var id = roleIdOf(enrollment);
+    if (idIn(CONFIG.INSTRUCTOR_ROLE_IDS, id)) return true;
+    var name = roleNameOf(enrollment);
+    return name.indexOf("instructor") !== -1 ||
+      name.indexOf("teacher") !== -1 ||
+      name === "faculty";
+  }
+
+  function isRestrictedRole(enrollment) {
+    return isStudentEnrollment(enrollment) ||
+      isIncompleteEnrollment(enrollment) ||
+      isStudentViewEnrollment(enrollment);
+  }
+
+  function parseAccessTime(value, isEnd) {
+    if (!value) return null;
+    var d = new Date(value);
+    if (isNaN(d.getTime())) return null;
+    if (isEnd && d.getUTCHours() === 0 && d.getUTCMinutes() === 0 && d.getUTCSeconds() === 0) {
+      d.setTime(d.getTime() + 24 * 60 * 60 * 1000 - 1);
+    }
+    return d.getTime();
+  }
+
+  function isWithinAvailability(access) {
+    var now = Date.now();
+    if (access.IsActive === false) return false;
+    if (access.CanAccess === false) return false;
+    var start = parseAccessTime(access.StartDate, false);
+    var end = parseAccessTime(access.EndDate, true);
+    if (start != null && now < start) return false;
+    if (end != null && now > end) return false;
+    return true;
+  }
+
+  function isCourseOffering(enrollment) {
+    var t = enrollment && enrollment.OrgUnit && enrollment.OrgUnit.Type ? enrollment.OrgUnit.Type : {};
+    return t.Id === CONFIG.COURSE_OFFERING_TYPE_ID || t.Code === "Course Offering";
+  }
+
+  function isPastAccess(access) {
+    var end = parseAccessTime(access && access.EndDate, true);
+    if (end != null && Date.now() > end) return true;
+    if (access && access.IsActive === false) {
+      var start = parseAccessTime(access.StartDate, false);
+      if (start != null && start < Date.now()) return true;
+    }
+    return false;
+  }
+
+  function isUpcomingAccess(access) {
+    var start = parseAccessTime(access && access.StartDate, false);
+    return start != null && Date.now() < start;
+  }
+
+  /*
+    Students (101) and Incomplete (107): current + upcoming + accessible incompletes.
+    Past student enrollments are hidden unless Incomplete.
+    All other roles: every course offering (tab builder decides what is listed).
+  */
+  function enrollmentIsVisible(enrollment) {
+    if (!isCourseOffering(enrollment)) return false;
+    var access = enrollment.Access || {};
+
+    if (isIncompleteEnrollment(enrollment)) {
+      if (typeof access.CanAccess === "boolean") return access.CanAccess === true;
+      return access.IsActive !== false;
+    }
+
+    if (isStudentEnrollment(enrollment) || isStudentViewEnrollment(enrollment)) {
+      if (isPastAccess(access)) return false;
+      return true;
+    }
+
+    return true;
+  }
+
+  function isPinned(enrollment) {
+    if (enrollment && enrollment.PinData && typeof enrollment.PinData.IsPinned === "boolean") {
+      return enrollment.PinData.IsPinned;
+    }
+    return !!(enrollment && enrollment.PinDate);
+  }
+
+  function courseHref(enrollment) {
+    var org = enrollment.OrgUnit || {};
+    if (org.HomeUrl) return org.HomeUrl;
+    if (org.Id) return "/d2l/home/" + org.Id;
+    return "#";
+  }
+
+  function courseImageSrc(enrollment) {
+    var org = enrollment.OrgUnit || {};
+    if (org.ImageUrl) return org.ImageUrl;
+    if (!org.Id) return "";
+    return "/d2l/api/lp/" + CONFIG.LP_VERSION + "/courses/" + org.Id + "/image?width=540&height=276";
+  }
+
+  var imageCache = {};
+  var imageQueue = [];
+  var imageBusy = 0;
+
+  /* ------------------------------------------------------------------ */
+  /* Semester tabs                                                      */
+  /* ------------------------------------------------------------------ */
+
+  function parseSemester(code, name) {
+    var s = String(code || "") + " " + String(name || "");
+    var m = /(\d{2})\/(FA|WI|SP|SU|SM|SS)/i.exec(s);
+    if (!m) m = /\b(\d{2})(FA|WI|SP|SU|SM|SS)\b/i.exec(s);
+    if (m) {
+      return { yy: parseInt(m[1], 10), season: m[2].toUpperCase() };
+    }
+    m = /\b(FA|WI|SP|SU|SM|SS)[- ]?(\d{2})\b/i.exec(s);
+    if (m) return { yy: parseInt(m[2], 10), season: m[1].toUpperCase() };
+    m = /\b(Fall|Winter|Spring|Summer)\s+(?:20)?(\d{2})\b/i.exec(s);
+    if (m) {
+      var map = { fall: "FA", winter: "WI", spring: "SP", summer: "SU" };
+      return { yy: parseInt(m[2], 10), season: map[m[1].toLowerCase()] || "FA" };
+    }
+    return null;
+  }
+
+  function semesterKey(sem) {
+    if (!sem) return "other";
+    return sem.yy + "/" + sem.season;
+  }
+
+  function semesterLabel(sem) {
+    if (!sem) return "Other";
+    var year = sem.yy >= 100 ? String(sem.yy) : "20" + String(sem.yy).padStart(2, "0");
+    return (SEASON_LABEL[sem.season] || sem.season) + " " + year;
+  }
+
+  function semesterTabLabel(sem) {
+    if (!sem) return "Other";
+    return String(sem.yy).padStart(2, "0") + "/" + sem.season;
+  }
+
+  function semesterSortKey(sem) {
+    if (!sem) return 0;
+    var rank = 5 - (SEASON_TAB_ORDER[sem.season] || 5);
+    return sem.yy * 10 + rank;
+  }
+
+  function isSandboxCourse(course) {
+    var hay = (String(course.name || "") + " " + String(course.code || "")).toLowerCase();
+    if (hay.indexOf("sandbox") !== -1) return true;
+    if (course.semester && String(course.semester.season || "").toLowerCase() === "sandbox") return true;
+    return false;
+  }
+
+  function displayCode(code) {
+    return String(code || "").trim();
+  }
+
+  function displayRoleName(enrollment, access) {
+    access = access || (enrollment && enrollment.Access) || {};
+    var named = String(access.RoleName || access.ClasslistRoleName || "").trim();
+    if (named) return named;
+    var id = roleIdOf(enrollment);
+    if (id != null && CONFIG.ROLE_LABELS[id]) return CONFIG.ROLE_LABELS[id];
+    var lis = access.LISRoles;
+    if (Array.isArray(lis)) {
+      for (var i = 0; i < lis.length; i++) {
+        var token = String(lis[i] || "");
+        var hash = token.lastIndexOf("#");
+        var shortName = (hash >= 0 ? token.slice(hash + 1) : token).replace(/([a-z])([A-Z])/g, "$1 $2");
+        if (shortName) return shortName;
+      }
+    }
+    return "";
+  }
+
+  function formatCourseDate(value) {
+    if (!value) return "";
+    var d = new Date(value);
+    if (isNaN(d.getTime())) return "";
+    var utcMidnight = d.getUTCHours() === 0 && d.getUTCMinutes() === 0 && d.getUTCSeconds() === 0;
+    return d.toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      timeZone: utcMidnight ? "UTC" : undefined
+    });
+  }
+
+  /* First hyphen segment of the offering code (PSY-211W-… → PSY, GECAC → GECAC). */
+  /* First hyphen segment of the offering code (PSY-211W-… → PSY, GECAC → GECAC). */
+  function divisionOf(course) {
+    var code = String(course && course.code ? course.code : "").trim();
+    if (!code) return "Other";
+    var first = code.split("-")[0].trim();
+    var m = /^([A-Za-z]{2,8})/.exec(first);
+    return m ? m[1].toUpperCase() : "Other";
+  }
+
+  function roleGroupOf(course) {
+    var name = String(course && course.roleName ? course.roleName : "").trim();
+    return name || "No role";
+  }
+
+  function isClosedCourse(course) {
+    if (course.isActive === false) return true;
+    var end = parseAccessTime(course.endDate, true);
+    return end != null && Date.now() > end;
+  }
+
+  function isUpcomingCourse(course) {
+    if (isClosedCourse(course)) return false;
+    var start = parseAccessTime(course.startDate, false);
+    return start != null && Date.now() < start;
+  }
+
+  function initials(name) {
+    return String(name || "C")
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map(function (w) { return w.charAt(0); })
+      .join("")
+      .toUpperCase() || "C";
+  }
+
+  function placeholderColor(id) {
+    var n = Number(id) || 0;
+    return PLACEHOLDER_COLORS[Math.abs(n) % PLACEHOLDER_COLORS.length];
+  }
+
+  function escapeHtml(value) {
+    return String(value == null ? "" : value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function normalizeCourse(enrollment) {
+    var org = enrollment.OrgUnit || {};
+    var access = enrollment.Access || {};
+    var sem = parseSemester(org.Code, org.Name);
+    var pinned = isPinned(enrollment);
+    var incomplete = isIncompleteEnrollment(enrollment);
+    var restricted = isRestrictedRole(enrollment);
+    var within = isWithinAvailability(access);
+    return {
+      enrollment: enrollment,
+      id: org.Id,
+      name: org.Name || "Course",
+      code: displayCode(org.Code || ""),
+      href: courseHref(enrollment),
+      image: courseImageSrc(enrollment),
+      pinned: pinned,
+      pinDate: enrollment.PinDate || (enrollment.PinData && enrollment.PinData.PinDate) || null,
+      roleName: displayRoleName(enrollment, access),
+      roleId: roleIdOf(enrollment),
+      incomplete: incomplete,
+      restricted: restricted,
+      isActive: access.IsActive !== false,
+      canAccess: access.CanAccess !== false,
+      startDate: access.StartDate || null,
+      endDate: access.EndDate || null,
+      lastAccessed: access.LastAccessed || access.LastAccessedDate || null,
+      semester: sem,
+      semesterKey: semesterKey(sem),
+      semesterLabel: semesterTabLabel(sem),
+      semesterSort: semesterSortKey(sem),
+      within: within,
+      isStudent: isStudentEnrollment(enrollment) || isStudentViewEnrollment(enrollment),
+      isInstructor: isInstructorEnrollment(enrollment),
+      isSandbox: false,
+      upcoming: isUpcomingAccess(access)
+    };
+  }
+
+  function decorateCourse(course) {
+    course.isSandbox = isSandboxCourse(course);
+    return course;
+  }
+
+  function courseCodeKey(course) {
+    var code = String(course && course.code || "").trim();
+    if (code) return code;
+    var match = /([A-Za-z]{2,5}-[A-Za-z0-9]+)/.exec(String(course && course.name || ""));
+    return match ? match[1] : String(course && course.name || "");
+  }
+
+  function sortCourses(list) {
+    var mode = state.sortMode || "code-asc";
+    if (mode === "code" || mode === "end") mode = "code-asc";
+    var desc = mode === "code-desc" || mode === "name-desc";
+    var dir = desc ? -1 : 1;
+    var byName = mode === "name-asc" || mode === "name-desc";
+    var byDate = mode === "start";
+    return list.slice().sort(function (a, b) {
+      if (byDate) {
+        var av = sectionDateValue(a, "start");
+        var bv = sectionDateValue(b, "start");
+        if (av == null && bv != null) return 1;
+        if (av != null && bv == null) return -1;
+        if (av != null && bv != null && av !== bv) return av - bv;
+      }
+      if (byName) {
+        var name = String(a.name).localeCompare(String(b.name), undefined, { sensitivity: "base" });
+        if (name) return name * dir;
+      }
+      var code = courseCodeKey(a).localeCompare(courseCodeKey(b), undefined, { numeric: true, sensitivity: "base" });
+      if (code) return code * (byDate ? 1 : dir);
+      return String(a.name).localeCompare(String(b.name), undefined, { sensitivity: "base" }) * (byDate ? 1 : dir);
+    });
+  }
+
+  function normalizeHeaderKey(value) {
+    return String(value || "").replace(/^\uFEFF/, "").replace(/[^a-z0-9]/gi, "").toLowerCase();
+  }
+
+  function csvCell(row, candidates) {
+    if (!row) return "";
+    var keys = Object.keys(row);
+    var normMap = {};
+    keys.forEach(function (key) {
+      var nk = normalizeHeaderKey(key);
+      if (nk && !normMap[nk]) normMap[nk] = key;
+    });
+    for (var i = 0; i < candidates.length; i++) {
+      var exact = row[candidates[i]];
+      if (exact != null && String(exact).trim()) return String(exact).trim();
+      var named = normMap[normalizeHeaderKey(candidates[i])];
+      if (named && row[named] != null && String(row[named]).trim()) return String(row[named]).trim();
+    }
+    return "";
+  }
+
+  function parseCSV(text) {
+    var cleaned = String(text || "").replace(/^\uFEFF/, "").replace(/\r/g, "");
+    var rows = [];
+    var row = [];
+    var cell = "";
+    var inQuotes = false;
+    for (var i = 0; i < cleaned.length; i++) {
+      var ch = cleaned[i];
+      if (inQuotes) {
+        if (ch === '"') {
+          if (cleaned[i + 1] === '"') {
+            cell += '"';
+            i++;
+          } else {
+            inQuotes = false;
+          }
+        } else {
+          cell += ch;
+        }
+      } else if (ch === '"') {
+        inQuotes = true;
+      } else if (ch === ",") {
+        row.push(cell.trim());
+        cell = "";
+      } else if (ch === "\n") {
+        row.push(cell.trim());
+        if (row.some(function (value) { return value !== ""; })) rows.push(row);
+        row = [];
+        cell = "";
+      } else {
+        cell += ch;
+      }
+    }
+    if (cell.length || row.length) {
+      row.push(cell.trim());
+      if (row.some(function (value) { return value !== ""; })) rows.push(row);
+    }
+    if (!rows.length) return [];
+    var headers = rows[0].map(function (header) { return header.replace(/^\uFEFF/, "").trim(); });
+    return rows.slice(1).map(function (values) {
+      var record = {};
+      headers.forEach(function (header, index) {
+        if (header) record[header] = values[index] || "";
+      });
+      return record;
+    });
+  }
+
+  function parseSISDate(dateStr) {
+    if (!dateStr) return null;
+    var firstPart = String(dateStr).trim().split(" ")[0];
+    var parts = firstPart.split("/");
+    if (parts.length !== 3) return null;
+    var mm = parseInt(parts[0], 10);
+    var dd = parseInt(parts[1], 10);
+    var yy = parseInt(parts[2], 10);
+    if (isNaN(mm) || isNaN(dd) || isNaN(yy)) return null;
+    yy = yy < 100 ? 2000 + yy : yy;
+    var d = new Date(yy, mm - 1, dd);
+    if (isNaN(d.getTime())) return null;
+    d.setHours(0, 0, 0, 0);
+    return d.getTime();
+  }
+
+  function shellCourseCode(code) {
+    var full = String(code || "").trim().toUpperCase().replace(/\s+/g, "");
+    var match = /^(.+)-(\d{2})\/(WI|SP|FA|SU|SM|SS)$/.exec(full);
+    return match ? match[1] : full;
+  }
+
+  function combinedCourseCode(row) {
+    var named = csvCell(row, [
+      "Combined Depts, Course Number, Section, Term",
+      "COURSE_CODE",
+      "Course Code",
+      "SEC_NAME",
+      "Section Name"
+    ]);
+    if (named) return named;
+    var keys = Object.keys(row || {});
+    for (var i = 0; i < keys.length; i++) {
+      if (/combined/i.test(keys[i]) && String(row[keys[i]] || "").trim()) return String(row[keys[i]]).trim();
+    }
+    var dept = csvCell(row, ["SEC_DEPTS", "Department", "Depts"]);
+    var num = csvCell(row, ["SEC_COURSE_NO", "Course Number", "CourseNo"]);
+    var sec = csvCell(row, ["SEC_NO", "Section"]);
+    if (dept && num && sec) return dept + "-" + num + "-" + sec;
+    return "";
+  }
+
+  function rememberSectionDate(map, key, start, end) {
+    var normalized = String(key || "").trim().toUpperCase().replace(/\s+/g, "");
+    if (!normalized) return;
+    var prev = map[normalized];
+    if (!prev || start < prev.start) map[normalized] = { start: start, end: end };
+  }
+
+  function buildSectionDateMap(rows) {
+    var map = {};
+    (rows || []).forEach(function (row) {
+      var status = csvCell(row, ["SEC_STATUS", "Status"]).toUpperCase();
+      if (status === "C" || status === "CANCELLED" || status === "CANCELED") return;
+      var combined = combinedCourseCode(row);
+      var start = parseSISDate(csvCell(row, ["SEC_START_DATE", "Start Date", "StartDate", "Start"]));
+      var end = parseSISDate(csvCell(row, ["SEC_END_DATE", "End Date", "EndDate", "End"]));
+      if (!combined || start == null || end == null) return;
+      var full = combined.toUpperCase().replace(/\s+/g, "");
+      var noCourse = full.replace(/-COURSE$/, "");
+      rememberSectionDate(map, full, start, end);
+      rememberSectionDate(map, noCourse, start, end);
+      rememberSectionDate(map, shellCourseCode(noCourse), start, end);
+    });
+    return map;
+  }
+
+  function sectionDateKeys(value) {
+    var full = String(value || "").trim().toUpperCase().replace(/\s+/g, "");
+    if (!full) return [];
+    var keys = [];
+    function add(key) {
+      if (key && keys.indexOf(key) === -1) keys.push(key);
+    }
+    add(full);
+    add(full.replace(/-COURSE$/, ""));
+    add(shellCourseCode(full.replace(/-COURSE$/, "")));
+    var match = /([A-Z0-9]+-[A-Z0-9]+-[A-Z0-9]+-\d{2}\/(?:FA|WI|SP|SU|SM|SS))/.exec(full);
+    if (match) {
+      add(match[1]);
+      add(shellCourseCode(match[1]));
+    }
+    return keys;
+  }
+
+  function sectionDatesFor(course) {
+    var map = state.sectionDates;
+    if (!map) return null;
+    var keys = sectionDateKeys(course && course.code).concat(sectionDateKeys(course && course.name));
+    for (var i = 0; i < keys.length; i++) {
+      if (map[keys[i]]) return map[keys[i]];
+    }
+    return null;
+  }
+
+  function sectionDateValue(course, mode) {
+    var dates = sectionDatesFor(course);
+    if (!dates) return null;
+    return mode === "end" ? dates.end : dates.start;
+  }
+
+  async function loadSectionDates() {
+    try {
+      var res = await pageFetch()(CONFIG.SECTION_DATES_URL, { credentials: "include" });
+      if (!res.ok) {
+        state.sectionDates = {};
+        return;
+      }
+      var text = await res.text();
+      if (!text || text.charAt(0) === "<") {
+        state.sectionDates = {};
+        return;
+      }
+      state.sectionDates = buildSectionDateMap(parseCSV(text));
+    } catch (e) {
+      state.sectionDates = {};
+    }
+    if (state.sortMode === "start" && (state.courses.length || state.lookupUser)) {
+      render();
+    }
+  }
+
+  function isStudentMode(courses) {
+    if (!courses.length) return true;
+    for (var i = 0; i < courses.length; i++) {
+      if (!courses[i].restricted) return false;
+    }
+    return true;
+  }
+
+  function pushTab(tabs, id, label, list) {
+    if (list && list.length) tabs.push({ id: id, label: label, courses: list });
+  }
+
+  /*
+    Pinned is first and is the default tab when any course is pinned.
+    Pinned is a view overlay; those courses still belong to another tab.
+    Other (staff) = enrolled as something other than Instructor.
+    Other (student) = no parseable term code.
+  */
+  function addSemesterTab(bySem, course) {
+    var key = course.semesterKey;
+    if (!key || key === "other") return false;
+    if (!bySem[key]) {
+      bySem[key] = {
+        id: "sem:" + key,
+        label: course.semesterLabel,
+        sort: course.semesterSort,
+        courses: []
+      };
+    }
+    bySem[key].courses.push(course);
+    return true;
+  }
+
+  function buildTabs(courses) {
+    var student = isStudentMode(courses);
+    var pinned = [];
+    var incompletes = [];
+    var sandbox = [];
+    var other = [];
+    var bySem = {};
+
+    courses.forEach(function (c) {
+      if (c.pinned) pinned.push(c);
+
+      if (c.incomplete) {
+        incompletes.push(c);
+        return;
+      }
+      if (c.isSandbox) {
+        sandbox.push(c);
+        return;
+      }
+      if (!student && !c.isInstructor) {
+        other.push(c);
+        return;
+      }
+      if (!addSemesterTab(bySem, c)) other.push(c);
+    });
+
+    var tabs = [];
+    pushTab(tabs, "pinned", "Pinned", pinned);
+    tabs.push({ id: "all", label: "All", courses: courses });
+    pushTab(tabs, "sandbox", "Sandbox", sandbox);
+    pushTab(tabs, "other", "Other", other);
+    pushTab(tabs, "incompletes", "Incompletes", incompletes);
+
+    Object.keys(bySem).map(function (k) { return bySem[k]; })
+      .sort(function (a, b) { return b.sort - a.sort; })
+      .forEach(function (t) { tabs.push(t); });
+
+    return tabs;
+  }
+
+  function defaultTabId(tabs) {
+    if (!tabs.length) return "";
+    for (var t = 0; t < tabs.length; t++) {
+      if (tabs[t].id === "pinned") return "pinned";
+    }
+    for (var a = 0; a < tabs.length; a++) {
+      if (tabs[a].id === "all") return "all";
+    }
+    return tabs[0].id;
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Render                                                             */
+  /* ------------------------------------------------------------------ */
+
+  function pinSvg(active) {
+    if (active) {
+      return '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16 9V4h1c.55 0 1-.45 1-1s-.45-1-1-1H7c-.55 0-1 .45-1 1s.45 1 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg>';
+    }
+    return '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14 4v5c0 1.12.37 2.16 1 3H9c.63-.84 1-1.88 1-3V4h4m3-2H7c-.55 0-1 .45-1 1s.45 1 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3V4h1c.55 0 1-.45 1-1s-.45-1-1-1z"/></svg>';
+  }
+
+  function assignmentSvg() {
+    return '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11zM8 12h8v2H8v-2zm0 4h5v2H8v-2z"/></svg>';
+  }
+
+  function discussionSvg() {
+    return '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>';
+  }
+
+  function alertBadgeHtml(kind, count) {
+    var show = count > 0;
+    var label = count > 99 ? "99+" : String(count || 0);
+    return '<span class="mcw-alert-badge" data-badge="' + kind + '"' + (show ? "" : " hidden") + ">" +
+      escapeHtml(label) + "</span>";
+  }
+
+  function quizSvg() {
+    return '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1.5 15.5L9 14l1.4-1.4 2.1 2.1 4.6-4.6L18.5 12l-6 6zM13 9V3.5L18.5 9H13z"/></svg>';
+  }
+
+  function lastAccessHtml(course) {
+    if (!isStudentMode(state.courses)) return "";
+    if (!course.lastAccessed) {
+      return '<p class="mcw-last-access">Last login: never</p>';
+    }
+    var t = Date.parse(course.lastAccessed);
+    if (isNaN(t)) return "";
+    var days = Math.floor((Date.now() - t) / 86400000);
+    if (days < 0) days = 0;
+    var label = days === 0 ? "today" : (days === 1 ? "1 day ago" : days + " days ago");
+    return '<p class="mcw-last-access">Last login: ' + escapeHtml(label) + "</p>";
+  }
+
+  function toolHref(course, tool) {
+    var ou = encodeURIComponent(course.id);
+    var staff = !course.restricted;
+    if (tool === "dropbox") {
+      return staff
+        ? "/d2l/lms/dropbox/admin/folders_manage.d2l?ou=" + ou
+        : "/d2l/lms/dropbox/user/folders_list.d2l?ou=" + ou;
+    }
+    if (tool === "quiz") {
+      return staff
+        ? "/d2l/lms/quizzing/admin/quizzes_manage.d2l?ou=" + ou
+        : "/d2l/lms/quizzing/user/quizzes_list.d2l?ou=" + ou;
+    }
+    return "/d2l/le/" + ou + "/discussions/List";
+  }
+
+  function alertLink(course, kind, title, href, svg, count) {
+    var n = count || 0;
+    var label = n > 0 ? (n > 99 ? "99+" : String(n)) + " " + title : title;
+    return '<a class="mcw-alert" href="' + escapeHtml(href) + '" title="' + escapeHtml(label) + '">' +
+      svg + alertBadgeHtml(kind, n) + "</a>";
+  }
+
+  function startDateHtml(course) {
+    var label = formatCourseDate(course.startDate);
+    if (!label) return "";
+    return '<p class="mcw-start-date">Starts ' + escapeHtml(label) + "</p>";
+  }
+
+  function renderCard(course) {
+    var busy = !!state.pinning[course.id];
+    var pinTitle = course.pinned ? "Unpin course" : "Pin course";
+    var activity = state.activity[course.id] || {};
+    var chips = [];
+    if (course.incomplete) {
+      chips.push('<span class="mcw-chip incomplete">Incomplete</span>');
+    }
+    if (course.roleName) {
+      chips.push('<span class="mcw-chip">' + escapeHtml(course.roleName) + "</span>");
+    }
+
+    var badge = "";
+    if (isClosedCourse(course)) {
+      badge = '<span class="status-badge">Closed</span>';
+    } else if (isUpcomingCourse(course)) {
+      badge = '<span class="status-badge upcoming">Upcoming</span>';
+    }
+
+    var subtitle = course.code || "";
+    if (course.semester) {
+      subtitle += (subtitle ? " • " : "") + course.semesterLabel.toUpperCase();
+    }
+
+    var banner = cachedImage(course.id);
+    return (
+      '<article class="course-card" data-ou="' + escapeHtml(course.id) + '">' +
+        '<a class="card-media' + (course.id ? "" : " mcw-no-image") + '" href="' + escapeHtml(course.href) + '" aria-label="' + escapeHtml(course.name) + '">' +
+          (course.id
+            ? '<img alt="" data-mcw-img="1" data-ou="' + escapeHtml(course.id) + '" data-try="0"' +
+              (banner ? ' class="mcw-ready" src="' + escapeHtml(banner) + '"' : "") + ">"
+            : "") +
+          '<span class="mcw-placeholder" style="background:' + placeholderColor(course.id) + '">' +
+            escapeHtml(initials(course.name)) +
+          "</span>" +
+          badge +
+        "</a>" +
+        (state.lookupUser ? "" :
+          '<button type="button" class="pin-btn' + (course.pinned ? " active" : "") + '"' +
+            ' data-pin="' + escapeHtml(course.id) + '"' +
+            ' title="' + pinTitle + '" aria-label="' + pinTitle + '" aria-pressed="' + (course.pinned ? "true" : "false") + '"' +
+            (busy ? " disabled" : "") + ">" + pinSvg(course.pinned) + "</button>") +
+        '<div class="card-body">' +
+          '<a class="course-title" href="' + escapeHtml(course.href) + '">' + escapeHtml(course.name) + "</a>" +
+          (subtitle ? '<p class="course-code">' + escapeHtml(subtitle) + "</p>" : "") +
+          startDateHtml(course) +
+          lastAccessHtml(course) +
+          (chips.length ? '<div class="mcw-chips">' + chips.join("") + "</div>" : "") +
+          (state.skipActivity ? "" :
+            '<div class="mcw-alerts" data-indicators="' + escapeHtml(course.id) + '">' +
+              alertLink(course, "dropbox", "Ungraded assignments", toolHref(course, "dropbox"), assignmentSvg(), activity.dropbox || 0) +
+              alertLink(course, "quiz", "Quizzes", toolHref(course, "quiz"), quizSvg(), activity.quiz || 0) +
+              alertLink(course, "discuss", "Unread discussions", toolHref(course, "discuss"), discussionSvg(), activity.discuss || 0) +
+            "</div>") +
+        "</div>" +
+      "</article>"
+    );
+  }
+
+  function courseMatches(course, query) {
+    if (!query) return true;
+    var hay = (
+      String(course.name || "") + " " +
+      String(course.code || "") + " " +
+      String(course.roleName || "") + " " +
+      divisionOf(course)
+    ).toLowerCase();
+    var compactHay = hay.replace(/[^a-z0-9]+/g, "");
+    var tokens = String(query).toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+    if (!tokens.length) return true;
+    return tokens.every(function (token) {
+      return hay.indexOf(token) !== -1 || compactHay.indexOf(token) !== -1;
+    });
+  }
+
+  function catalogCourses() {
+    if (state.lookupUser) return state.lookupCourses || [];
+    return state.courses;
+  }
+
+  function userLabel(person) {
+    return [person.name, person.username, person.orgId].filter(Boolean).join(" · ");
+  }
+
+  function userLookupHtml() {
+    if (!state.canLookupUsers) return "";
+    var banner = "";
+    if (state.lookupUser) {
+      var detail = [state.lookupUser.username, state.lookupUser.orgId].filter(Boolean).join(" · ");
+      banner = '<div class="mcw-user-banner">Courses for <strong>' + escapeHtml(state.lookupUser.name) + "</strong>" +
+        (detail ? " · " + escapeHtml(detail) : "") +
+        '<button type="button" data-mcw-user-clear>Show my courses</button></div>';
+    }
+    var matches = "";
+    if (!state.lookupUser && state.lookupMatches && state.lookupMatches.length) {
+      matches = '<div class="mcw-user-matches">' + state.lookupMatches.map(function (person) {
+        return '<button type="button" data-mcw-user-pick="' + escapeHtml(person.id) + '">' +
+          escapeHtml(userLabel(person)) + "</button>";
+      }).join("") + "</div>";
+    }
+    var status = state.lookupStatus
+      ? '<p class="mcw-user-status">' + escapeHtml(state.lookupStatus) + "</p>"
+      : "";
+    return banner +
+      '<div class="mcw-user-lookup">' +
+        '<label for="mcw-user">User</label>' +
+        '<input id="mcw-user" data-mcw-user type="search" placeholder="Name, username, or ID" aria-label="Find courses for a user" value="' +
+          escapeHtml(state.userQuery || "") + '">' +
+        '<button type="button" data-mcw-user-go' + (state.lookupBusy ? " disabled" : "") + ">Find courses</button>" +
+      "</div>" + matches + status;
+  }
+
+  function hideActivityIcons() {
+    /* Counts stay off until we know the role, then only role 100 (Admin) skips them. */
+    if (!state.roleChecked) return true;
+    if (state.lookupUser) return !!state.lookupUser.isRole100;
+    return !!state.canLookupUsers;
+  }
+
+  function render() {
+    state.skipActivity = hideActivityIcons();
+    var catalog = catalogCourses();
+    var query = String(state.query || "").trim().toLowerCase();
+    var filtered = query
+      ? catalog.filter(function (c) { return courseMatches(c, query); })
+      : catalog;
+    var tabs = buildTabs(filtered);
+
+    if (!state.courses.length && !state.lookupUser) {
+      root.innerHTML =
+        '<div class="mcw-empty"><strong>No courses to display.</strong><br>' +
+        "Upcoming courses will not appear in D2L until the first day of the course start date. " +
+        "Check <a href=\"https://selfservice.example.edu/student\" target=\"_blank\" rel=\"noopener noreferrer\">Student Self-Service</a> " +
+        "or the Upcoming Courses widget for registered courses and start dates.</div>";
+      return;
+    }
+
+    if (!tabs.length) {
+      var emptyCopy = state.lookupBusy
+        ? ""
+        : (state.lookupUser
+          ? '<div class="mcw-empty">No course enrollments for this user.</div>'
+          : '<div class="mcw-empty"><strong>No courses to display.</strong><br>Pinned, upcoming, and current-term courses will appear here.</div>');
+      root.innerHTML = userLookupHtml() + emptyCopy;
+      bindToolbar();
+      return;
+    }
+
+    var hasPinned = tabs.some(function (t) { return t.id === "pinned"; });
+    if (!state.tabChosen && hasPinned && !state.pinnedDefaulted) {
+      state.activeTab = "pinned";
+      state.pinnedDefaulted = true;
+    } else if (!tabs.some(function (t) { return t.id === state.activeTab; })) {
+      state.activeTab = defaultTabId(tabs);
+    }
+
+    var active = tabs.filter(function (t) { return t.id === state.activeTab; })[0] || tabs[0];
+    var sorted = sortCourses(active ? active.courses : filtered);
+    var limit = CONFIG.PREVIEW_LIMIT || 20;
+    var expanded = !!state.expandedTabs[active.id];
+    var shown = (!expanded && sorted.length > limit) ? sorted.slice(0, limit) : sorted;
+    var hiddenCount = sorted.length - shown.length;
+
+    var tabBar = "";
+    if (tabs.length) {
+      tabBar = '<div class="mcw-tabs-wrap">' +
+        '<div class="mcw-tabs" role="tablist" aria-label="Course filters">' +
+        tabs.map(function (t) {
+          var selected = t.id === active.id;
+          return '<button type="button" class="mcw-tab" role="tab" id="mcw-tab-' + escapeHtml(t.id) + '"' +
+            ' data-tab="' + escapeHtml(t.id) + '"' +
+            ' aria-selected="' + (selected ? "true" : "false") + '">' +
+            escapeHtml(t.label) + "</button>";
+        }).join("") +
+        "</div>" +
+        '<button type="button" class="mcw-tab-more" aria-label="More tabs" hidden>&#8250;</button>' +
+        "</div>";
+    }
+
+    var toolbar =
+      '<div class="mcw-toolbar">' +
+        '<div class="mcw-tool mcw-search"><label for="mcw-search">Search</label>' +
+          '<input id="mcw-search" data-mcw-search type="search" placeholder="Name, code, or section" aria-label="Search courses" value="' +
+          escapeHtml(state.query || "") + '"></div>' +
+        '<div class="mcw-tool"><label for="mcw-sort">Sort</label>' +
+          '<select id="mcw-sort" data-mcw-sort aria-label="Sort courses">' +
+            '<option value="code-asc"' + (state.sortMode !== "code-desc" && state.sortMode !== "name-asc" && state.sortMode !== "name-desc" && state.sortMode !== "start" ? " selected" : "") + ">Course code A–Z</option>" +
+            '<option value="code-desc"' + (state.sortMode === "code-desc" ? " selected" : "") + ">Course code Z–A</option>" +
+            '<option value="name-asc"' + (state.sortMode === "name-asc" ? " selected" : "") + ">Name A–Z</option>" +
+            '<option value="name-desc"' + (state.sortMode === "name-desc" ? " selected" : "") + ">Name Z–A</option>" +
+            '<option value="start"' + (state.sortMode === "start" ? " selected" : "") + ">Start date</option>" +
+          "</select></div>" +
+        '<div class="mcw-tool"><label for="mcw-group">Group</label>' +
+          '<select id="mcw-group" data-mcw-group aria-label="Group courses">' +
+            '<option value="none"' + (state.groupBy !== "division" && state.groupBy !== "role" ? " selected" : "") + ">None</option>" +
+            '<option value="division"' + (state.groupBy === "division" ? " selected" : "") + ">Division / program</option>" +
+            '<option value="role"' + (state.groupBy === "role" ? " selected" : "") + ">Role</option>" +
+          "</select></div>" +
+      "</div>";
+
+    var viewAll = "";
+    if (hiddenCount > 0) {
+      viewAll = '<button type="button" class="mcw-view-all" data-mcw-view-all="more">View all (' +
+        sorted.length + ")</button>";
+    } else if (expanded && sorted.length > limit) {
+      viewAll = '<button type="button" class="mcw-view-all" data-mcw-view-all="less">Show less</button>';
+    }
+
+    root.innerHTML = tabBar + toolbar + userLookupHtml() +
+      (state.loadingMore && !state.lookupUser ? '<p class="mcw-loading-more">Loading more courses…</p>' : "") +
+      (sorted.length
+        ? renderCourseList(shown)
+        : '<div class="mcw-empty">No courses match <strong>' + escapeHtml(state.query || "") + "</strong>.</div>") +
+      viewAll;
+
+    bindTabs();
+    bindTabScroller();
+    bindToolbar();
+    bindViewAll(active.id);
+    bindPins();
+    loadCardImages();
+    if (CONFIG.LOAD_ACTIVITY_INDICATORS && !state.loadingMore && !state.skipActivity) loadIndicators(shown);
+  }
+
+  function renderCourseList(courses) {
+    if (state.groupBy !== "division" && state.groupBy !== "role") {
+      return '<div class="custom-course-grid" role="tabpanel">' +
+        courses.map(renderCard).join("") +
+        "</div>";
+    }
+    var groups = {};
+    var order = [];
+    courses.forEach(function (c) {
+      var key = state.groupBy === "role" ? roleGroupOf(c) : divisionOf(c);
+      if (!groups[key]) {
+        groups[key] = [];
+        order.push(key);
+      }
+      groups[key].push(c);
+    });
+    var dir = state.sortDir === "desc" ? -1 : 1;
+    order.sort(function (a, b) {
+      if (a === "Other" || a === "No role") return 1;
+      if (b === "Other" || b === "No role") return -1;
+      return a.localeCompare(b) * dir;
+    });
+    return '<div role="tabpanel">' + order.map(function (key) {
+      return '<div class="mcw-group">' +
+        '<h3 class="mcw-group-title">' + escapeHtml(key) +
+          '<span class="mcw-group-count">' + groups[key].length + "</span></h3>" +
+        '<div class="custom-course-grid">' + groups[key].map(renderCard).join("") + "</div>" +
+      "</div>";
+    }).join("") + "</div>";
+  }
+
+  function bindToolbar() {
+    var searchEl = root.querySelector("[data-mcw-search]");
+    var sortEl = root.querySelector("[data-mcw-sort]");
+    var groupEl = root.querySelector("[data-mcw-group]");
+    if (searchEl) {
+      searchEl.addEventListener("input", function () {
+        state.query = searchEl.value;
+        var pos = searchEl.selectionStart;
+        render();
+        var again = root.querySelector("[data-mcw-search]");
+        if (!again) return;
+        again.focus();
+        if (pos != null && again.setSelectionRange) again.setSelectionRange(pos, pos);
+      });
+    }
+    if (sortEl) {
+      sortEl.addEventListener("change", function () {
+        var mode = sortEl.value;
+        if (mode !== "code-desc" && mode !== "name-asc" && mode !== "name-desc" && mode !== "start") mode = "code-asc";
+        state.sortMode = mode;
+        state.sortDir = (mode === "code-desc" || mode === "name-desc") ? "desc" : "asc";
+        saveViewPrefs();
+        render();
+      });
+    }
+    if (groupEl) {
+      groupEl.addEventListener("change", function () {
+        state.groupBy = groupEl.value === "division" || groupEl.value === "role" ? groupEl.value : "none";
+        saveViewPrefs();
+        render();
+      });
+    }
+    bindUserLookup();
+  }
+
+  function bindUserLookup() {
+    var input = root.querySelector("[data-mcw-user]");
+    var go = root.querySelector("[data-mcw-user-go]");
+    var clearBtn = root.querySelector("[data-mcw-user-clear]");
+    if (input) {
+      input.addEventListener("input", function () {
+        state.userQuery = input.value;
+      });
+      input.addEventListener("keydown", function (evt) {
+        if (evt.key !== "Enter") return;
+        evt.preventDefault();
+        state.userQuery = input.value;
+        runUserLookup();
+      });
+    }
+    if (go) {
+      go.addEventListener("click", function () {
+        if (input) state.userQuery = input.value;
+        runUserLookup();
+      });
+    }
+    if (clearBtn) {
+      clearBtn.addEventListener("click", function () {
+        state.lookupUser = null;
+        state.lookupCourses = null;
+        state.lookupMatches = [];
+        state.lookupStatus = "";
+        state.userQuery = "";
+        state.query = "";
+        state.activeTab = state.savedTab || "";
+        state.tabChosen = !!state.savedTabChosen;
+        render();
+      });
+    }
+    root.querySelectorAll("[data-mcw-user-pick]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var id = String(btn.getAttribute("data-mcw-user-pick") || "");
+        var person = (state.lookupMatches || []).filter(function (u) { return String(u.id) === id; })[0];
+        if (person) loadUserCourses(person);
+      });
+    });
+  }
+
+  function bindViewAll(tabId) {
+    var btn = root.querySelector("[data-mcw-view-all]");
+    if (!btn) return;
+    btn.addEventListener("click", function () {
+      var mode = btn.getAttribute("data-mcw-view-all");
+      state.expandedTabs[tabId] = mode === "more";
+      render();
+    });
+  }
+
+  function bindTabs() {
+    var tabs = root.querySelectorAll(".mcw-tab");
+    tabs.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        state.tabChosen = true;
+        state.activeTab = btn.getAttribute("data-tab") || "";
+        saveViewPrefs();
+        render();
+      });
+    });
+  }
+
+  function bindTabScroller() {
+    var wrap = root.querySelector(".mcw-tabs");
+    var btn = root.querySelector(".mcw-tab-more");
+    if (!wrap || !btn) return;
+
+    function update() {
+      var overflow = wrap.scrollWidth > wrap.clientWidth + 2;
+      var atEnd = wrap.scrollLeft + wrap.clientWidth >= wrap.scrollWidth - 2;
+      btn.hidden = !overflow || atEnd;
+    }
+
+    btn.addEventListener("click", function () {
+      wrap.scrollBy({ left: 160, behavior: "smooth" });
+    });
+    wrap.addEventListener("scroll", update);
+    window.setTimeout(update, 0);
+  }
+
+  function cachedImage(id) {
+    var hit = imageCache[String(id)];
+    return typeof hit === "string" ? hit : "";
+  }
+
+  function imageCandidates(id) {
+    var key = String(id);
+    var out = [];
+    function add(url) {
+      if (!url || out.indexOf(url) !== -1) return;
+      out.push(url);
+    }
+    add(state.bannerLinks[key]);
+    add("/d2l/api/lp/" + CONFIG.LP_VERSION + "/courses/" + encodeURIComponent(id) + "/image");
+    add("/d2l/api/lp/" + CONFIG.LP_VERSION + "/courses/" + encodeURIComponent(id) + "/image?width=300&height=180");
+    var saved = cachedImage(id);
+    if (saved && saved.indexOf("blob:") !== 0) {
+      return [saved].concat(out.filter(function (url) { return url !== saved; }));
+    }
+    return out;
+  }
+
+  function assignImage(img, url, tryIndex) {
+    var token = String(Number(img.getAttribute("data-token") || "0") + 1);
+    img.setAttribute("data-token", token);
+    img.setAttribute("data-try", String(tryIndex));
+    img.src = url;
+  }
+
+  function markNoImage(img) {
+    img.classList.remove("mcw-ready");
+    var media = img.closest ? img.closest(".card-media") : null;
+    if (media) media.classList.add("mcw-no-image");
+  }
+
+  async function fetchImageBlob(url) {
+    try {
+      var res = await pageFetch()(url, {
+        credentials: "include",
+        headers: { Accept: "image/avif,image/webp,image/*,*/*" }
+      });
+      if (!res.ok) return "";
+      var blob = await res.blob();
+      if (!blob || !blob.size) return "";
+      var type = String(blob.type || "");
+      if (type && type.indexOf("image/") !== 0 && type !== "application/octet-stream" && type !== "binary/octet-stream") return "";
+      return URL.createObjectURL(blob);
+    } catch (e) {
+      return "";
+    }
+  }
+
+  function advanceImage(img, token) {
+    if (!img || img.getAttribute("data-token") !== String(token)) return;
+    var id = img.getAttribute("data-ou");
+    var sources = imageCandidates(id);
+    var tryN = Number(img.getAttribute("data-try") || "0") + 1;
+    if (tryN < sources.length) {
+      assignImage(img, sources[tryN], tryN);
+      return;
+    }
+    if (!img.getAttribute("data-blob")) {
+      img.setAttribute("data-blob", "1");
+      var bare = "/d2l/api/lp/" + CONFIG.LP_VERSION + "/courses/" + encodeURIComponent(id) + "/image";
+      fetchImageBlob(bare).then(function (blobUrl) {
+        if (!img.isConnected) return;
+        if (img.getAttribute("data-token") !== String(token)) return;
+        if (!blobUrl) {
+          markNoImage(img);
+          return;
+        }
+        imageCache[String(id)] = blobUrl;
+        assignImage(img, blobUrl, sources.length);
+      });
+      return;
+    }
+    markNoImage(img);
+  }
+
+  function bindCardImage(img) {
+    if (img.getAttribute("data-bound")) return;
+    img.setAttribute("data-bound", "1");
+    img.addEventListener("load", function () {
+      if (!img.getAttribute("src")) return;
+      img.classList.add("mcw-ready");
+      var media = img.closest(".card-media");
+      if (media) media.classList.remove("mcw-no-image");
+      var src = img.currentSrc || img.src || "";
+      if (src.indexOf("blob:") !== 0) imageCache[String(img.getAttribute("data-ou"))] = src;
+    });
+    img.addEventListener("error", function () {
+      var token = img.getAttribute("data-token");
+      var src = img.src;
+      window.setTimeout(function () {
+        if (!img.isConnected) return;
+        if (img.getAttribute("data-token") !== token) return;
+        if (img.src !== src) return;
+        advanceImage(img, token);
+      }, 0);
+    });
+  }
+
+  function pumpImages() {
+    var started = 0;
+    while (started < 3 && imageQueue.length) {
+      var img = imageQueue.shift();
+      if (!img || !img.isConnected || img.getAttribute("src")) continue;
+      var sources = imageCandidates(img.getAttribute("data-ou"));
+      if (!sources.length) {
+        markNoImage(img);
+        continue;
+      }
+      assignImage(img, sources[0], 0);
+      started++;
+    }
+    if (imageQueue.length) window.setTimeout(pumpImages, 80);
+  }
+
+  async function fetchBannerLinks(ids) {
+    var missing = [];
+    var seen = {};
+    (ids || []).forEach(function (id) {
+      var key = String(id || "");
+      if (!key || seen[key] || state.bannerLinks[key] || state.bannerMiss[key]) return;
+      seen[key] = true;
+      missing.push(key);
+    });
+    if (!missing.length) return;
+    missing.forEach(function (id) { state.bannerMiss[id] = true; });
+    try {
+      var data = await fetchJson("/d2l/le/manageCourses/api/mycourses?orgUnitIds=" + encodeURIComponent(missing.join(",")));
+      var list = (data && (data.Courses || data.Items || data.Objects)) || (Array.isArray(data) ? data : []);
+      list.forEach(function (c) {
+        if (!c || c.OrgUnitId == null || !c.FormattedImageLink) return;
+        state.bannerLinks[String(c.OrgUnitId)] = c.FormattedImageLink;
+      });
+    } catch (e) { /* homepage image list is optional */ }
+    root.querySelectorAll("img[data-mcw-img]").forEach(function (img) {
+      var link = state.bannerLinks[img.getAttribute("data-ou")];
+      if (!link || img.classList.contains("mcw-ready")) return;
+      var media = img.closest(".card-media");
+      if (media) media.classList.remove("mcw-no-image");
+      img.classList.remove("mcw-ready");
+      img.removeAttribute("data-blob");
+      assignImage(img, link, 0);
+    });
+  }
+
+  function loadCardImages() {
+    imageQueue = imageQueue.filter(function (img) {
+      return img && img.isConnected && !img.getAttribute("src");
+    });
+    var ids = [];
+    root.querySelectorAll("img[data-mcw-img]").forEach(function (img) {
+      bindCardImage(img);
+      ids.push(img.getAttribute("data-ou"));
+      if (img.getAttribute("src") || img.classList.contains("mcw-ready")) return;
+      imageQueue.push(img);
+    });
+    pumpImages();
+    fetchBannerLinks(ids);
+  }
+
+  function bindPins() {
+    root.querySelectorAll(".pin-btn").forEach(function (btn) {
+      function onPin(evt) {
+        evt.preventDefault();
+        evt.stopPropagation();
+        if (evt.stopImmediatePropagation) evt.stopImmediatePropagation();
+        var id = Number(btn.getAttribute("data-pin"));
+        if (!id) return;
+        togglePin(id);
+      }
+      btn.addEventListener("click", onPin);
+    });
+  }
+
+  async function sendPinRequest(orgUnitId, pinNow) {
+    /* Valence pin/unpin: POST or DELETE, no body (Faculty Dashboard fetch style). */
+    var url = "/d2l/api/lp/" + CONFIG.LP_VERSION + "/enrollments/myenrollments/" + orgUnitId + "/pin";
+    return await fetchJson(url, { method: pinNow ? "POST" : "DELETE" });
+  }
+
+  function applyPinState(course, pinNow, apiResult) {
+    course.pinned = pinNow;
+    if (!course.enrollment) return;
+    if (pinNow) {
+      course.enrollment.PinDate = (apiResult && apiResult.PinDate) || new Date().toISOString();
+      if (!course.enrollment.PinData) course.enrollment.PinData = {};
+      course.enrollment.PinData.IsPinned = true;
+    } else {
+      course.enrollment.PinDate = null;
+      if (course.enrollment.PinData) course.enrollment.PinData.IsPinned = false;
+    }
+    course.pinDate = course.enrollment.PinDate;
+  }
+
+  async function togglePin(orgUnitId) {
+    var course = state.courses.filter(function (c) { return Number(c.id) === Number(orgUnitId); })[0];
+    if (!course || state.pinning[orgUnitId]) return;
+    var pinNow = !course.pinned;
+    state.pinning[orgUnitId] = true;
+    course.pinned = pinNow;
+    render();
+    try {
+      var result = await sendPinRequest(orgUnitId, pinNow);
+      applyPinState(course, pinNow, result);
+    } catch (err) {
+      console.warn("My Courses pin failed", err);
+      course.pinned = !pinNow;
+    }
+    delete state.pinning[orgUnitId];
+    render();
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Unread counts — LE Updates API (native My Courses source)          */
+  /* ------------------------------------------------------------------ */
+
+  function updateCount(v) {
+    var n = typeof v === "string" ? Number(v) : v;
+    return typeof n === "number" && isFinite(n) && n > 0 ? n : 0;
+  }
+
+  function updatesToCounts(u) {
+    return {
+      dropbox: updateCount(u.UnreadAssignmentSubmissions) + updateCount(u.UnreadAssignmentFeedback),
+      discuss: updateCount(u.UnreadDiscussions) + updateCount(u.UnapprovedDiscussions),
+      quiz: updateCount(u.UngradedQuizzes) + updateCount(u.UnattemptedQuizzes)
+    };
+  }
+
+  function applyAlertBadges(host, counts) {
+    function set(kind, n) {
+      var el = host.querySelector('[data-badge="' + kind + '"]');
+      if (!el) return;
+      if (n > 0) {
+        el.hidden = false;
+        el.textContent = n > 99 ? "99+" : String(n);
+      } else {
+        el.hidden = true;
+      }
+    }
+    set("dropbox", counts.dropbox || 0);
+    set("discuss", counts.discuss || 0);
+    set("quiz", counts.quiz || 0);
+  }
+
+  function paintVisibleBadges(courses) {
+    (courses || []).forEach(function (course) {
+      var host = root.querySelector('[data-indicators="' + course.id + '"]');
+      var counts = state.activity[course.id];
+      if (host && counts) applyAlertBadges(host, counts);
+    });
+  }
+
+  function updatesList(page) {
+    if (!page) return [];
+    if (Array.isArray(page)) return page;
+    if (Array.isArray(page.Objects)) return page.Objects;
+    if (Array.isArray(page.Items)) return page.Items;
+    if (page.OrgUnitId != null) return [page];
+    return null;
+  }
+
+  async function fetchUpdatesForIds(version, ids) {
+    var url = "/d2l/api/le/" + version + "/updates/myUpdates/?orgUnitIdsCSV=" +
+      encodeURIComponent(ids.join(",")) +
+      "&updateTypesCSV=" + encodeURIComponent(CONFIG.UPDATE_TYPES_CSV);
+    var page = await fetchJson(url);
+    var items = updatesList(page);
+    if (items == null) return [];
+    var guard = 0;
+    var next = nextUpdatesToken(page);
+    while (next && guard++ < 5) {
+      var moreUrl = next.indexOf("/d2l/api/") !== -1
+        ? (next.split("/d2l/api/")[1] ? "/d2l/api/" + next.split("/d2l/api/")[1] : "")
+        : url + "&bookmark=" + encodeURIComponent(next);
+      if (!moreUrl) break;
+      var more = await fetchJson(moreUrl);
+      var extra = updatesList(more);
+      if (extra && extra.length) items = items.concat(extra);
+      var step = nextUpdatesToken(more);
+      if (!step || step === next) break;
+      next = step;
+    }
+    return items;
+  }
+
+  function nextUpdatesToken(page) {
+    if (!page) return "";
+    if (page.Next) return String(page.Next);
+    var pi = page.PagingInfo;
+    if (pi && pi.HasMoreItems && pi.Bookmark) return String(pi.Bookmark);
+    return "";
+  }
+
+  async function fetchUpdatesChunk(ids) {
+    var versions = [CONFIG.UPDATES_VERSION, CONFIG.LE_VERSION].filter(function (v, i, a) {
+      return v && a.indexOf(v) === i;
+    });
+    var lastErr = null;
+    for (var i = 0; i < versions.length; i++) {
+      try {
+        return { ok: true, items: await fetchUpdatesForIds(versions[i], ids) };
+      } catch (err) {
+        lastErr = err;
+      }
+    }
+    var items = [];
+    for (var j = 0; j < ids.length; j++) {
+      try {
+        var one = await fetchJson(
+          "/d2l/api/le/" + versions[0] + "/" + ids[j] +
+          "/updates/myUpdates?updateTypesCSV=" + encodeURIComponent(CONFIG.UPDATE_TYPES_CSV)
+        );
+        var rows = updatesList(one);
+        if (rows && rows.length) {
+          rows.forEach(function (row) {
+            if (row && row.OrgUnitId == null) row.OrgUnitId = ids[j];
+            items.push(row);
+          });
+        }
+      } catch (e2) { /* skip course */ }
+    }
+    if (items.length) return { ok: true, items: items };
+    if (lastErr) console.warn("My Courses updates failed", lastErr);
+    return { ok: false, items: [] };
+  }
+
+  async function loadIndicators(visible) {
+    if (state.indicatorsBusy) return;
+    var pending = (visible || []).filter(function (c) {
+      return c && c.id != null && !state.activity[c.id];
+    });
+    paintVisibleBadges(visible);
+    if (!pending.length) return;
+    state.indicatorsBusy = true;
+    try {
+      for (var i = 0; i < pending.length; i += 100) {
+        var todo = pending.slice(i, i + 100);
+        var ids = todo.map(function (c) { return c.id; });
+        var result = await fetchUpdatesChunk(ids);
+        if (!result.ok) continue;
+        var seen = {};
+        result.items.forEach(function (u) {
+          var rawId = u && u.OrgUnitId;
+          if (rawId == null) return;
+          var counts = updatesToCounts(u);
+          seen[String(rawId)] = true;
+          state.activity[String(rawId)] = counts;
+          var n = Number(rawId);
+          if (isFinite(n)) state.activity[n] = counts;
+        });
+        todo.forEach(function (c) {
+          if (!seen[String(c.id)]) {
+            state.activity[c.id] = { dropbox: 0, discuss: 0, quiz: 0 };
+          }
+        });
+        paintVisibleBadges(visible);
+      }
+    } finally {
+      state.indicatorsBusy = false;
+    }
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Admin: look up another user's courses                             */
+  /* ------------------------------------------------------------------ */
+
+  function asLookupUser(raw) {
+    if (!raw) return null;
+    var id = raw.UserId != null ? raw.UserId : raw.Identifier;
+    var n = Number(id);
+    if (!isFinite(n) || n <= 0) return null;
+    var first = String(raw.FirstName || "").trim();
+    var last = String(raw.LastName || "").trim();
+    var username = String(raw.UserName || raw.Username || "").trim();
+    var name = [first, last].filter(Boolean).join(" ") || String(raw.DisplayName || "").trim() || username || "User";
+    return {
+      id: n,
+      first: first,
+      last: last,
+      name: name,
+      username: username,
+      orgId: String(raw.OrgDefinedId || "").trim()
+    };
+  }
+
+  function userOrgUnitToEnrollment(row) {
+    var role = (row && row.Role) || {};
+    var org = (row && row.OrgUnit) ? row.OrgUnit : {};
+    if (!org.Type) org.Type = { Id: CONFIG.COURSE_OFFERING_TYPE_ID, Code: "Course Offering" };
+    return {
+      OrgUnit: org,
+      Access: {
+        RoleId: role.Id,
+        RoleName: role.Name || role.Code || "",
+        ClasslistRoleName: role.Name || "",
+        IsActive: true,
+        CanAccess: true
+      }
+    };
+  }
+
+  async function lookupUsers(param, value) {
+    try {
+      var data = await fetchJson("/d2l/api/lp/" + CONFIG.LP_VERSION + "/users/?" + param + "=" + encodeURIComponent(value));
+      var list = Array.isArray(data) ? data : (data ? [data] : []);
+      return list.map(asLookupUser).filter(Boolean);
+    } catch (e) {
+      if (e && e.status === 403) throw e;
+      return [];
+    }
+  }
+
+  function nameTokens(query) {
+    var cleaned = String(query || "").replace(/\s+/g, " ").trim();
+    if (cleaned.indexOf(",") !== -1) {
+      var parts = cleaned.split(",").map(function (part) { return part.trim(); }).filter(Boolean);
+      if (parts.length >= 2) {
+        var rest = parts.slice(1).join(" ").split(/\s+/).filter(Boolean);
+        return rest.concat([parts[0]]);
+      }
+    }
+    return cleaned.split(/[\s,]+/).filter(Boolean);
+  }
+
+  function personMatchesTokens(person, tokens) {
+    var hay = [person.first, person.last, person.name, person.username, person.orgId].join(" ").toLowerCase();
+    for (var i = 0; i < tokens.length; i++) {
+      var token = String(tokens[i] || "").toLowerCase();
+      if (token.length < 2) continue;
+      if (hay.indexOf(token) === -1) return false;
+    }
+    return true;
+  }
+
+  async function organizationId() {
+    if (state.orgId) return state.orgId;
+    var info = await fetchJson("/d2l/api/lp/" + CONFIG.LP_VERSION + "/organization/info");
+    var id = info && (info.Identifier || info.Id);
+    state.orgId = id != null ? String(id) : "";
+    return state.orgId;
+  }
+
+  function classlistItems(page) {
+    if (!page) return [];
+    if (Array.isArray(page.Objects)) return page.Objects;
+    if (Array.isArray(page.Items)) return page.Items;
+    return Array.isArray(page) ? page : [];
+  }
+
+  function classlistNext(page, version, orgId, term) {
+    var next = page && page.Next ? String(page.Next) : "";
+    if (!next) return "";
+    if (next.indexOf("/d2l/api/") !== -1) {
+      var parts = next.split("/d2l/api/");
+      return parts.length > 1 ? "/d2l/api/" + parts[1] : "";
+    }
+    if (next.charAt(0) === "/") return next;
+    return "/d2l/api/le/" + version + "/" + orgId + "/classlist/paged/?searchTerm=" +
+      encodeURIComponent(term) + "&bookmark=" + encodeURIComponent(next);
+  }
+
+  async function pageClasslist(version, orgId, term) {
+    var users = [];
+    var seen = {};
+    var url = "/d2l/api/le/" + version + "/" + orgId + "/classlist/paged/?searchTerm=" + encodeURIComponent(term);
+    var guard = 0;
+    while (url && guard++ < 4) {
+      if (seen[url]) break;
+      seen[url] = true;
+      var page = await fetchJson(url);
+      classlistItems(page).forEach(function (row) {
+        var user = asLookupUser(row);
+        if (user) users.push(user);
+      });
+      url = classlistNext(page, version, orgId, term);
+    }
+    return users;
+  }
+
+  async function searchPeopleByName(query) {
+    var tokens = nameTokens(query);
+    var term = tokens.length > 1 ? tokens[tokens.length - 1] : query;
+    if (!term || term.length < 2) return [];
+    var orgId = await organizationId();
+    if (!orgId) return [];
+    var versions = ["1.82", CONFIG.LE_VERSION];
+    var rows = [];
+    var lastErr = null;
+    for (var i = 0; i < versions.length; i++) {
+      if (i > 0 && versions[i] === versions[i - 1]) continue;
+      try {
+        rows = await pageClasslist(versions[i], orgId, term);
+        lastErr = null;
+        break;
+      } catch (e) {
+        lastErr = e;
+        if (!e || e.status !== 404) break;
+      }
+    }
+    if (lastErr && lastErr.status === 403) throw lastErr;
+    var filtered = rows.filter(function (person) { return personMatchesTokens(person, tokens); });
+    var uniq = [];
+    var seen = {};
+    filtered.forEach(function (person) {
+      if (seen[person.id]) return;
+      seen[person.id] = true;
+      uniq.push(person);
+    });
+    return uniq;
+  }
+
+  async function findUsers(query) {
+    var q = String(query || "").trim();
+    var byName = await lookupUsers("userName", q);
+    var nameHit = byName.filter(function (user) {
+      return String(user.username).toLowerCase() === q.toLowerCase();
+    });
+    if (nameHit.length) return nameHit;
+
+    var byOrg = await lookupUsers("orgDefinedId", q);
+    var orgHit = byOrg.filter(function (user) {
+      return String(user.orgId).toLowerCase() === q.toLowerCase();
+    });
+    if (orgHit.length) return orgHit;
+
+    if (q.indexOf("@") !== -1) {
+      var byEmail = await lookupUsers("externalEmail", q);
+      if (byEmail.length) return byEmail;
+    }
+
+    return searchPeopleByName(q);
+  }
+
+  async function fetchUserCourseEnrollments(userId) {
+    var all = [];
+    var seen = {};
+    var bookmark = "";
+    var guard = 0;
+    while (guard++ < 200) {
+      var url = "/d2l/api/lp/" + CONFIG.LP_VERSION + "/enrollments/users/" + userId +
+        "/orgUnits/?orgUnitTypeId=" + CONFIG.COURSE_OFFERING_TYPE_ID;
+      if (bookmark) url += "&bookmark=" + encodeURIComponent(bookmark);
+      var page = await fetchJson(url);
+      var items = Array.isArray(page) ? page : ((page && page.Items) || []);
+      var added = 0;
+      for (var i = 0; i < items.length; i++) {
+        var ou = items[i] && items[i].OrgUnit;
+        var key = ou && ou.Id != null ? "ou:" + ou.Id : "row:" + all.length + ":" + i;
+        if (seen[key]) continue;
+        seen[key] = true;
+        all.push(items[i]);
+        added++;
+      }
+      if (added === 0) break;
+      var pi = (page && page.PagingInfo) || {};
+      var next = pi.Bookmark || pi.bookmark || "";
+      next = next ? String(next) : "";
+      if ((!next || next === bookmark) && items.length >= 100) {
+        var last = items[items.length - 1];
+        var lastId = last && last.OrgUnit && last.OrgUnit.Id;
+        if (lastId != null && String(lastId) !== bookmark) next = String(lastId);
+      }
+      if (!next || next === bookmark) break;
+      bookmark = next;
+    }
+    return all;
+  }
+
+  async function loadUserCourses(user) {
+    state.lookupUser = user;
+    state.lookupMatches = [];
+    state.lookupCourses = null;
+    state.lookupBusy = true;
+    state.lookupStatus = "Loading courses…";
+    state.query = "";
+    state.activeTab = "";
+    render();
+    try {
+      var roleTask = userHasRoleId(user.id, 100);
+      var rows = await fetchUserCourseEnrollments(user.id);
+      user.isRole100 = await roleTask;
+      state.lookupCourses = rows
+        .map(userOrgUnitToEnrollment)
+        .filter(enrollmentIsVisible)
+        .map(normalizeCourse)
+        .map(decorateCourse)
+        .filter(function (course) { return !!course.id; });
+      state.lookupStatus = "";
+    } catch (e) {
+      state.lookupCourses = [];
+      state.lookupStatus = e && e.status === 403
+        ? "Brightspace did not allow that enrollment list."
+        : "Could not load courses for this user.";
+    }
+    state.lookupBusy = false;
+    render();
+  }
+
+  async function runUserLookup() {
+    if (!state.canLookupUsers) return;
+    var q = String(state.userQuery || "").trim();
+    state.lookupUser = null;
+    state.lookupCourses = null;
+    state.lookupMatches = [];
+    state.activeTab = "";
+    if (q.length < 2) {
+      state.lookupStatus = "Enter at least 2 characters.";
+      render();
+      return;
+    }
+    state.lookupBusy = true;
+    state.lookupStatus = "Searching…";
+    render();
+    try {
+      var matches = await findUsers(q);
+      state.lookupBusy = false;
+      if (!matches.length) {
+        state.lookupStatus = "No user found. Try a username or ID.";
+        render();
+        return;
+      }
+      if (matches.length === 1) {
+        state.lookupStatus = "";
+        await loadUserCourses(matches[0]);
+        return;
+      }
+      state.lookupMatches = matches.slice(0, 12);
+      state.lookupStatus = matches.length > 12
+        ? "Showing the first 12 matches. Add a username or ID to narrow it."
+        : "Choose a user.";
+      render();
+    } catch (e) {
+      state.lookupBusy = false;
+      state.lookupMatches = [];
+      state.lookupStatus = e && e.status === 403
+        ? "Brightspace did not allow that user lookup."
+        : "User lookup failed. Try again.";
+      render();
+    }
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Boot                                                               */
+  /* ------------------------------------------------------------------ */
+
+  async function userHasRoleId(userId, roleId) {
+    if (!userId) return false;
+    try {
+      var page = await fetchJson(
+        "/d2l/api/lp/" + CONFIG.LP_VERSION + "/enrollments/users/" +
+        encodeURIComponent(userId) + "/orgUnits/?roleId=" + encodeURIComponent(roleId)
+      );
+      var items = Array.isArray(page) ? page : ((page && page.Items) || []);
+      return items.length > 0;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function publishCourses(final) {
+    state.loadingMore = !final;
+    var pinnedMap = state.pinnedMap || {};
+    state.courses = (state.rawEnrollments || [])
+      .filter(enrollmentIsVisible)
+      .map(normalizeCourse)
+      .map(decorateCourse)
+      .filter(function (c) { return !!c.id; });
+    state.courses.forEach(function (course) {
+      var meta = pinnedMap[String(course.id)];
+      if (!meta) return;
+      course.pinned = true;
+      if (meta.pinDate && meta.pinDate !== true) course.pinDate = meta.pinDate;
+      if (meta.imageUrl) {
+        course.image = meta.imageUrl;
+        state.bannerLinks[String(course.id)] = meta.imageUrl;
+      }
+      if (course.enrollment) {
+        if (!course.enrollment.PinData) course.enrollment.PinData = {};
+        course.enrollment.PinData.IsPinned = true;
+        if (meta.pinDate && meta.pinDate !== true) course.enrollment.PinDate = meta.pinDate;
+      }
+    });
+    if (!state.courses.length && !final) return;
+    render();
+  }
+
+  async function init() {
+    injectStyles();
+    root.innerHTML = '<p class="mcw-status">Loading courses…</p>';
+    state.loadingMore = true;
+    var pinTask = fetchPinnedFromWidget().then(function (map) {
+      state.pinnedMap = map || {};
+      if (state.rawEnrollments.length) publishCourses(!state.loadingMore);
+    });
+    loadSectionDates();
+    try {
+      var meId = await fetchWhoAmIId();
+      applyViewPrefs(meId);
+      await fetchMyEnrollments(function (all, final) {
+        state.rawEnrollments = all;
+        publishCourses(final);
+      });
+      await pinTask;
+      publishCourses(true);
+      /* User lookup and hidden counts are only for role 100 (Admin). */
+      state.canLookupUsers = await userHasRoleId(meId, 100);
+      state.roleChecked = true;
+      /* Role names are a second full catalog walk. Skip it for admin-sized lists.
+         Notification counts load after that walk so the two calls do not collide. */
+      if (state.courses.length > 0 && state.courses.length <= 250) {
+        applyRoleMap(state.rawEnrollments, await fetchRoleMap(meId));
+        publishCourses(true);
+      } else if (state.courses.length) {
+        render();
+      }
+    } catch (err) {
+      console.error("My Courses widget failed", err);
+      root.innerHTML = '<p class="mcw-error">Unable to load courses. Refresh the page and try again.</p>';
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script></p>

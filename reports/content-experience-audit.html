@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Experience Audit by Semester - D2L Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            transition: all 0.2s ease;
+        }
+
+        .back-link:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-2px);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .controls-row {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+            min-width: 280px;
+        }
+
+        .field label {
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .field select {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-base);
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-primary:disabled,
+        .btn-secondary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status-text,
+        .progress-text,
+        .summary-text {
+            margin-top: var(--spacing-sm);
+            color: var(--text-secondary);
+        }
+
+        .summary-text {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .log-output {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            white-space: pre-wrap;
+            background: #0b1021;
+            color: #cde3ff;
+            border-radius: var(--radius-sm);
+            padding: var(--spacing-md);
+            max-height: 280px;
+            overflow: auto;
+            font-size: var(--font-size-sm);
+        }
+
+        table.display {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--surface-color);
+        }
+
+        table.display th,
+        table.display td {
+            border: 1px solid var(--border-color);
+            padding: var(--spacing-sm);
+            text-align: left;
+            font-size: var(--font-size-sm);
+        }
+
+        table.display th {
+            background: var(--bg-color);
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            font-weight: 600;
+        }
+
+        table.display tbody tr.error-row {
+            background-color: #ffeae8;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports & Tools
+                    </a>
+                    <h1 class="page-title">Content Experience Audit by Semester</h1>
+                    <p class="page-subtitle">Survey course offerings and classify each one as New Content Experience, Classic Content Experience, or Unknown.</p>
+                </div>
+            </header>
+
+            <div class="card">
+                <div class="controls-row">
+                    <div class="field">
+                        <label for="semesterSelect"><i class="fas fa-calendar-alt"></i> Semester</label>
+                        <select id="semesterSelect">
+                            <option value="">Loading semesters…</option>
+                        </select>
+                    </div>
+                    <div class="field" style="flex: 1 1 auto;">
+                        <label>&nbsp;</label>
+                        <div style="display: flex; gap: var(--spacing-sm);">
+                            <button id="runBtn" class="btn-primary"><i class="fas fa-play"></i> Run Audit</button>
+                            <button id="stopBtn" class="btn-secondary" disabled><i class="fas fa-stop"></i> Stop</button>
+                            <button id="downloadBtn" class="btn-secondary" disabled><i class="fas fa-download"></i> Download CSV</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="status" class="status-text">Status: Ready</div>
+                <div id="progress" class="progress-text"></div>
+                <div id="summary" class="summary-text"></div>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-top: 0;">Log Output</h3>
+                <div id="log" class="log-output" aria-label="Log output"></div>
+            </div>
+
+            <div class="card" id="tableCard" style="display: none;">
+                <h3 style="margin-top: 0;">Results</h3>
+                <div style="overflow-x: auto;">
+                    <table id="resultTable" class="display">
+                        <thead>
+                            <tr>
+                                <th>OrgUnitId</th>
+                                <th>Course Name</th>
+                                <th>Course Code</th>
+                                <th>Content Experience</th>
+                                <th>Status Code</th>
+                                <th>Detection URL</th>
+                                <th>Content URL</th>
+                                <th>Error</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/semester-config.js"></script>
+    <script src="../js/content-experience-audit.js"></script>
+</body>
+
+</html>

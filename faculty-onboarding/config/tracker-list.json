@@ -1,0 +1,61 @@
+{
+  "listName": "New Faculty Tracker",
+  "oneRow": "One instructor for one first teaching semester",
+  "defaultStage": "New",
+  "columns": [
+    { "name": "Faculty ID", "group": "who", "type": "text" },
+    { "name": "Name", "group": "who", "type": "text" },
+    { "name": "Email", "group": "who", "type": "text" },
+    { "name": "Division", "group": "who", "type": "text" },
+    { "name": "Type", "group": "who", "type": "choice", "choices": ["Adjunct", "Full-time"] },
+    { "name": "First teaching semester", "group": "who", "type": "text" },
+    { "name": "Specialist", "group": "who", "type": "text" },
+
+    { "name": "Stage", "group": "stage", "type": "choice", "choices": ["New", "Teaching prep", "In semester", "Semester 2 watch", "Done"] },
+
+    { "name": "Logged in", "group": "d2l", "type": "yesNo", "sourceCheck": "hasLoggedIn" },
+    { "name": "Orientation enrolled", "group": "d2l", "type": "yesNo", "sourceCheck": "orientationEnrolled" },
+    { "name": "Orientation complete", "group": "d2l", "type": "yesNo", "sourceCheck": "orientationComplete" },
+    { "name": "Sandbox", "group": "d2l", "type": "yesNo", "sourceCheck": "sandboxExists" },
+    { "name": "Course has content", "group": "d2l", "type": "yesNo", "sourceCheck": "coursesNotEmpty" },
+    { "name": "Recent activity", "group": "d2l", "type": "yesNo", "sourceCheck": "recentActivity" },
+    { "name": "Last checked", "group": "d2l", "type": "date" },
+
+    { "name": "Intro meeting done", "group": "human", "type": "yesNo" },
+    { "name": "Course review done", "group": "human", "type": "yesNo" },
+    { "name": "Last contact", "group": "human", "type": "date" },
+    { "name": "Next contact", "group": "human", "type": "date" },
+    { "name": "Needs attention", "group": "human", "type": "yesNo" },
+    { "name": "Notes", "group": "human", "type": "note" }
+  ],
+  "views": [
+    {
+      "name": "My faculty",
+      "filter": "Specialist is the current person, and Stage is not Done"
+    },
+    {
+      "name": "Needs attention",
+      "filter": "Needs attention is Yes"
+    },
+    {
+      "name": "This semester",
+      "filter": "First teaching semester is the current term"
+    },
+    {
+      "name": "Done",
+      "filter": "Stage is Done"
+    }
+  ],
+  "planner": {
+    "name": "New Faculty Tracker",
+    "buckets": ["This week", "Waiting on faculty", "Done"],
+    "whenToCreate": "Only when a person must follow up. Title is the faculty name plus the reason. Do not create a task per milestone."
+  },
+  "notInThisVersion": [
+    "Faculty interaction list",
+    "Faculty development list",
+    "Power Automate mail, logging, or Planner tasks",
+    "Rebuilt Command Center, Communication Hub, or Leadership Report",
+    "Six-phase checklist"
+  ]
+}

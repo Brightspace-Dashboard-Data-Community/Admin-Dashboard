@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User List - D2L Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <link rel="stylesheet" href="css/tables.css">
+
+    <style>
+        /* Page specific overrides */
+        .controls-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: var(--spacing-sm);
+            flex-wrap: wrap;
+        }
+
+        .role-counter-note {
+            font-size: 13px;
+            font-style: italic;
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-lg);
+            display: block;
+        }
+
+        .search-bar-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: #f5f5f5;
+            padding: 8px;
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--spacing-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .search-label {
+            font-weight: 600;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .search-input {
+            flex: 1;
+            border: 1px solid var(--border-color);
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .btn-clear {
+            background: #e0e0e0;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .back-link:hover {
+            background-color: #e5e5e5;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation (injected via js/sidebar.js) -->
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <!-- Breadcrumb / Back -->
+                    <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+                    <h1 class="page-title">Users by Role</h1>
+                </div>
+            </header>
+
+            <div class="form-container">
+
+                <!-- Controls -->
+                <div class="controls-row">
+                    <label class="form-label" style="min-width: 40px;">Role:</label>
+                    <select class="form-control" style="width: 300px;">
+                        <option>Student (101) - 206008 users</option>
+                        <option>Instructor (109) - 450 users</option>
+                        <option>Administrator (120) - 15 users</option>
+                    </select>
+
+                    <button class="btn btn-primary">
+                        <i class="fa-solid fa-magnifying-glass"></i> View Users
+                    </button>
+
+                    <button class="btn btn-outline"
+                        style="background-color: #28a745; color: white; border-color: #28a745;">
+                        <i class="fa-solid fa-book"></i> Roles Glossary
+                    </button>
+                </div>
+
+                <span class="role-counter-note">Note: All available roles from the system are listed in the
+                    dropdown</span>
+
+                <!-- Search Filter -->
+                <div class="search-bar-container">
+                    <span class="search-label"><i class="fa-solid fa-magnifying-glass"></i> Fuzzy Search:</span>
+                    <input type="text" class="search-input" placeholder="Search by name, username, or ID...">
+                    <button class="btn-clear"><i class="fa-solid fa-xmark"></i> Clear</button>
+                </div>
+
+                <!-- Data Table -->
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>User ID</th>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>Username</th>
+                                <th>Created Date</th>
+                                <th>Last Visited</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Empty / Placeholder State -->
+                            <tr class="table-message-row">
+                                <td colspan="7" class="table-message">
+                                    Select a Role and click "View Users" to see data
+                                </td>
+                            </tr>
+
+                            <!-- Example Row (Hidden for now, or could show mocked data) -->
+                            <!-- 
+                            <tr>
+                                <td>1535209</td>
+                                <td>John</td>
+                                <td>Doe</td>
+                                <td>jdoe123</td>
+                                <td>Oct 12, 2024</td>
+                                <td>Dec 08, 2024</td>
+                                <td class="table-actions">
+                                    <button class="btn-icon-small" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                                </td>
+                            </tr> 
+                            -->
+                        </tbody>
+                    </table>
+
+                    <div class="table-footer">
+                        <span>Rows per page:</span>
+                        <select class="rows-per-page">
+                            <option>20</option>
+                            <option>50</option>
+                            <option>100</option>
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="js/sidebar.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/user-list.js" type="module"></script>
+</body>
+
+</html>

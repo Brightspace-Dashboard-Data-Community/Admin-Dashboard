@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D2L Faculty Tutorials - D2L Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/components.css">
+
+    <style>
+        /* Tutorials specific styles */
+        .tutorials-intro {
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-lg);
+            font-size: 15px;
+        }
+
+        .tutorials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 24px;
+        }
+
+        .tutorial-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tutorial-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            background-color: #f8f9fa;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .card-icon {
+            font-size: 20px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            background-color: var(--bg-hover);
+        }
+
+        /* Specific colors for icons */
+        .icon-grades {
+            color: #dc3545;
+            background-color: #ffeef0;
+        }
+
+        .icon-course {
+            color: #0d6efd;
+            background-color: #e7f1ff;
+        }
+
+        .icon-comm {
+            color: #198754;
+            background-color: #e8f5e9;
+        }
+
+        .icon-quiz {
+            color: #fd7e14;
+            background-color: #fff4e6;
+        }
+
+        .icon-cond {
+            color: #6f42c1;
+            background-color: #f3ebff;
+        }
+
+        .card-body {
+            padding: 0;
+            flex: 1;
+        }
+
+        .tutorial-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .tutorial-item {
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .tutorial-item:last-child {
+            border-bottom: none;
+        }
+
+        .tutorial-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 20px;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: background-color 0.15s, color 0.15s;
+        }
+
+        .tutorial-link:hover {
+            background-color: #fafafa;
+            color: var(--primary-color);
+        }
+
+        .tutorial-link i {
+            color: #6c757d;
+            /* Generic file icon color */
+            font-size: 14px;
+        }
+
+        .tutorial-link:hover i {
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <!-- Breadcrumb / Back -->
+                    <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+                    <h1 class="page-title">D2L Faculty Tutorials</h1>
+                </div>
+            </header>
+
+            <div class="content-container" style="padding: 0 40px 40px 40px;">
+                <p class="tutorials-intro">
+                    Click any of the topics below to download or view the tutorial document.
+                </p>
+
+                <div class="tutorials-grid">
+
+                    <!-- Grades & Gradebook -->
+                    <article class="tutorial-card">
+                        <div class="card-header">
+                            <div class="card-icon icon-grades"><i class="fa-solid fa-graduation-cap"></i></div>
+                            <h2>Grades & Gradebook</h2>
+                        </div>
+                        <div class="card-body">
+                            <ul class="tutorial-list">
+                                <li class="tutorial-item">
+                                    <a href="tutorials/Automatic Zero in Grades.docx" class="tutorial-link">
+                                        <i class="fa-regular fa-file-word"></i> Automatic Zero in Grades
+                                    </a>
+                                </li>
+                                <li class="tutorial-item">
+                                    <a href="tutorials/Bonus vs Extra Credit.docx" class="tutorial-link">
+                                        <i class="fa-regular fa-file-word"></i> Bonus vs Extra Credit
+                                    </a>
+                                </li>
+                                <li class="tutorial-item">
+                                    <a href="tutorials/Deleting Gradebook Items in D2L.docx" class="tutorial-link">
+                                        <i class="fa-regular fa-file-word"></i> Deleting Gradebook Items in D2L
+                                    </a>
+                                </li>
+                                <li class="tutorial-item">
+                                    <a href="tutorials/Grade Schemes in D2L Brightspace.docx" class="tutorial-link">
+                                        <i class="fa-regular fa-file-word"></i> Grade Schemes in D2L Brightspace
+                                    </a>
+                                </li>
+                                <li class="tutorial-item">
+                                    <a href="tutorials/Release Final Grade.docx" class="tutorial-link">
+                                        <i class="fa-regular fa-file-word"></i> Release Final Grade
+                                    </a>
+                                </li>
+                                <li class="tutorial-item">
+                                    <a href="tutorials/Submit Final Grades from D2L.docx" class="tutorial-link">
+                                        <i class="fa-regular fa-file-word"></i> Submit Final Grades from D2L
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </article>
+
+                    <!-- Course Management -->
+                    <article class="tutorial-card">
+                        <div class="card-header">
+                            <div class="card-icon icon-course"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+                            <h2>Course Management</h2>
+                        </div>
+                        <div class="card-body">
+                            <ul class="tutorial-list">
+                                <li class="tutorial-item">
+                                    <a href="tutorials/Bulk Edit in Multiple Places.docx" class="tutorial-link">
+                                        <i class="fa-regular fa-file-word"></i> Bulk Edit in Multiple Places
+                                    </a>
+                                </li>
+                                <li class="tutorial-item">
+                                    <a href="tutorials/Copying Course Content in D2L Brightspace.docx"
+                                        class="tutorial-link">
+                                        <i class="fa-regular fa-file-word"></i> Copying Course Content in D2L
+                                        Brightspace
+                                    </a>
+                                </li>
+                                <li class="tutorial-item">
+                                    <a href="tutorials/Course Progress in D2L Brightspace.docx" class="tutorial-link">
+                                        <i class="fa-regular fa-file-word"></i> Course Progress in D2L Brightspace
+                                    </a>
+                                </li>
+                                <li class="tutorial-item">
+                                    <a href="tutorials/Work To Do Widget in D2L Brightspace.docx" class="tutorial-link">
+                                        <i class="fa-regular fa-file-word"></i> Work To Do Widget in D2L Brightspace
+                                    </a>
+                                </li>
+                                <!-- New items found in folder -->
+                                <li class="tutorial-item">
+                                    <a href="tutorials/Using_Manage_Files_to_Organize_Course_Content.docx"
+                                        class="tutorial-link">
+                                        <i class="fa-regular fa-file-word"></i> Using Manage Files
+                                    </a>
+                                </li>
+                                <li class="tutorial-item">
+                                    <a href="tutorials/Managing_Start_and_End_Dates_for_a_Course.docx"
+                                        class="tutorial-link">
+                                        <i class="fa-regular fa-file-word"></i> Managing Start/End Dates
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </article>
+
+                    <!-- Communication & Engagement -->
+                    <article class="tutorial-card">
+                        <div class="card-header">
+                            <div class="card-icon icon-comm"><i class="fa-regular fa-comments"></i></div>
+                            <h2>Communication & Engagement</h2>
+                        </div>
+                        <div class="card-body">
+                            <ul class="tutorial-list">
+                                <li class="tutorial-item">
+                                    <a href="tutorials/Emailing from Classlist.docx" class="tutorial-link">
+                                        <i class="fa-regular fa-file-word"></i> Emailing from Classlist
+                                    </a>
+                                </li>
+                                <li class="tutorial-item">
+                                    <a href="tutorials/Discussion Board must post first.docx" class="tutorial-link">
+                                        <i class="fa-regular fa-file-word"></i> Discussion Board – Must Post First
+                                    </a>
+                                </li>
+                                <li class="tutorial-item">
+                                    <a href="tutorials/Using Rubrics in D2L Brightspace.docx" class="tutorial-link">
+                                        <i class="fa-regular fa-file-word"></i> Using Rubrics in D2L Brightspace
+                                    </a>
+                                </li>
+                                <li class="tutorial-item">
+                                    <a href="tutorials/Intelligent Agents in D2L Brightspace.docx"
+                                        class="tutorial-link">
+                                        <i class="fa-regular fa-file-word"></i> Intelligent Agents in D2L Brightspace
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </article>
+
+                    <!-- Quizzes & Assessments -->
+                    <article class="tutorial-card">
+                        <div class="card-header">
+                            <div class="card-icon icon-quiz"><i class="fa-solid fa-pen-to-square"></i></div>
+                            <h2>Quizzes & Assessments</h2>
+                        </div>
+                        <div class="card-body">
+                            <ul class="tutorial-list">
+                                <li class="tutorial-item">
+                                    <a href="tutorials/Quiz Submission Log & Force Submission.docx"
+                                        class="tutorial-link">
+                                        <i class="fa-regular fa-file-word"></i> Quiz Submission Log & Force Submission
+                                    </a>
+                                </li>
+                                <li class="tutorial-item">
+                                    <a href="tutorials/Using Special Access in D2L Quiz.docx" class="tutorial-link">
+                                        <i class="fa-regular fa-file-word"></i> Using Special Access in D2L Quiz
+                                    </a>
+                                </li>
+                                <li class="tutorial-item">
+                                    <a href="tutorials/Creating_Randomized_Quizzes_Question_Pools.docx"
+                                        class="tutorial-link">
+                                        <i class="fa-regular fa-file-word"></i> Randomized Quizzes & Pools
+                                    </a>
+                                </li>
+                                <li class="tutorial-item">
+                                    <a href="tutorials/Setting_Up_Quizzes_to_Auto_Grade_and_Publish.docx"
+                                        class="tutorial-link">
+                                        <i class="fa-regular fa-file-word"></i> Auto-Grade & Publish Quizzes
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </article>
+
+                    <!-- Conditional Release & Access -->
+                    <article class="tutorial-card">
+                        <div class="card-header">
+                            <div class="card-icon icon-cond"><i class="fa-solid fa-lock"></i></div>
+                            <h2>Conditional Release & Access</h2>
+                        </div>
+                        <div class="card-body">
+                            <ul class="tutorial-list">
+                                <li class="tutorial-item">
+                                    <a href="tutorials/Release Conditions in D2L.docx" class="tutorial-link">
+                                        <i class="fa-regular fa-file-word"></i> Release Conditions in D2L
+                                    </a>
+                                </li>
+                                <li class="tutorial-item">
+                                    <a href="tutorials/Creating_Learning_Paths_with_Release_Conditions.docx"
+                                        class="tutorial-link">
+                                        <i class="fa-regular fa-file-word"></i> Creating Learning Paths
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </article>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/sidebar.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

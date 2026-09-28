@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Not in Orientation - D2L Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/tables.css">
+    <link rel="stylesheet" href="faculty-onboarding/css/fsp-common.css">
+</head>
+<body>
+    <div class="app-container">
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="faculty-onboarding/command-center.html" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Command Center</a>
+                    <h1 class="page-title">Faculty Not Yet in Orientation</h1>
+                    <p class="page-subtitle">Instructors in active onboarding who are not enrolled in the Faculty Orientation course.</p>
+                </div>
+                <div class="header-actions header-actions-row">
+                    <button id="download-csv-btn" class="btn btn-outline"><i class="fa-solid fa-file-csv"></i> Download CSV</button>
+                    <button id="refresh-btn" class="btn btn-primary"><i class="fa-solid fa-arrows-rotate"></i> Refresh</button>
+                </div>
+            </header>
+
+            <div class="fsp-card card-static">
+                <div id="status" class="status-message" role="status"></div>
+                <div id="loading-message" class="loading-state">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    <span>Loading faculty records…</span>
+                    <div class="progress-bar"><div class="progress-fill progress-fill-indeterminate"></div></div>
+                </div>
+                <div id="empty-message" class="loading-state" style="display:none;">
+                    All active onboarding faculty are enrolled in orientation.
+                </div>
+                <div id="table-container" style="display:none;">
+                    <p><span id="count-badge" class="badge badge-primary">0</span> faculty not enrolled</p>
+                    <div class="table-container" style="margin-top:12px;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Org Defined ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Onboarding Folder</th>
+                                    <th>Created</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/sidebar.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/d2l-api.js"></script>
+    <script src="faculty-onboarding/js/faculty-record-service.js"></script>
+    <script src="js/faculty-orientation-not-enrolled.js"></script>
+    <script>
+        let allRows = [];
+
+        function escapeHtml(t) {
+            const d = document.createElement('div');
+            d.textContent = t;
+            return d.innerHTML;
+        }
+
+        async function load() {
+            const loading = document.getElementById('loading-message');
+            loading.style.display = 'flex';
+            loading.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Loading faculty records…</span><div class="progress-bar"><div class="progress-fill progress-fill-indeterminate"></div></div>';
+            document.getElementById('empty-message').style.display = 'none';
+            document.getElementById('table-container').style.display = 'none';
+            const status = document.getElementById('status');
+            if (status) { status.className = 'status-message'; status.innerHTML = ''; }
+            try {
+                const { count, users } = await FacultyOrientationNotEnrolled.getNotEnrolled();
+                allRows = users;
+                loading.style.display = 'none';
+                document.getElementById('count-badge').textContent = count;
+                if (!count) {
+                    document.getElementById('empty-message').style.display = 'flex';
+                    return;
+                }
+                document.getElementById('table-container').style.display = 'block';
+                document.getElementById('tbody').innerHTML = users.map(u => `
+                    <tr>
+                        <td>${escapeHtml(u.orgDefinedId)}</td>
+                        <td>${escapeHtml(u.firstName)} ${escapeHtml(u.lastName)}</td>
+                        <td>${escapeHtml(u.email || '—')}</td>
+                        <td>${escapeHtml(u.folder || '—')}</td>
+                        <td>${escapeHtml(u.dateCreated || '—')}</td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                loading.style.display = 'none';
+                if (status) {
+                    status.className = 'status-message show error';
+                    status.innerHTML = `Error: ${escapeHtml(e.message)}`;
+                }
+            }
+        }
+
+        document.getElementById('refresh-btn').addEventListener('click', load);
+        document.getElementById('download-csv-btn').addEventListener('click', () => {
+            const headers = ['orgDefinedId','firstName','lastName','email','folder','dateCreated'];
+            const esc = v => `"${String(v ?? '').replace(/"/g,'""')}"`;
+            const csv = [headers.join(','), ...allRows.map(r => headers.map(h => esc(r[h])).join(','))].join('\n');
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+            a.download = `faculty-orientation-not-enrolled-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        });
+
+        document.addEventListener('DOMContentLoaded', load);
+    </script>
+</body>
+</html>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OrgDefinedId User Loader - D2L Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            transition: all 0.2s ease;
+        }
+
+        .back-link:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-2px);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+            line-height: 1.5;
+        }
+
+        .tabs {
+            display: flex;
+            gap: var(--spacing-sm);
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 10px 0;
+            margin-right: var(--spacing-md);
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .tab-btn.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .input-label {
+            display: block;
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        textarea,
+        input[type="text"],
+        input[type="number"],
+        input[type="file"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            background: var(--surface-color);
+            color: var(--text-primary);
+        }
+
+        textarea {
+            min-height: 180px;
+            resize: vertical;
+            font-family: monospace;
+        }
+
+        .actions {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+            margin-top: var(--spacing-md);
+        }
+
+        .status-box {
+            margin-top: var(--spacing-md);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-sm);
+            background: #f5f7fa;
+            font-size: var(--font-size-sm);
+        }
+
+        .form-hint {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+        }
+
+        .table-wrap {
+            margin-top: var(--spacing-md);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th,
+        td {
+            border: 1px solid var(--border-color);
+            padding: 8px 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background: #f7f9fb;
+            font-weight: 600;
+        }
+
+        .card {
+            margin-bottom: var(--spacing-xl);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports & Tools
+                    </a>
+                    <h1 class="page-title">OrgDefinedId Validation + Bulk User Create</h1>
+                    <p class="page-subtitle">
+                        Tab 1 validates OrgDefinedIds against D2L and exports missing users to CSV.
+                        Tab 2 uploads a CSV and creates users in bulk through the D2L API.
+                    </p>
+                </div>
+            </header>
+
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="check">Check OrgDefinedIds</button>
+                <button class="tab-btn" data-tab="create">Bulk Create Users</button>
+            </div>
+
+            <section id="tab-check" class="tab-content active">
+                <div class="card">
+                    <label for="orgDefinedIdsInput" class="input-label">OrgDefinedId List</label>
+                    <textarea id="orgDefinedIdsInput" placeholder="Paste one OrgDefinedId per line, or comma-separated values."></textarea>
+                    <div class="form-hint">Tip: You can also upload a CSV to auto-fill this list.</div>
+                    <div style="margin-top: var(--spacing-sm);">
+                        <label for="orgDefinedIdFile" class="input-label">Optional CSV Upload</label>
+                        <input id="orgDefinedIdFile" type="file" accept=".csv,text/csv">
+                        <div class="form-hint">Reads the first non-empty column from each row.</div>
+                    </div>
+                    <div class="actions">
+                        <button id="runCheckBtn" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Check IDs</button>
+                        <button id="downloadMissingBtn" class="btn btn-outline" disabled><i class="fa-solid fa-file-csv"></i> Download Missing CSV</button>
+                    </div>
+                    <div id="checkStatus" class="status-box" style="display:none;"></div>
+                </div>
+
+                <div class="card table-wrap" id="checkResultsWrap" style="display:none;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>OrgDefinedId</th>
+                                <th>Status</th>
+                                <th>UserId</th>
+                                <th>UserName</th>
+                                <th>Name</th>
+                            </tr>
+                        </thead>
+                        <tbody id="checkResultsBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="tab-create" class="tab-content">
+                <div class="card">
+                    <label for="bulkCreateFile" class="input-label">Bulk Create CSV</label>
+                    <input id="bulkCreateFile" type="file" accept=".csv,text/csv">
+                    <div class="form-hint">
+                        Columns: OrgDefinedId, FirstName, LastName, UserName, ExternalEmail, RoleId, IsActive, SendCreationEmail.
+                        Required: OrgDefinedId, FirstName, LastName, UserName. RoleId defaults to 101 if blank.
+                    </div>
+                    <div class="actions">
+                        <button id="runCreateBtn" class="btn btn-primary"><i class="fa-solid fa-users"></i> Create Users</button>
+                        <button id="downloadCreateResultsBtn" class="btn btn-outline" disabled><i class="fa-solid fa-download"></i> Download Results CSV</button>
+                    </div>
+                    <div id="createStatus" class="status-box" style="display:none;"></div>
+                </div>
+
+                <div class="card table-wrap" id="createResultsWrap" style="display:none;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>OrgDefinedId</th>
+                                <th>UserName</th>
+                                <th>Status</th>
+                                <th>UserId</th>
+                                <th>Message</th>
+                            </tr>
+                        </thead>
+                        <tbody id="createResultsBody"></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/orgdefinedid-user-loader.js"></script>
+</body>
+
+</html>

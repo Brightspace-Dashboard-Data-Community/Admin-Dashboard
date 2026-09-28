@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reactivate students (IsActive) - D2L Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
+
+    <!-- PapaParse + JSZip -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            margin-left: 0;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            overflow: visible;
+        }
+
+        .back-link:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-2px);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .source-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: var(--spacing-md);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .source-tab {
+            padding: 10px 20px;
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s;
+        }
+
+        .source-tab:hover {
+            color: var(--text-primary);
+        }
+
+        .source-tab.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .source-desc {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-xs);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+            flex-wrap: wrap;
+        }
+
+        .summary-box {
+            margin: var(--spacing-md) 0;
+            padding: var(--spacing-md);
+            background-color: var(--bg-color);
+            border-left: 4px solid var(--primary-color);
+            font-size: var(--font-size-sm);
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .btn-primary,
+        .btn-secondary,
+        .btn-danger {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-secondary {
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: var(--bg-color);
+            border-color: var(--text-primary);
+        }
+
+        .btn-danger {
+            background-color: #b3261e;
+            color: #fff;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            filter: brightness(1.05);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:disabled,
+        .btn-secondary:disabled,
+        .btn-danger:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .card {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .card:last-child {
+            margin-bottom: 0;
+        }
+
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-top: var(--spacing-sm);
+        }
+
+        .checkbox-option {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-option code {
+            font-size: var(--font-size-sm);
+            padding: 2px 6px;
+            background: var(--bg-color);
+            border-radius: var(--radius-sm);
+        }
+
+        #inactiveStudentsTable {
+            width: 100% !important;
+        }
+
+        #inactiveStudentsTable thead th {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-weight: 600;
+            padding: 12px 8px;
+            border-bottom: 2px solid var(--border-color);
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        #inactiveStudentsTable tbody td {
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: top;
+        }
+
+        .mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation (injected via js/sidebar.js) -->
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports & Tools
+                    </a>
+                    <h1 class="page-title">Reactivate students (<code>IsActive</code> = false)</h1>
+                    <p class="page-subtitle">
+                        Students only (<strong>RoleId 101</strong>) with the account flag off in Brightspace. Optionally exclude or strip <code>.retired.</code> usernames, then bulk-reactivate. Already have a UserId list? Use <a href="bulk-user-activation.html">Bulk activate from UserId CSV</a> instead. For staff who were <em>retired</em> via rename, use <strong>Retirement</strong> on Reports &amp; Tools instead.
+                    </p>
+                </div>
+            </header>
+
+            <div class="card">
+                <p style="margin-top: 0; font-weight: 600;">Data source</p>
+                <div class="source-tabs" role="tablist" id="sourceTabList">
+                    <button type="button" class="source-tab active" role="tab" aria-selected="true" data-source="datahub"
+                        onclick="window.switchInactiveStudentsSource('datahub')">Data Hub file</button>
+                    <button type="button" class="source-tab" role="tab" aria-selected="false" data-source="paged"
+                        onclick="window.switchInactiveStudentsSource('paged')">Paged API (org 1001)</button>
+                </div>
+                <p id="sourceDescDataHub" class="source-desc">Uses the latest Data Hub user extract and filters for students where IsActive=false.</p>
+                <p id="sourceDescPaged" class="source-desc" style="display:none;">Fetches inactive users from org 1001 via enrollments API (<strong>isActive=false</strong>), then filters to RoleId 101 (Student).</p>
+
+                <div class="checkbox-row">
+                    <label class="checkbox-option">
+                        <input type="checkbox" id="excludeRetired" name="excludeRetired" checked />
+                        <span>Exclude usernames containing <code>.retired.</code></span>
+                    </label>
+                    <label class="checkbox-option" title="If a username looks like john.doe.retired.2026, this will set it back to john.doe when reactivating.">
+                        <input type="checkbox" id="stripRetiredOnReactivate" name="stripRetiredOnReactivate" checked />
+                        <span>Strip <code>.retired.*</code> from username when reactivating</span>
+                    </label>
+                </div>
+
+                <div class="form-actions">
+                    <button id="fetchBtn" class="btn-primary">
+                        <i class="fas fa-search"></i> Fetch Inactive Students
+                    </button>
+                    <button id="downloadCsv" class="btn-secondary" style="display:none;">
+                        <i class="fas fa-download"></i> Download CSV
+                    </button>
+                    <button id="downloadIds" class="btn-secondary" style="display:none;">
+                        <i class="fas fa-clipboard-list"></i> Download IDs (one per line)
+                    </button>
+                    <button id="reactivateSelected" class="btn-danger" style="display:none;" disabled>
+                        <i class="fas fa-user-check"></i> Reactivate Selected
+                    </button>
+                </div>
+
+                <div id="summary" class="summary-box">No data loaded. Choose a data source and click "Fetch Inactive Students".</div>
+            </div>
+
+            <div class="card">
+                <table id="inactiveStudentsTable" class="display" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="selectAll" title="Select all rows on this page"></th>
+                            <th>UserId</th>
+                            <th>OrgDefinedId</th>
+                            <th>FirstName</th>
+                            <th>LastName</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>IsActive</th>
+                            <th>LastAccessed</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/d2l-api.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <script src="../js/loading-utils.js"></script>
+    <script src="../js/inactive-student-reactivation.js"></script>
+</body>
+
+</html>
+

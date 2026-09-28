@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Missing End Dates - D2L Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
+
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            margin-left: 0;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            overflow: visible;
+        }
+
+        .back-link:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-2px);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .info-section {
+            background-color: var(--surface-color);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .info-section h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: var(--spacing-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .info-section h3 {
+            color: var(--primary-color);
+            margin-top: var(--spacing-lg);
+        }
+
+        .info-box {
+            background-color: var(--bg-color);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-sm);
+            margin: var(--spacing-md) 0;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .warning-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: var(--radius-sm);
+            padding: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+        }
+
+        .input-group {
+            margin-bottom: var(--spacing-md);
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .input-group select {
+            width: 100%;
+            max-width: 400px;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-base);
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+        }
+
+        /* Button Styles - Consistent with design system */
+        .btn-primary,
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: var(--bg-color);
+            border-color: var(--text-primary);
+        }
+
+        .btn-secondary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-md);
+            flex-wrap: wrap;
+        }
+
+        /* Card spacing - consistent spacing between cards */
+        .card {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .card:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation (injected via js/sidebar.js) -->
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports & Tools
+                    </a>
+                    <h1 class="page-title">Courses Missing Start or End Dates</h1>
+                    <p class="page-subtitle">Find and fix courses that are missing start or end dates in D2L.</p>
+                </div>
+            </header>
+
+            <!-- Documentation Section -->
+            <div class="info-section">
+                <h2><i class="fas fa-info-circle"></i> How to Use This Tool</h2>
+
+                <h3>Step 1: Select Semester</h3>
+                <p>Choose the semester you want to audit from the dropdown menu.</p>
+
+                <h3>Step 2: Run Report</h3>
+                <p>Click "Run Report" to scan all courses in the selected semester for missing start or end dates.</p>
+
+                <h3>Step 3: Fix Missing Dates</h3>
+                <p>You can fix missing dates individually or in bulk. End dates are set to end of today, and if start date is missing, it's set to yesterday.</p>
+
+                <div class="warning-box">
+                    <p style="margin: 0 0 var(--spacing-xs) 0;"><strong>⚠️ Important Notes:</strong></p>
+                    <ul style="margin: 0;">
+                        <li>End dates are set to the end of today (00:01 UTC)</li>
+                        <li>If a course is missing both dates, start date is set to yesterday</li>
+                        <li>Date changes are permanent - ensure you want to update before bulk fixing</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="input-group">
+                    <label for="semesterSelect">
+                        <i class="fas fa-calendar-alt"></i> Semester:
+                    </label>
+                    <select id="semesterSelect">
+                        <option value="">Loading semesters...</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button id="runReportBtn" class="btn-primary">
+                        <i class="fas fa-play"></i> Run Report
+                    </button>
+                    <button id="bulkFixBtn" class="btn-secondary" style="display:none;">
+                        <i class="fas fa-tools"></i> Bulk Fix All Missing Dates
+                    </button>
+                    <button id="downloadBtn" class="btn-secondary" style="display:none;">
+                        <i class="fas fa-download"></i> Download CSV
+                    </button>
+                </div>
+
+                <!-- Loading bar is injected here by LoadingUtils.createLoadingBar in missing-end-date.js -->
+            </div>
+
+            <div id="report-container"></div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <!-- D2L API - Must be loaded first -->
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/semester-config.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <script src="../js/loading-utils.js"></script>
+    <script src="../js/missing-end-date.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module Distribution Tools - D2L Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/forms.css">
+    <link rel="stylesheet" href="../css/tables.css">
+</head>
+<body>
+    <div class="app-container">
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle"><button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button></div>
+                <div>
+                    <a href="../reports-tools.html" style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; background-color:#f0f0f0; color:var(--text-primary); text-decoration:none; border-radius:4px; font-size:13px; font-weight:500; margin-bottom:var(--spacing-sm);"><i class="fa-solid fa-arrow-left"></i> Back to Reports & Tools</a>
+                    <h1 class="page-title">Module Distribution Tools</h1>
+                    <p class="card-subtitle">CSV copy, semester copy, topic pushes, and module cleanup with dropdown-assisted source selection.</p>
+                </div>
+            </header>
+
+            <div class="card">
+                <div class="border-l-warning mb-4 text-sm">
+                    Source course lookup now auto-populates course code/name and module dropdown. Semester operations skip offerings with MERGED in name or CXLD in course code.
+                </div>
+
+                <div class="form-actions mb-4">
+                    <button class="tab-btn btn btn-primary btn-sm active" data-tab="tab-csv">CSV Copy</button>
+                    <button class="tab-btn btn btn-outline btn-sm" data-tab="tab-semester">Semester Copy</button>
+                    <button class="tab-btn btn btn-outline btn-sm" data-tab="tab-topics">Push Topic Changes</button>
+                    <button class="tab-btn btn btn-outline btn-sm" data-tab="tab-delete-sem">Delete Module by Semester</button>
+                    <button class="tab-btn btn btn-outline btn-sm" data-tab="tab-delete-csv">Delete Module by CSV</button>
+                    <button class="tab-btn btn btn-outline btn-sm" data-tab="tab-report-sem">Module Presence Report</button>
+                </div>
+                <div class="mb-4">
+                    <h2 id="activeTabTitle" class="card-title">CSV Copy</h2>
+                    <p id="activeTabSubtitle" class="card-subtitle">Copy source module components to a list of target courses via CSV.</p>
+                </div>
+
+                <section id="tab-csv" class="tab-panel active">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="csvSourceCourseId">Source Course OrgUnitId</label>
+                            <input id="csvSourceCourseId" class="form-control" type="text" inputmode="numeric" placeholder="e.g. 3009837">
+                            <div id="csvSourceInfo" class="form-text"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="csvSourceModuleSelect">Source Module</label>
+                            <select id="csvSourceModuleSelect" class="form-control"><option value="">Select source course first</option></select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="csvTargetsFile">CSV of Target Course OrgUnitIds</label>
+                        <input id="csvTargetsFile" class="form-control" type="file" accept=".csv,text/csv">
+                    </div>
+                    <div class="form-actions">
+                        <span class="badge badge-primary">Content</span><span class="badge badge-primary">Quizzes</span><span class="badge badge-primary">QuestionLibrary</span><span class="badge badge-primary">CourseFiles</span><span class="badge badge-primary">Links</span><span class="badge badge-primary">LtiLink</span><span class="badge badge-primary">LtiTP</span>
+                    </div>
+                    <div class="form-actions">
+                        <button id="csvRunBtn" class="btn btn-primary"><i class="fa-solid fa-play"></i> Start CSV Copy</button>
+                        <button id="csvResetBtn" class="btn btn-outline"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+                        <button id="downloadCsvLogBtn" class="btn btn-outline" disabled><i class="fa-solid fa-download"></i> Download CSV</button>
+                        <span id="csvBusy" class="text-muted text-sm" hidden>Working...</span>
+                    </div>
+                    <div id="csvStatus" class="form-text mb-2">Ready.</div>
+                    <div id="csvLog" class="card"></div>
+                </section>
+
+                <section id="tab-semester" class="tab-panel">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="semSourceCourseId">Source Course OrgUnitId</label>
+                            <input id="semSourceCourseId" class="form-control" type="text" inputmode="numeric">
+                            <div id="semSourceInfo" class="form-text"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="semSourceModuleSelect">Source Module</label>
+                            <select id="semSourceModuleSelect" class="form-control"><option value="">Select source course first</option></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="semesterSelect">Semester</label>
+                            <select id="semesterSelect" class="form-control"><option value="">Loading semesters...</option></select>
+                            <div class="form-text">MERGED/CXLD offerings are automatically skipped.</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="semParallelSelect">Parallel Workers</label>
+                            <select id="semParallelSelect" class="form-control">
+                                <option value="1">1 (Sequential - safest)</option>
+                                <option value="2">2</option>
+                                <option value="3" selected>3 (Recommended)</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select>
+                            <div class="form-text">Higher values are faster but can hit API rate limits.</div>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button id="semLoadBtn" class="btn btn-outline"><i class="fa-solid fa-list"></i> Preview Semester Targets</button>
+                        <button id="semRunBtn" class="btn btn-primary"><i class="fa-solid fa-play"></i> Start Semester Copy</button>
+                        <button id="downloadSemLogBtn" class="btn btn-outline" disabled><i class="fa-solid fa-download"></i> Download CSV</button>
+                        <span id="semBusy" class="text-muted text-sm" hidden>Working...</span>
+                    </div>
+                    <div id="semStatus" class="form-text mb-2">Ready.</div>
+                    <div id="semLog" class="card"></div>
+                </section>
+
+                <section id="tab-topics" class="tab-panel">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="topicSourceCourseId">Source Course OrgUnitId</label>
+                            <input id="topicSourceCourseId" class="form-control" type="text" inputmode="numeric">
+                            <div id="topicSourceInfo" class="form-text"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="topicSourceModuleSelect">Source Module</label>
+                            <select id="topicSourceModuleSelect" class="form-control"><option value="">Select source course first</option></select>
+                        </div>
+                    </div>
+                    <div class="inline-actions">
+                        <button id="loadTopicsBtn" class="btn btn-outline"><i class="fa-solid fa-arrows-rotate"></i> Load Topics from Source Module</button>
+                        <button id="selectAllTopicsBtn" class="btn btn-outline btn-sm">Select All</button>
+                        <button id="selectNoTopicsBtn" class="btn btn-outline btn-sm">Clear</button>
+                    </div>
+                    <div id="topicsList" class="module-list mb-4"></div>
+                    <div class="border-l-warning mb-4 text-sm">Choose target scope by semester and/or CSV. Semester targets skip MERGED/CXLD.</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="topicSemesterSelect">Semester (optional)</label>
+                            <select id="topicSemesterSelect" class="form-control"><option value="">None</option></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="topicTargetsCsv">Target CSV (optional)</label>
+                            <input id="topicTargetsCsv" class="form-control" type="file" accept=".csv,text/csv">
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button id="pushTopicsBtn" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Push Selected Topic Changes</button>
+                        <button id="downloadTopicLogBtn" class="btn btn-outline" disabled><i class="fa-solid fa-download"></i> Download CSV</button>
+                        <span id="topicBusy" class="text-muted text-sm" hidden>Working...</span>
+                    </div>
+                    <div id="topicStatus" class="form-text mb-2">Ready.</div>
+                    <div id="topicLog" class="card"></div>
+                </section>
+
+                <section id="tab-report-sem" class="tab-panel">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="reportSourceCourseId">Source Course OrgUnitId</label>
+                            <input id="reportSourceCourseId" class="form-control" type="text" inputmode="numeric">
+                            <div id="reportSourceInfo" class="form-text"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="reportSourceModuleSelect">Source Module</label>
+                            <select id="reportSourceModuleSelect" class="form-control"><option value="">Select source course first</option></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="reportSemesterSelect">Semester</label>
+                            <select id="reportSemesterSelect" class="form-control"><option value="">Loading semesters...</option></select>
+                            <div class="form-text">Checks eligible offerings (MERGED/CXLD skipped).</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="reportParallelSelect">Parallel Workers</label>
+                            <select id="reportParallelSelect" class="form-control">
+                                <option value="1">1 (Sequential)</option>
+                                <option value="2">2</option>
+                                <option value="3" selected>3 (Recommended)</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button id="runReportSemBtn" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Run Module Presence Report</button>
+                        <button id="downloadReportSemBtn" class="btn btn-outline" disabled><i class="fa-solid fa-download"></i> Download CSV</button>
+                        <span id="reportSemBusy" class="text-muted text-sm" hidden>Working...</span>
+                    </div>
+                    <div id="reportSemStatus" class="form-text mb-2">Ready.</div>
+                    <div id="reportSemLog" class="card"></div>
+                </section>
+
+                <section id="tab-delete-sem" class="tab-panel">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="delSemSourceCourseId">Source Course OrgUnitId</label>
+                            <input id="delSemSourceCourseId" class="form-control" type="text" inputmode="numeric">
+                            <div id="delSemSourceInfo" class="form-text"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="delSemSourceModuleSelect">Source Module</label>
+                            <select id="delSemSourceModuleSelect" class="form-control"><option value="">Select source course first</option></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="delSemesterSelect">Semester</label>
+                            <select id="delSemesterSelect" class="form-control"><option value="">Loading semesters...</option></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="delSemParallelSelect">Parallel Workers</label>
+                            <select id="delSemParallelSelect" class="form-control">
+                                <option value="1">1 (Sequential)</option>
+                                <option value="2">2</option>
+                                <option value="3" selected>3 (Recommended)</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="text-danger text-sm mb-4">Deletes module by exact source module name match in each target course.</div>
+                    <div class="form-actions">
+                        <button id="deleteSemModuleBtn" class="btn btn-outline"><i class="fa-solid fa-trash"></i> Delete Module from Semester</button>
+                        <button id="downloadDelSemLogBtn" class="btn btn-outline" disabled><i class="fa-solid fa-download"></i> Download CSV</button>
+                        <span id="delSemBusy" class="text-muted text-sm" hidden>Working...</span>
+                    </div>
+                    <div id="delSemStatus" class="form-text mb-2">Ready.</div>
+                    <div id="delSemLog" class="card"></div>
+                </section>
+
+                <section id="tab-delete-csv" class="tab-panel">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="delCsvSourceCourseId">Source Course OrgUnitId</label>
+                            <input id="delCsvSourceCourseId" class="form-control" type="text" inputmode="numeric">
+                            <div id="delCsvSourceInfo" class="form-text"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="delCsvSourceModuleSelect">Source Module</label>
+                            <select id="delCsvSourceModuleSelect" class="form-control"><option value="">Select source course first</option></select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="delCsvTargetsFile">CSV of Target Course OrgUnitIds</label>
+                        <input id="delCsvTargetsFile" class="form-control" type="file" accept=".csv,text/csv">
+                    </div>
+                    <div class="text-danger text-sm mb-4">Deletes module by exact source module name match in each target listed in CSV.</div>
+                    <div class="form-actions">
+                        <button id="deleteCsvModuleBtn" class="btn btn-outline"><i class="fa-solid fa-trash"></i> Delete Module from CSV Targets</button>
+                        <button id="downloadDelCsvLogBtn" class="btn btn-outline" disabled><i class="fa-solid fa-download"></i> Download CSV</button>
+                        <span id="delCsvBusy" class="text-muted text-sm" hidden>Working...</span>
+                    </div>
+                    <div id="delCsvStatus" class="form-text mb-2">Ready.</div>
+                    <div id="delCsvLog" class="card"></div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/semester-config.js"></script>
+    <script src="../js/copy-course-module.js?v=20260424-1"></script>
+</body>
+</html>

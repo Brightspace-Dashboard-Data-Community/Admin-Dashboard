@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>End of Semester Course Report - D2L Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/end-of-semester-report.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports &amp; Tools
+                    </a>
+                    <h1 class="page-title">End of Semester Course Report <span class="beta-badge">WIP</span></h1>
+                    <p class="page-subtitle">Work-in-Progress. Class-level retrospective of grades, access, content, due dates, quizzes, discussions, and assignments, with next-term suggestions. No student names. Last-access timing is measured from the course end date, not from today. This copy requests Content Progress and Learner Usage from Data Hub (Advanced Data Sets), which faculty cannot execute.</p>
+                </div>
+            </header>
+
+            <div class="card">
+                <h2><i class="fas fa-chart-pie"></i> Build a report</h2>
+                <p class="tool-meta">
+                    Enter a course offering OrgUnit ID. The report pulls Brightspace gradebook, assignment, quiz, discussion, content, and last-access data,
+                    then also creates Data Hub jobs for Content Progress and Learner Usage, unzips the CSV in the browser, and matches rows to this course.
+                    Names from those files are not shown. If Data Hub is not permitted, the report falls back to Brightspace content APIs.
+                </p>
+                <div class="ferpa-note" role="note">
+                    <strong>FERPA:</strong> Even without names, this is a class education record. Generate and download only for legitimate educational purposes at Your College. Do not post or share the PDF outside that use.
+                </div>
+
+                <form id="eosForm" novalidate>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="eosCourseOu">OrgUnit ID</label>
+                            <input type="text" id="eosCourseOu" inputmode="numeric" autocomplete="off" placeholder="Enter course OrgUnit ID" required>
+                        </div>
+                        <div class="input-group action">
+                            <label>&nbsp;</label>
+                            <div class="cr-actions">
+                                <button type="submit" class="btn-primary" id="eosRunBtn">
+                                    <i class="fas fa-chart-pie" aria-hidden="true"></i>
+                                    <span id="eosRunLabel">Generate report</span>
+                                </button>
+                                <button type="button" class="btn-secondary" id="eosPdfBtn" hidden>
+                                    <i class="fas fa-file-pdf" aria-hidden="true"></i>
+                                    Download PDF
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <p class="course-meta" id="eosCourseMeta"></p>
+                <div id="eosMessage" class="message-container" style="display:none;" role="status"></div>
+            </div>
+
+            <div class="card" id="eosPreviewSection" hidden>
+                <h2 id="eosPreviewTitle">Course retrospective</h2>
+                <nav class="eos-jump" id="eosJump" aria-label="Report sections" hidden></nav>
+                <div id="eosPreview" class="cr-preview"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/semester-config.js"></script>
+    <script src="../js/pdf-brand.js"></script>
+    <script src="../js/data-hub-ads.js"></script>
+    <script src="../js/end-of-semester-report.js"></script>
+</body>
+
+</html>

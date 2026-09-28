@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Merge Verifier - D2L Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
+
+    <!-- PapaParse -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            margin-left: 0;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            overflow: visible;
+        }
+
+        .back-link:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-2px);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .info-section {
+            background-color: var(--surface-color);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .info-section h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: var(--spacing-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .info-section h3 {
+            color: var(--primary-color);
+            margin-top: var(--spacing-lg);
+        }
+
+        .info-box {
+            background-color: var(--bg-color);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-sm);
+            margin: var(--spacing-md) 0;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .input-group {
+            margin-bottom: var(--spacing-md);
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .input-group select,
+        .input-group input[type="file"] {
+            width: 100%;
+            max-width: 500px;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-base);
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+        }
+
+        #log {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            padding: var(--spacing-md);
+            margin-top: var(--spacing-md);
+            background: var(--bg-color);
+            border-radius: var(--radius-sm);
+            font-family: monospace;
+            font-size: var(--font-size-sm);
+        }
+
+        /* Button Styles - Consistent with design system */
+        .btn-primary,
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: var(--bg-color);
+            border-color: var(--text-primary);
+        }
+
+        .btn-secondary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-md);
+            flex-wrap: wrap;
+        }
+
+        /* Card spacing - consistent spacing between cards */
+        .card {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .card:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Verification result styling */
+        #results {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+        }
+
+        #results details {
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background: var(--surface-color);
+            margin-top: var(--spacing-md);
+            overflow: hidden;
+        }
+
+        #results summary {
+            list-style: none;
+            cursor: pointer;
+            padding: 12px 14px;
+            background: var(--bg-color);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid transparent;
+        }
+
+        #results details[open] summary {
+            border-bottom-color: var(--border-color);
+        }
+
+        #results summary::-webkit-details-marker {
+            display: none;
+        }
+
+        #results .pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 24px;
+            height: 24px;
+            padding: 0 8px;
+            border-radius: 999px;
+            background: var(--primary-color);
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .results-table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: var(--font-size-sm);
+            min-width: 1400px;
+        }
+
+        .results-table th,
+        .results-table td {
+            border: 1px solid var(--border-color);
+            padding: 8px 10px;
+            vertical-align: top;
+            text-align: left;
+        }
+
+        .results-table thead th {
+            background: var(--primary-color);
+            color: #fff;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            white-space: nowrap;
+        }
+
+        .results-table tbody tr:nth-child(even) {
+            background: var(--bg-color);
+        }
+
+        .results-table .alerts-cell {
+            color: #9b1c1c;
+            font-weight: 600;
+        }
+
+        .results-table .failure-reason-cell {
+            min-width: 280px;
+            max-width: 420px;
+            white-space: normal;
+            color: #9b1c1c;
+        }
+
+        #results .actions {
+            padding: 12px 14px;
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-color);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation (injected via js/sidebar.js) -->
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports & Tools
+                    </a>
+                    <h1 class="page-title">Course Merge Verifier</h1>
+                    <p class="page-subtitle">Verify course merge requests by checking course codes, Delta ID Number, enrollment status (ACTIVE/CXLD), and instructor assignments.</p>
+                </div>
+            </header>
+
+            <!-- Documentation Section -->
+            <div class="info-section">
+                <h2><i class="fas fa-info-circle"></i> How to Use This Tool</h2>
+
+                <h3>Step 1: Prepare Zoho CSV File</h3>
+                <p>Export the course merge request data from Zoho as a CSV file.</p>
+                <div class="info-box">
+                    <p style="margin: 0 0 var(--spacing-xs) 0;"><strong>Required CSV Columns (case-insensitive):</strong></p>
+                    <ul style="margin: 0.5rem 0 0 1.5rem;">
+                        <li><code>Name</code> - Submitter's name</li>
+                        <li><code>Email</code> - Submitter's email</li>
+                        <li><code>Delta ID Number</code> - Instructor's Delta ID (matched against D2L OrgDefinedId)</li>
+                        <li><code>Division</code> - Division/department</li>
+                        <li><code>Master course</code> - The master course code</li>
+                        <li><code>Merging course…</code> - One or more columns starting with "Merging course" containing course codes to merge</li>
+                    </ul>
+                    <p style="margin: var(--spacing-sm) 0 0 0;"><strong>Each row is verified against D2L</strong> with Yes/No columns for: Courses Found, Courses Active, Not CXLD, User Resolved, Delta ID Match, and Instructor Role (102). <strong>Pass</strong> is Yes only when every check passes. Failed rows include a <strong>Failure Reason</strong> explaining which check(s) failed and on which course.</p>
+                </div>
+
+                <h3>Step 2: Select Semester and Upload CSV</h3>
+                <p>Choose the semester from the dropdown, upload your Zoho CSV file, and click "Run Verification" to verify merge requests.</p>
+            </div>
+
+            <div class="card">
+                <div class="input-group">
+                    <label for="semesterSelect">Semester:</label>
+                    <select id="semesterSelect">
+                        <option value="">Loading...</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="csvFile">Upload Zoho CSV File:</label>
+                    <input type="file" id="csvFile" accept=".csv">
+                </div>
+                <div class="form-actions">
+                    <button id="runBtn" class="btn-primary">
+                        <i class="fas fa-play"></i> Run Verification
+                    </button>
+                    <button id="downloadAllBtn" class="btn-secondary" disabled>
+                        <i class="fas fa-download"></i> Download Results CSV
+                    </button>
+                    <button id="downloadLogBtn" class="btn-secondary" disabled>
+                        <i class="fas fa-download"></i> Download Log
+                    </button>
+                </div>
+
+                <div id="loadingContainer"></div>
+                <div id="phaseLabel" style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--spacing-sm);"></div>
+            </div>
+
+            <div class="card" id="results" style="display: none;"></div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <!-- D2L API - Must be loaded first -->
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/semester-config.js"></script>
+    <script src="../js/loading-utils.js"></script>
+    <script src="../js/course-merge-verifier.js"></script>
+</body>
+
+</html>

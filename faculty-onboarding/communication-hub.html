@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Communication Hub - D2L Admin</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/forms.css">
+    <link rel="stylesheet" href="css/fsp-common.css">
+</head>
+<body>
+    <div class="app-container">
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn" type="button" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="command-center.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Command Center</a>
+                    <h1 class="page-title">Communication Hub <span class="beta-badge">Beta</span></h1>
+                    <p class="page-subtitle">Pre-filled Outlook email templates for faculty onboarding outreach.</p>
+                </div>
+            </header>
+
+            <div id="status" class="status-message" role="status"></div>
+
+            <div class="fsp-grid-2">
+                <div class="fsp-card card-static">
+                    <h2>Select Faculty</h2>
+                    <div class="form-group">
+                        <label class="form-label" for="searchInput">Search</label>
+                        <input id="searchInput" class="form-control" type="text" placeholder="Search faculty records">
+                    </div>
+                    <div id="facultyList" class="fsp-results" style="max-height:300px;"></div>
+                </div>
+                <div class="fsp-card card-static">
+                    <h2>Email Template</h2>
+                    <div class="form-group">
+                        <label class="form-label" for="templateSelect">Template</label>
+                        <select id="templateSelect" class="form-control"></select>
+                    </div>
+                    <div class="toolbar">
+                        <button id="generateBtn" class="btn btn-primary" type="button">Generate Email</button>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="emailTo">To</label>
+                        <input id="emailTo" class="form-control email-preview" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="emailSubject">Subject</label>
+                        <input id="emailSubject" class="form-control email-preview" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="emailBody">Body</label>
+                        <textarea id="emailBody" class="form-control email-preview" readonly rows="12"></textarea>
+                    </div>
+                    <div class="toolbar">
+                        <button id="openOutlookBtn" class="btn btn-primary" type="button">Open in Outlook</button>
+                        <button id="copyBodyBtn" class="btn btn-outline" type="button">Copy Body</button>
+                        <button id="logSentBtn" class="btn btn-success" type="button">Log as Sent &amp; Save</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="js/faculty-record-service.js"></script>
+    <script src="js/email-templates.js"></script>
+    <script>
+    const state = { records: [], selected: null, templateKey: 'welcome' };
+
+    function showStatus(msg, type) {
+      const el = document.getElementById('status');
+      el.className = `status-message show ${type}`;
+      el.innerHTML = msg;
+    }
+
+    async function init() {
+      showStatus('Loading faculty records…', 'info');
+      await FacultyRecordService.loadConfig();
+      await FacultyEmailTemplates.loadTemplates();
+      state.records = await FacultyRecordService.loadAllRecords();
+      state.records = state.records.filter(r => r.folder !== FacultyRecordService.FOLDER_FINISHED);
+      renderList();
+      populateTemplates();
+      bindEvents();
+      showStatus(`Loaded ${state.records.length} active record(s).`, 'success');
+    }
+
+    function populateTemplates() {
+      const sel = document.getElementById('templateSelect');
+      const keys = Object.keys(FacultyEmailTemplates._templates || {});
+      sel.innerHTML = keys.map(k => {
+        const label = FacultyEmailTemplates._templates[k].label || k;
+        return `<option value="${k}">${label}</option>`;
+      }).join('');
+    }
+
+    function renderList() {
+      const q = (document.getElementById('searchInput').value || '').toLowerCase();
+      const filtered = state.records.filter(r => {
+        const d = r.data;
+        return !q || `${d.firstName} ${d.lastName} ${d.orgDefinedId}`.toLowerCase().includes(q);
+      });
+      document.getElementById('facultyList').innerHTML = filtered.map((r, i) => `
+        <div class="fsp-result-item" data-i="${i}">
+          <strong>${r.data.firstName} ${r.data.lastName}</strong>
+          <div class="fsp-meta">${r.data.orgDefinedId} · ${r.data.email || 'no email'}</div>
+        </div>
+      `).join('') || '<div class="fsp-meta" style="padding:12px;">No records found.</div>';
+      document.getElementById('facultyList').querySelectorAll('.fsp-result-item').forEach(el => {
+        el.addEventListener('click', () => {
+          state.selected = filtered[Number(el.dataset.i)];
+          document.querySelectorAll('.fsp-result-item').forEach(x => x.classList.remove('active'));
+          el.classList.add('active');
+        });
+      });
+    }
+
+    function generateEmail() {
+      if (!state.selected) { showStatus('Select a faculty member first.', 'error'); return; }
+      state.templateKey = document.getElementById('templateSelect').value;
+      const rendered = FacultyEmailTemplates.render(state.templateKey, state.selected.data);
+      document.getElementById('emailTo').value = rendered.to;
+      document.getElementById('emailSubject').value = rendered.subject;
+      document.getElementById('emailBody').value = rendered.body;
+      showStatus(`Generated "${rendered.label}" for ${state.selected.data.firstName}.`, 'success');
+    }
+
+    async function logSent() {
+      if (!state.selected) return;
+      try {
+        const record = FacultyRecordService.logEmail({ ...state.selected.data }, state.templateKey, 'Admin');
+        const tpl = FacultyEmailTemplates._templates[state.templateKey];
+        if (tpl) {
+          FacultyRecordService.getPhases().forEach(phase => {
+            (phase.items || []).forEach(item => {
+              if (typeof item === 'object' && item.type === 'email' && item.template === state.templateKey) {
+                if (!record.lifecycle[phase.key]) record.lifecycle[phase.key] = {};
+                record.lifecycle[phase.key][item.label] = true;
+              }
+            });
+          });
+        }
+        await FacultyRecordService.saveRecord(record, state.selected.fileName, state.selected.folder);
+        showStatus('Email logged and record saved.', 'success');
+      } catch (err) {
+        showStatus(err.message, 'error');
+      }
+    }
+
+    function bindEvents() {
+      document.getElementById('searchInput').addEventListener('input', renderList);
+      document.getElementById('generateBtn').addEventListener('click', generateEmail);
+      document.getElementById('openOutlookBtn').addEventListener('click', () => {
+        FacultyEmailTemplates.openInOutlook(
+          document.getElementById('emailTo').value,
+          document.getElementById('emailSubject').value,
+          document.getElementById('emailBody').value
+        );
+      });
+      document.getElementById('copyBodyBtn').addEventListener('click', async () => {
+        await FacultyEmailTemplates.copyToClipboard(document.getElementById('emailBody').value);
+        showStatus('Body copied to clipboard.', 'success');
+      });
+      document.getElementById('logSentBtn').addEventListener('click', logSent);
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

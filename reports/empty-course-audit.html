@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empty Course Audit - D2L Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
+
+    <!-- PapaParse for CSV -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            margin-left: 0;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            overflow: visible;
+        }
+
+        .back-link:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-2px);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .info-section {
+            background-color: var(--surface-color);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .info-section h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: var(--spacing-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .info-section h3 {
+            color: var(--primary-color);
+            margin-top: var(--spacing-lg);
+        }
+
+        .info-box {
+            background-color: var(--bg-color);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-sm);
+            margin: var(--spacing-md) 0;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .warning-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: var(--radius-sm);
+            padding: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+        }
+
+        .controls-row {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .field label {
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .field input[type="file"],
+        .field select,
+        .field input[type="text"] {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-base);
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .field input[type="file"] {
+            padding: 8px;
+            cursor: pointer;
+            font-size: var(--font-size-sm);
+        }
+
+        .field input[type="file"]::file-selector-button {
+            padding: 8px 16px;
+            margin-right: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .field input[type="file"]::file-selector-button:hover {
+            background-color: var(--bg-color);
+            border-color: var(--primary-color);
+        }
+
+        /* Button Styles - Consistent with design system */
+        .btn-primary,
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: var(--bg-color);
+            border-color: var(--text-primary);
+        }
+
+        .btn-secondary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status-text {
+            margin-top: var(--spacing-md);
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .log-output {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            white-space: pre-wrap;
+            background: #0b1021;
+            color: #cde3ff;
+            border-radius: var(--radius-sm);
+            padding: var(--spacing-md);
+            max-height: 300px;
+            overflow: auto;
+            font-size: var(--font-size-sm);
+        }
+
+        .pager {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-md);
+            flex-wrap: wrap;
+        }
+
+        .pager .stats {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+
+        .table-note {
+            color: var(--text-secondary);
+            font-size: var(--font-size-sm);
+            margin-top: var(--spacing-md);
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: var(--font-size-xs);
+            border: 1px solid var(--border-color);
+            font-weight: 500;
+        }
+
+        .pill.empty {
+            background: #ffeae8;
+            color: #7e1100;
+            border-color: #ffc6bf;
+        }
+
+        .pill.ok {
+            background: #e9f7ef;
+            color: #0c5d2a;
+            border-color: #c7edd6;
+        }
+
+        table.display {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--surface-color);
+        }
+
+        table.display th,
+        table.display td {
+            border: 1px solid var(--border-color);
+            padding: var(--spacing-sm);
+            text-align: left;
+            font-size: var(--font-size-sm);
+        }
+
+        table.display th {
+            background: var(--bg-color);
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            font-weight: 600;
+        }
+
+        table.display tbody tr:hover {
+            background-color: var(--bg-color);
+        }
+
+        @media (max-width: 768px) {
+            .controls-row {
+                flex-direction: column;
+            }
+
+            .field {
+                width: 100%;
+            }
+        }
+
+        /* Card spacing - consistent spacing between cards */
+        .card {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .card:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation (injected via js/sidebar.js) -->
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports & Tools
+                    </a>
+                    <h1 class="page-title">Empty Course Audit</h1>
+                    <p class="page-subtitle">
+                        Audits selected semester's course offerings (excluding MERGED, CXLD, Sandbox) for news, content, and grades.
+                    </p>
+                </div>
+            </header>
+
+            <!-- Documentation Section -->
+            <div class="info-section">
+                <h2><i class="fas fa-info-circle"></i> How to Use This Tool</h2>
+
+                <h3>Step 1: Prepare Simplified Courses CSV (Optional)</h3>
+                <p>The CSV is optional but recommended. It provides start/end dates (and faculty name as a fallback). If not provided, the audit will still run but start/end dates will be blank.</p>
+                <div class="info-box">
+                    <p style="margin: 0 0 var(--spacing-xs) 0;"><strong>CSV Format Requirements:</strong></p>
+                    <ul style="margin: 0;">
+                        <li>Combined course code: <code>Combined Depts, Course Number, Section, Term</code> — e.g. <code>ART-111-FA100-26/FA</code></li>
+                        <li>Dates: <code>Start Date</code> and <code>End Date</code> (prefixed names like <code>course sec meetings simplified → Start Date</code> are fine)</li>
+                        <li>Optional: <code>faculty_name</code> (used only if D2L has no instructor on the classlist)</li>
+                    </ul>
+                    <p style="margin: var(--spacing-sm) 0 0 0; font-size: var(--font-size-sm); color: var(--text-secondary);">The term suffix (<code>-26/FA</code>) is stripped when matching D2L. Legacy <code>SEC_NAME</code> / <code>SEC_START_DATE</code> / <code>SEC_END_DATE</code> files still work.</p>
+                </div>
+
+                <h3>Step 2: Run the Audit</h3>
+                <ol>
+                    <li><strong>Upload CSV (Optional):</strong> If you have the simplified courses CSV, upload it using the file input</li>
+                    <li><strong>Select Semester:</strong> Choose the semester you want to audit from the dropdown</li>
+                    <li><strong>Click "Run Audit":</strong> The tool will check each course for news, content topics, and grade items (ignoring Final Calculated Grade and Final Adjusted Grade)</li>
+                </ol>
+
+                <h3>Step 3: Review Results</h3>
+                <p>The results table shows course status, instructor information, and dates. You can paginate through results and download the complete audit as CSV.</p>
+
+                <div class="warning-box">
+                    <p style="margin: 0 0 var(--spacing-xs) 0;"><strong>⚠️ Important Notes:</strong></p>
+                    <ul style="margin: 0;">
+                        <li>A course is <strong>Empty</strong> only when it has no news, no content topics, and no grade items besides Final Calculated Grade / Final Adjusted Grade. The preloaded <strong>Student Success Modules</strong> folder is ignored.</li>
+                        <li>Courses are checked in batches - results appear incrementally</li>
+                        <li>Instructor role is identified as RoleId <strong>102</strong> (Instructor)</li>
+                        <li>MERGED, CXLD, and Sandbox courses are automatically excluded</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Tool Interface -->
+            <div class="card">
+                <h2 style="margin-top: 0; color: var(--primary-color);">Tool Interface</h2>
+                <div class="controls-row">
+                    <div class="field">
+                        <label for="csvFile">
+                            <i class="fas fa-file-csv"></i> Simplified Courses CSV (Optional):
+                        </label>
+                        <input id="csvFile" type="file" accept=".csv">
+                    </div>
+                    <div class="field">
+                        <label for="semesterSelect">
+                            <i class="fas fa-calendar-alt"></i> Semester:
+                        </label>
+                        <select id="semesterSelect">
+                            <option value="">Loading semesters…</option>
+                        </select>
+                    </div>
+                    <div class="field" style="flex: 1 1 auto;">
+                        <label>&nbsp;</label>
+                        <div style="display: flex; gap: var(--spacing-sm);">
+                            <button id="loadBtn" class="btn-primary">
+                                <i class="fas fa-play"></i> Run Audit
+                            </button>
+                            <button id="downloadBtn" class="btn-secondary">
+                                <i class="fas fa-download"></i> Download CSV
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div id="status" class="status-text">Status: initializing…</div>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-top: 0;">Log Output</h3>
+                <div id="log" class="log-output" aria-label="Log output"></div>
+            </div>
+
+            <div class="card" id="tableCard" style="display: none;">
+                <div class="controls-row" style="justify-content: space-between; align-items: center;">
+                    <div class="field">
+                        <label for="pageSize">Rows per page</label>
+                        <select id="pageSize">
+                            <option>25</option>
+                            <option>50</option>
+                            <option>100</option>
+                            <option>250</option>
+                        </select>
+                    </div>
+                    <div class="pager">
+                        <button id="prevBtn" class="btn-secondary">&larr; Prev</button>
+                        <span class="stats" id="pageStats">Page 1 / 1</span>
+                        <button id="nextBtn" class="btn-secondary">Next &rarr;</button>
+                    </div>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table id="resultTable" class="display">
+                        <thead>
+                            <tr>
+                                <th>Semester</th>
+                                <th>OrgUnitId</th>
+                                <th>Course Code</th>
+                                <th>Empty?</th>
+                                <th>Has News</th>
+                                <th>Has Content</th>
+                                <th>Has Grades</th>
+                                <th>Instructor Last Access</th>
+                                <th>Instructor Name(s)</th>
+                                <th>Instructor Email(s)</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <div class="pager" style="margin-top: var(--spacing-md);">
+                    <button id="prevBtn2" class="btn-secondary">&larr; Prev</button>
+                    <span class="stats" id="pageStats2">Page 1 / 1</span>
+                    <button id="nextBtn2" class="btn-secondary">Next &rarr;</button>
+                </div>
+
+                <div class="table-note">
+                    Instructor role assumed as RoleId <strong>102</strong>. "Empty" means Content root returns <code>null</code> or an empty array, and no News, Overview, or Schedule items exist.
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <!-- D2L API - Must be loaded first -->
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/semester-config.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <script src="../js/loading-utils.js"></script>
+    <script src="../js/empty-course-audit.js"></script>
+</body>
+
+</html>

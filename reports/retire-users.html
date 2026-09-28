@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retire accounts (bulk) - D2L Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <!-- PapaParse for CSV -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            margin-left: 0;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            overflow: visible;
+        }
+
+        .back-link:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-2px);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .input-row {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            flex-wrap: wrap;
+        }
+
+        .input-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .input-group input[type="file"],
+        .input-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-base);
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+            flex-wrap: wrap;
+        }
+
+        .summary-box {
+            margin: var(--spacing-md) 0;
+            padding: var(--spacing-md);
+            background-color: var(--bg-color);
+            border-left: 4px solid var(--primary-color);
+            font-size: var(--font-size-sm);
+            color: var(--text-primary);
+        }
+
+        .warning-box {
+            margin: var(--spacing-md) 0;
+            padding: var(--spacing-md);
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            font-size: var(--font-size-sm);
+            color: #856404;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: var(--bg-color);
+            border-color: var(--text-primary);
+        }
+
+        .btn-secondary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .card {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .card:last-child {
+            margin-bottom: 0;
+        }
+
+        #previewTable {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        #previewTable thead th {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-weight: 600;
+            padding: 12px 8px;
+            border-bottom: 2px solid var(--border-color);
+            text-align: left;
+        }
+
+        #previewTable tbody td {
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        #previewTable tbody tr:nth-child(even) {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        .results-log {
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: ui-monospace, monospace;
+            font-size: 12px;
+            padding: var(--spacing-md);
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .results-log .ok { color: #0a6b0a; }
+        .results-log .err { color: #c00; }
+        .results-log .skip { color: #666; }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation (injected via js/sidebar.js) -->
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports & Tools
+                    </a>
+                    <h1 class="page-title">Retire accounts (bulk)</h1>
+                    <p class="page-subtitle">Upload a CSV of usernames (or Org Defined IDs). Each user will be set to <strong>Inactive</strong> in D2L and their username changed to <strong>username.retired.2026</strong>.</p>
+                </div>
+            </header>
+
+            <div class="warning-box">
+                <i class="fa-solid fa-triangle-exclamation"></i> <strong>Warning:</strong> This process will make each user on the list <strong>inactive</strong> and rename their username to <em>username.retired.2026</em>. Ensure your CSV contains the correct users. You need permission to update user data and activation in D2L.
+            </div>
+
+            <div class="card">
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="csvFile">CSV file (must have a Username or OrgDefinedId column):</label>
+                        <input type="file" id="csvFile" accept=".csv,text/csv">
+                    </div>
+                    <div class="input-group" id="columnGroup" style="display: none;">
+                        <label for="identifierColumn">Use this column as identifier:</label>
+                        <select id="identifierColumn"></select>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button id="runBtn" class="btn-primary" disabled>
+                        <i class="fas fa-user-slash"></i> Inactivate & Rename Users
+                    </button>
+                    <button id="clearBtn" class="btn-secondary" style="display: none;">
+                        <i class="fas fa-times"></i> Clear
+                    </button>
+                </div>
+
+                <div id="summary" class="summary-box">Upload a CSV file. Accepted columns: <strong>Username</strong>, <strong>UserName</strong>, or <strong>OrgDefinedId</strong> (case-insensitive).</div>
+            </div>
+
+            <div class="card" id="previewCard" style="display: none;">
+                <h3 style="margin-top: 0;">Preview (first 20 rows)</h3>
+                <div style="overflow-x: auto;">
+                    <table id="previewTable">
+                        <thead><tr id="previewHead"></tr></thead>
+                        <tbody id="previewBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card" id="resultsCard" style="display: none;">
+                <h3 style="margin-top: 0;">Results</h3>
+                <div id="loadingContainer"></div>
+                <div id="resultsLog" class="results-log"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/loading-utils.js"></script>
+    <script src="../js/retire-users.js"></script>
+</body>
+
+</html>

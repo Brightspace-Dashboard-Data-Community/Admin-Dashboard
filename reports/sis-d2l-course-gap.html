@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIS vs D2L Course Gap - D2L Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            transition: all 0.2s ease;
+        }
+
+        .back-link:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-2px);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .input-group select,
+        .input-group input[type="file"] {
+            width: 100%;
+            max-width: 480px;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-base);
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-light);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            margin-left: var(--spacing-sm);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: var(--bg-color);
+        }
+
+        .stats-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: var(--spacing-md) 0;
+        }
+
+        .stat-pill {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 999px;
+            padding: 8px 14px;
+            font-size: 13px;
+        }
+
+        .stat-pill strong {
+            color: var(--primary-color);
+        }
+
+        .help-box {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: var(--spacing-md);
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .help-box ul {
+            margin: 8px 0 0 18px;
+        }
+
+        .help-box code {
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.06);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        #gapTable thead th {
+            background-color: var(--bg-color);
+            font-weight: 600;
+            padding: 10px 8px;
+            border-bottom: 2px solid var(--border-color);
+            text-align: left;
+        }
+
+        #gapTable tbody td {
+            padding: 8px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: top;
+        }
+
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: var(--spacing-sm);
+            font-size: 14px;
+        }
+
+        .card {
+            margin-bottom: var(--spacing-xl);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports & Tools
+                    </a>
+                    <h1 class="page-title">SIS vs D2L Course Gap</h1>
+                    <p class="page-subtitle">Upload a SIS course list CSV, pick the D2L semester, and see which sections are not present as course offerings in Brightspace.</p>
+                </div>
+            </header>
+
+            <div class="card">
+                <div class="help-box">
+                    <strong>How matching works</strong>
+                    <ul>
+                        <li><strong><code>COURSE_CODE</code> (SIS export):</strong> This is the main column we compare to each Brightspace offering’s <strong>Code</strong> under the semester you pick. Values often include the term (for example <code>ABS-101W-FA818-26/FA</code>) while D2L may store only the section shell (<code>ABS-101W-FA818</code>); the tool also tries <code>SEC_NAME</code> and strips a trailing <code>-{SEC_TERM}</code> when present.</li>
+                        <li><strong>Org unit ID:</strong> If the CSV includes a Brightspace <code>OrgUnitId</code>, that is checked first against the semester’s offerings.</li>
+                        <li><strong>Legacy columns:</strong> <code>SEC_DEPTS</code> + <code>SEC_COURSE_NO</code> + <code>SEC_NO</code> are still supported when <code>COURSE_CODE</code> is empty.</li>
+                    </ul>
+                </div>
+
+                <div class="input-group" style="margin-bottom: var(--spacing-md);">
+                    <label for="semesterSelect">D2L semester</label>
+                    <select id="semesterSelect"></select>
+                </div>
+
+                <div class="input-group" style="margin-bottom: var(--spacing-md);">
+                    <label for="sisCsv"><i class="fas fa-file-csv"></i> SIS / schedule CSV</label>
+                    <input type="file" id="sisCsv" accept=".csv">
+                </div>
+
+                <div class="checkbox-row">
+                    <input type="checkbox" id="excludeCancelled" checked>
+                    <label for="excludeCancelled" style="margin:0;font-weight:400;">Skip cancelled sections when <code>SEC_STATUS</code> is <code>C</code> (or Cancelled)</label>
+                </div>
+
+                <div style="margin-top: var(--spacing-md);">
+                    <button type="button" id="runBtn" class="btn-primary">
+                        <i class="fas fa-search"></i> Compare
+                    </button>
+                    <button type="button" id="downloadBtn" class="btn-secondary" disabled>
+                        <i class="fas fa-download"></i> Download missing as CSV
+                    </button>
+                </div>
+            </div>
+
+            <div class="card" id="resultsCard" style="display: none;">
+                <div class="stats-row">
+                    <span class="stat-pill">SIS rows analyzed: <strong id="statTotal">0</strong></span>
+                    <span class="stat-pill">Matched in D2L: <strong id="statMatched">0</strong></span>
+                    <span class="stat-pill">Missing from D2L: <strong id="statMissing">0</strong></span>
+                    <span class="stat-pill">Skipped (empty / cancelled): <strong id="statSkipped">0</strong></span>
+                </div>
+                <p id="statusMsg" style="font-size: 14px; color: var(--text-secondary); margin-bottom: var(--spacing-md);"></p>
+                <table id="gapTable" class="display" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>COURSE_CODE</th>
+                            <th>SIS OrgUnitId</th>
+                            <th>Title / name</th>
+                            <th>SEC_STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/semester-config.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <script src="../js/loading-utils.js"></script>
+    <script src="../js/sis-d2l-course-gap.js"></script>
+</body>
+
+</html>

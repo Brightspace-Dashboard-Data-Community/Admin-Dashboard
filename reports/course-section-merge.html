@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Section Association (Merge) - D2L Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            transition: all 0.2s ease;
+        }
+
+        .back-link:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-2px);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+            line-height: 1.5;
+        }
+
+        .info-box {
+            background-color: #f5f7fa;
+            border-left: 3px solid var(--primary-color);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            line-height: 1.55;
+        }
+
+        .info-box code {
+            background-color: rgba(0, 0, 0, 0.05);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: ui-monospace, monospace;
+            font-size: 0.9em;
+        }
+
+        .warning-box {
+            background-color: #fff8e6;
+            border: 1px solid #ffc107;
+            border-radius: var(--radius-sm);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .field input[type="file"] {
+            width: 100%;
+            max-width: 480px;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+        }
+
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: var(--spacing-md) 0;
+            font-size: var(--font-size-sm);
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            opacity: 0.92;
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .log-panel pre {
+            min-height: 320px;
+            max-height: 520px;
+            overflow: auto;
+            padding: var(--spacing-md);
+            font-size: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background-color: #fafafa;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: ui-monospace, 'Courier New', monospace;
+        }
+
+        .card {
+            margin-bottom: var(--spacing-xl);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports &amp; Tools
+                    </a>
+                    <h1 class="page-title">Course Section Association (Merge)</h1>
+                    <p class="page-subtitle">
+                        For production merges, use Brightspace <strong>Merge Course Offering</strong> (IPSIS/SIS section associations)—not the experimental CSV tool below.
+                    </p>
+                </div>
+            </header>
+
+            <div class="card">
+                <h2 style="margin: 0 0 var(--spacing-md) 0; font-size: 1.1rem; color: var(--primary-color);">Supported workflow: Merge Course Offering</h2>
+                <div class="info-box" style="margin-bottom: var(--spacing-md);">
+                    <p style="margin: 0 0 10px 0;">
+                        This is the same flow shown in <strong>Search → Merge Course Offering</strong>, <strong>Confirm Course Offering Merge</strong>, and the resulting classlist (multiple sections under one course shell).
+                    </p>
+                    <ol style="margin: 0; padding-left: 1.25rem; line-height: 1.65;">
+                        <li><strong>Search Course Offerings</strong> — Filter by <em>Course Offering</em>, search LMS course code/name, status <em>Active</em>. Find the offerings you need.</li>
+                        <li><strong>Merge Course Offering</strong> — From a result row, open the menu (chevron) and choose <strong>Merge Course Offering</strong> (or add offerings into the merge list). The <em>Before Merge</em> column lists each selected LMS course and its <strong>current associated SIS section(s)</strong> (SIS section codes).</li>
+                        <li><strong>After Merge</strong> — Choose the <strong>destination Course Offering</strong> (the shell that will keep running). <em>Next</em> continues the wizard.</li>
+                        <li><strong>Confirm Course Offering Merge</strong> — The summary shows what IPSIS actually does, which is <em>not</em> generic org-structure “children” moves:
+                            <ul style="margin: 8px 0 0 0; padding-left: 1.25rem;">
+                                <li><strong>Create Section Associations</strong> — Associate the SIS section with the destination LMS course.</li>
+                                <li><strong>Remove Section Associations</strong> — Remove the association between that SIS section and the original (source) LMS course.</li>
+                                <li><strong>Delete Course Offerings</strong> — Remove the now-unneeded source course shell when applicable.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Processing / Done</strong> — After completion, <strong>Classlist → Filter by Sections</strong> can show multiple sections (e.g. FA811 and FA813) under the destination course.</li>
+                    </ol>
+                    <p style="margin: 12px 0 0 0;">
+                        Related menu actions: <strong>Manage Course Offering Associations</strong> (review links without merging). The <strong>Org Unit Editor</strong> shows the same sections under <strong>Groups &amp; Sections</strong> on the destination offering; the generic <strong>Children</strong> list may still be empty—that is normal.
+                    </p>
+                </div>
+
+                <div class="warning-box" style="background-color: #fdecea; border-color: #e57373;">
+                    <strong>Why the CSV tool below usually fails (Section org units).</strong> It used Valence
+                    <code>orgstructure/…/children/</code> (unlink section from one course, attach under another). Brightspace returns
+                    <code>Parents cannot be changed for Group or Section type org units</code> — that API path is the wrong surface for IPSIS-style work. The official merge wizard updates <strong>SIS section ↔ LMS course associations</strong> and may delete the source offering; it does not rely on that orgstructure children trick. Treat the CSV runner as <strong>experimental / not supported</strong> for real merges unless D2L documents otherwise.
+                </div>
+
+                <h2 style="margin: var(--spacing-xl) 0 var(--spacing-md) 0; font-size: 1.05rem; color: var(--text-secondary);">Experimental: CSV + orgstructure APIs</h2>
+                <div class="warning-box">
+                    <strong>Destructive if it ever partially works.</strong> When section moves succeed, this tool would set each <em>source</em> course offering inactive. Use Preview only; expect <strong>400</strong> errors on Section org units as above.
+                </div>
+
+                <div class="info-box">
+                    <strong>CSV columns</strong> (header row required). Column names are case-insensitive.
+                    <p style="margin: 0 0 8px 0;">
+                        <strong>Recommended (faster):</strong> use numeric <strong>org unit IDs</strong> so the tool skips code lookups.
+                    </p>
+                    <ul style="margin: 8px 0 0 18px;">
+                        <li><code>MAIN_ORG_UNIT_ID</code> — destination course offering org unit id (aliases: <code>DESTINATION_ORG_UNIT_ID</code>, <code>MAIN_OU_ID</code>)</li>
+                        <li><code>SECONDARY_ORG_UNIT_ID</code> — first source course (aliases: <code>SOURCE_ORG_UNIT_ID</code>, <code>SECONDARY_OU_ID</code>)</li>
+                        <li><code>THIRD_ORG_UNIT_ID</code> — optional second source course (alias: <code>THIRD_OU_ID</code>)</li>
+                    </ul>
+                    <p style="margin: 10px 0 0 0;">
+                        <strong>Alternatively (code lookup):</strong>
+                        <code>MAIN_COURSE</code> (destination),
+                        <code>SECONDARY_COURSE</code>,
+                        <code>THIRD_COURSE</code> — each row must identify destination and at least one source by id <em>or</em> code.
+                        If both id and code are present for the same role, <strong>id wins</strong> (no <code>exactOrgUnitCode</code> call).
+                    </p>
+                    <p style="margin: 10px 0 0 0;">
+                        Aliases supported: <code>DESTINATION_COURSE</code> / <code>DestinationCourseCode</code> for the main course;
+                        <code>SOURCE_COURSE</code> / <code>SourceCourseCode</code> for a secondary column.
+                    </p>
+                    <p style="margin: 10px 0 0 0;">
+                        <strong>APIs used:</strong>
+                        <code>GET …/orgstructure/?exactOrgUnitCode=…</code> (only when resolving by code),
+                        <code>GET …/{courseId}/sections/</code>,
+                        <code>DELETE …/orgstructure/{source}/children/{sectionId}</code>,
+                        <code>POST …/orgstructure/{dest}/children/</code> (body: section org unit id as a JSON number per Valence),
+                        <code>PUT …/courses/{source}</code> with <code>IsActive: false</code>.
+                    </p>
+                    <p style="margin: 10px 0 0 0;">
+                        <strong>OAuth2 scopes</strong> (typical): <code>organizations:organization:read</code>,
+                        <code>organizations:organization:create</code>, <code>organizations:organization:delete</code>,
+                        <code>orgunits:course:update</code>.
+                    </p>
+                </div>
+
+                <div class="field">
+                    <label for="csvFile">Upload CSV</label>
+                    <input type="file" id="csvFile" accept=".csv,text/csv" />
+                </div>
+
+                <div class="checkbox-row">
+                    <input type="checkbox" id="previewOnly" />
+                    <label for="previewOnly">Preview only (log planned actions; no unlink, link, or deactivate)</label>
+                </div>
+
+                <div style="margin-top: var(--spacing-md);">
+                    <button type="button" id="runBtn" class="btn-primary">
+                        <i class="fa-solid fa-object-group"></i> Run section association
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <label for="log" style="font-weight: 600; display: block; margin-bottom: 8px;">Log</label>
+                <div class="log-panel">
+                    <pre id="log" aria-label="Processing log"></pre>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/section-course-merge.js"></script>
+</body>
+
+</html>

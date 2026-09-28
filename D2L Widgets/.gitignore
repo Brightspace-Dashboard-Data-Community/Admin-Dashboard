@@ -1,0 +1,6 @@
+# Delta College production widget copies — real domains, URLs, and admin usernames.
+# Keep local / OneDrive only; never publish to the public API-Widgets GitHub repo.
+delta-production/
+
+# Local-only widget (not ready / not intended for public API-Widgets publish)
+Recent Discussion Activity/

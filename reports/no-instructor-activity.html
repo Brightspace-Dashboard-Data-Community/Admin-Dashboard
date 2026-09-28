@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>No Instructor Activity - D2L Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation (injected via ../js/sidebar.js) -->
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <h1 class="page-title">No Instructor Activity</h1>
+                    <p class="page-subtitle">Courses where instructors have not accessed or had no activity in the last 14 days</p>
+                </div>
+                <div class="header-actions">
+                    <button id="refresh-data-btn" class="btn btn-primary"><i class="fa-solid fa-arrows-rotate"></i> Refresh</button>
+                    <button id="download-csv-btn" class="btn btn-outline"><i class="fa-solid fa-download"></i> Download CSV</button>
+                </div>
+            </header>
+
+            <!-- Filters -->
+            <div class="card" style="margin-bottom: var(--spacing-lg);">
+                <div class="card-body">
+                    <div style="display: flex; gap: var(--spacing-md); align-items: center; flex-wrap: wrap;">
+                        <div>
+                            <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: 500;">Semester</label>
+                            <select id="semester-select" class="form-control" style="min-width: 200px;">
+                                <option value="">Loading...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: 500;">Days Since Last Access</label>
+                            <select id="days-filter" class="form-control" style="min-width: 150px;">
+                                <option value="14">14+ days</option>
+                                <option value="7">7+ days</option>
+                                <option value="30">30+ days</option>
+                                <option value="never">Never accessed</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1;"></div>
+                        <div>
+                            <button id="run-audit-btn" class="btn btn-primary" style="margin-top: 20px;">
+                                <i class="fa-solid fa-play"></i> Run Audit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Courses with No Instructor Activity</h3>
+                    <div id="results-count" class="text-muted" style="font-size: 14px;">Select semester and click "Run Audit"</div>
+                </div>
+                <div class="card-body">
+                    <div id="loading-indicator" style="text-align: center; padding: 40px; display: none;">
+                        <i class="fa-solid fa-spinner fa-spin"></i> <span id="loading-text">Loading courses...</span>
+                    </div>
+                    <div id="results-container" style="display: none;">
+                        <table id="results-table" class="display" style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>OrgUnitId</th>
+                                    <th>OrgDefinedId</th>
+                                    <th>Course Code</th>
+                                    <th>Instructor(s)</th>
+                                    <th>Email</th>
+                                    <th>Last Access</th>
+                                    <th>Days Since Access</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div id="empty-message" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                        Select a semester and click "Run Audit" to begin.
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- jQuery (required for DataTables) -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+
+    <!-- Core Scripts -->
+    <script src="../js/supabase.js"></script>
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/semester-config.js"></script>
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/no-instructor-activity.js"></script>
+</body>
+
+</html>
+

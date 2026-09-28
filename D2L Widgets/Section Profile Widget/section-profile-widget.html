@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <!--
+    Section Profile Widget
+    Paste into a Brightspace Custom Widget on a course homepage (or a shared
+    course homepage template). Requires section-instructors.json in Manage Files.
+    See README.md for course-level and org-level installation.
+  -->
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 14px;
+      color: #202122;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #ffffff;
+    }
+
+    #section-profile-widget {
+      width: 100%;
+    }
+
+    .spw-card {
+      width: 100%;
+      padding: 20px 16px;
+      border: 1px solid #d5d9dd;
+      border-radius: 10px;
+      background: #ffffff;
+      text-align: center;
+    }
+
+    .spw-photo {
+      display: block;
+      width: 96px;
+      height: 96px;
+      margin: 0 auto 14px;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: center;
+      border: 3px solid #e6e9ec;
+    }
+
+    .spw-label {
+      margin: 0 0 4px;
+      color: #565e66;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .spw-name {
+      margin: 0 0 4px;
+      font-size: 21px;
+      line-height: 1.25;
+    }
+
+    .spw-title {
+      margin: 0 0 12px;
+      color: #4f575e;
+      font-weight: 600;
+    }
+
+    .spw-details {
+      margin: 0 auto;
+      max-width: 28rem;
+      text-align: left;
+    }
+
+    .spw-detail {
+      margin: 5px 0;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .spw-bio {
+      margin: 12px 0;
+      font-size: 14px;
+      line-height: 1.5;
+      text-align: left;
+    }
+
+    .spw-email {
+      display: inline-block;
+      margin-top: 6px;
+      padding: 9px 14px;
+      color: #ffffff;
+      background: #006fbf;
+      border-radius: 5px;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .spw-email:hover,
+    .spw-email:focus {
+      background: #005a9c;
+      text-decoration: underline;
+    }
+
+    .spw-section {
+      margin: 14px 0 0;
+      color: #60676d;
+      font-size: 12px;
+      font-style: italic;
+      text-align: left;
+    }
+
+    .spw-message {
+      padding: 14px;
+      border: 1px solid #d5d9dd;
+      border-radius: 7px;
+      background: #f7f8f9;
+      line-height: 1.5;
+    }
+
+    .spw-error {
+      color: #721c24;
+      border-color: #d92525;
+      background: #fff4f4;
+    }
+
+    .spw-warning {
+      color: #594600;
+      border-color: #d8a000;
+      background: #fff9e6;
+    }
+
+    .spw-debug {
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px solid #cccccc;
+      border-radius: 6px;
+      background: #f5f5f5;
+      font-family: monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+  </style>
+</head>
+<body>
+<div id="section-profile-widget">
+  <div class="spw-message" role="status" aria-live="polite">Loading your instructor information…</div>
+</div>
+<script>
+(function () {
+  "use strict";
+
+  /**
+   * Institution settings — edit these when adapting for your Brightspace org.
+   *
+   * CONFIG_URL options:
+   *   1) Per-course Manage Files (recommended):
+   *      "/content/enforced/{OrgUnitId}/section-instructors.json"
+   *   2) Absolute Shared/Public Files path (advanced multi-course JSON):
+   *      "/content/shared/section-profile/section-instructors.json"
+   *   3) Leave empty to use CONFIG_FILE under /content/enforced/{OrgUnitId}/
+   */
+  const CONFIG = Object.freeze({
+    LP_VERSION: "1.51",
+    ORG_UNIT_ID: "{OrgUnitId}",
+    CONFIG_FILE: "section-instructors.json",
+    CONFIG_URL: "/content/enforced/{OrgUnitId}/section-instructors.json",
+    HEADING_LABEL: "Your Instructor",
+    EMAIL_BUTTON_LABEL: "Email Instructor",
+    SHOW_SECTION_NAME: true,
+    DEBUG: false
+  });
+
+  const container = document.getElementById("section-profile-widget");
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function getOrgUnitId() {
+    const replacement = String(CONFIG.ORG_UNIT_ID || "").trim();
+    if (/^\d+$/.test(replacement)) return replacement;
+
+    const paths = [window.location.pathname];
+    try { paths.push(window.parent.location.pathname); } catch (e) { /* cross-origin iframe */ }
+
+    for (const path of paths) {
+      const match = path.match(/\/d2l\/home\/(\d+)/);
+      if (match) return match[1];
+    }
+    return null;
+  }
+
+  function applyOrgUnitToken(value, orgUnitId) {
+    return String(value || "").replaceAll("{OrgUnitId}", String(orgUnitId));
+  }
+
+  function resolveConfigUrl(orgUnitId) {
+    if (CONFIG.CONFIG_URL && String(CONFIG.CONFIG_URL).trim()) {
+      return applyOrgUnitToken(CONFIG.CONFIG_URL, orgUnitId);
+    }
+    const fileName = String(CONFIG.CONFIG_FILE || "section-instructors.json").replace(/^\/+/, "");
+    return "/content/enforced/" + orgUnitId + "/" + fileName;
+  }
+
+  function dirnameFromUrl(url) {
+    const clean = String(url || "").split("?")[0].split("#")[0];
+    const idx = clean.lastIndexOf("/");
+    return idx >= 0 ? clean.slice(0, idx + 1) : "./";
+  }
+
+  function resolveAssetUrl(assetPath, configUrl) {
+    if (!assetPath) return "";
+    if (/^https?:\/\//i.test(assetPath) || assetPath.startsWith("/")) return assetPath;
+    try {
+      return new URL(assetPath, window.location.origin + dirnameFromUrl(configUrl)).href;
+    } catch (e) {
+      return dirnameFromUrl(configUrl) + assetPath.replace(/^\/+/, "");
+    }
+  }
+
+  async function getJson(url, label) {
+    const response = await fetch(url, {
+      method: "GET",
+      credentials: "include",
+      headers: { "Accept": "application/json" }
+    });
+
+    if (!response.ok) {
+      const error = new Error(label + " failed with HTTP " + response.status + ".");
+      error.status = response.status;
+      error.url = url;
+      try { error.responseText = await response.text(); } catch (e) { /* ignore */ }
+      throw error;
+    }
+    return response.json();
+  }
+
+  function renderMessage(message, type, details) {
+    const extraClass = type === "error" ? " spw-error" : type === "warning" ? " spw-warning" : "";
+    container.innerHTML =
+      '<div class="spw-message' + extraClass + '" role="status">' + escapeHtml(message) + "</div>" +
+      (CONFIG.DEBUG && details ? '<div class="spw-debug">' + escapeHtml(details) + "</div>" : "");
+  }
+
+  function sectionLookupKeys(section) {
+    return [
+      section && section.SectionId != null ? String(section.SectionId) : "",
+      section && section.Code != null ? String(section.Code).trim() : "",
+      section && section.Name != null ? String(section.Name).trim() : ""
+    ].filter(Boolean);
+  }
+
+  function resolveInstructorKey(config, section) {
+    const map = config && config.sections;
+    if (!map || typeof map !== "object") return config && config.defaultInstructorKey;
+
+    for (const key of sectionLookupKeys(section)) {
+      if (Object.prototype.hasOwnProperty.call(map, key) && map[key]) {
+        return map[key];
+      }
+    }
+    return config.defaultInstructorKey;
+  }
+
+  function pickSection(sections, config) {
+    if (!Array.isArray(sections) || sections.length === 0) return null;
+    if (sections.length === 1) return sections[0];
+
+    for (const section of sections) {
+      const key = resolveInstructorKey(config, section);
+      if (key && config.instructors && config.instructors[key] &&
+          config.sections && sectionLookupKeys(section).some(function (k) {
+            return Object.prototype.hasOwnProperty.call(config.sections, k);
+          })) {
+        return section;
+      }
+    }
+    return sections[0];
+  }
+
+  function courseScopedInstructorConfig(config, orgUnitId) {
+    if (!config || typeof config !== "object") return config;
+    if (config.instructors && config.sections) return config;
+    if (config.courses && config.courses[String(orgUnitId)]) {
+      return config.courses[String(orgUnitId)];
+    }
+    return config;
+  }
+
+  function renderInstructor(section, instructor, configUrl) {
+    const imageUrl = resolveAssetUrl(instructor.image, configUrl);
+    const email = instructor.email || "";
+    const sectionLabel = section.Name || section.Code || section.SectionId || "";
+
+    container.innerHTML =
+      '<div class="spw-card">' +
+        (imageUrl
+          ? '<img class="spw-photo" src="' + escapeHtml(imageUrl) +
+            '" alt="Profile photo of ' + escapeHtml(instructor.name || "instructor") + '">'
+          : "") +
+        '<p class="spw-label">' + escapeHtml(CONFIG.HEADING_LABEL) + "</p>" +
+        '<h2 class="spw-name">' + escapeHtml(instructor.name || "Instructor") + "</h2>" +
+        (instructor.title ? '<p class="spw-title">' + escapeHtml(instructor.title) + "</p>" : "") +
+        '<div class="spw-details">' +
+          (instructor.officeHours
+            ? '<p class="spw-detail"><strong>Office hours:</strong> ' + escapeHtml(instructor.officeHours) + "</p>"
+            : "") +
+          (instructor.office
+            ? '<p class="spw-detail"><strong>Office:</strong> ' + escapeHtml(instructor.office) + "</p>"
+            : "") +
+          (instructor.phone
+            ? '<p class="spw-detail"><strong>Phone:</strong> ' + escapeHtml(instructor.phone) + "</p>"
+            : "") +
+          (instructor.bio ? '<p class="spw-bio">' + escapeHtml(instructor.bio) + "</p>" : "") +
+        "</div>" +
+        (email
+          ? '<a class="spw-email" href="mailto:' + encodeURIComponent(email) + '">' +
+            escapeHtml(CONFIG.EMAIL_BUTTON_LABEL) + "</a>"
+          : "") +
+        (CONFIG.SHOW_SECTION_NAME && sectionLabel
+          ? '<p class="spw-section">Section: ' + escapeHtml(sectionLabel) + "</p>"
+          : "") +
+      "</div>";
+  }
+
+  async function initializeWidget() {
+    const orgUnitId = getOrgUnitId();
+    if (!orgUnitId) {
+      renderMessage(
+        "The widget could not determine the current course offering ID. Place it on a course homepage Custom Widget so {OrgUnitId} is replaced.",
+        "error"
+      );
+      return;
+    }
+
+    const configUrl = resolveConfigUrl(orgUnitId);
+
+    try {
+      const sectionsUrl =
+        "/d2l/api/lp/" + CONFIG.LP_VERSION + "/" + orgUnitId + "/sections/mysections/";
+      const sections = await getJson(sectionsUrl, "Retrieving the current user's section");
+
+      if (!Array.isArray(sections) || sections.length === 0) {
+        renderMessage(
+          "You are not currently assigned to a section in this course.",
+          "warning",
+          sectionsUrl
+        );
+        return;
+      }
+
+      const rawConfig = await getJson(configUrl, "Loading the instructor configuration file");
+      const config = courseScopedInstructorConfig(rawConfig, orgUnitId);
+      const section = pickSection(sections, config);
+      const instructorKey = resolveInstructorKey(config, section);
+      const instructor = config.instructors && config.instructors[instructorKey];
+
+      if (!instructor) {
+        renderMessage(
+          "No instructor is configured for your section.",
+          "warning",
+          "Section ID: " + (section && section.SectionId) +
+            "\nSection Code: " + (section && section.Code) +
+            "\nSection Name: " + (section && section.Name) +
+            "\nResolved key: " + (instructorKey || "(none)") +
+            "\nConfiguration: " + configUrl
+        );
+        return;
+      }
+
+      renderInstructor(section, instructor, configUrl);
+    } catch (error) {
+      renderMessage(
+        "The instructor information could not be loaded.",
+        "error",
+        "Message: " + error.message +
+          "\nStatus: " + (error.status || "Unknown") +
+          "\nURL: " + (error.url || configUrl || "Unknown") +
+          "\nResponse: " + (error.responseText || "")
+      );
+    }
+  }
+
+  initializeWidget();
+})();
+</script>
+</body>
+</html>

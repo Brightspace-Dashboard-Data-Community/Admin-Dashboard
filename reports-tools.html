@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports & Tools - D2L Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/components.css">
+
+    <style>
+        /* Improved spacing for header area */
+        .top-bar {
+            flex-direction: column;
+            align-items: flex-start;
+            margin-bottom: var(--spacing-xl);
+            height: auto;
+            padding-bottom: var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .top-bar > div {
+            width: 100%;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            transition: all 0.2s ease;
+        }
+
+        .back-link:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-2px);
+        }
+
+        .page-title {
+            margin-top: var(--spacing-md);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+
+        /* Section spacing */
+        .tool-category {
+            background-color: transparent;
+            margin-bottom: var(--spacing-xl);
+            margin-top: var(--spacing-xl);
+        }
+
+        .tool-category:first-of-type {
+            margin-top: var(--spacing-lg);
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: var(--spacing-lg);
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+            color: var(--text-primary);
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .tool-link {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background-color: var(--surface-color);
+            padding: 20px;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: transform 0.2s, box-shadow 0.2s, color 0.2s;
+            border-left: 4px solid transparent;
+        }
+
+        .tool-link:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+        }
+
+        .tool-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(26, 93, 26, 0.1);
+            /* Primary color with opacity */
+            color: var(--primary-color);
+            border-radius: 8px;
+            font-size: 18px;
+        }
+
+        .tool-name {
+            font-weight: 500;
+        }
+
+        .category-subtitle {
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: var(--text-secondary);
+            line-height: 1.45;
+            margin: calc(-1 * var(--spacing-sm)) 0 var(--spacing-md);
+            max-width: 900px;
+        }
+
+        .tool-link.tool-link--stacked {
+            align-items: flex-start;
+        }
+
+        .tool-link.tool-link--stacked .tool-icon {
+            margin-top: 2px;
+        }
+
+        .tool-link-text {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 0;
+        }
+
+        .tool-desc {
+            font-size: 0.8125rem;
+            font-weight: 400;
+            color: var(--text-secondary);
+            line-height: 1.35;
+        }
+
+        /* Featured/Primary Reports Section */
+        .featured-section {
+            background: linear-gradient(135deg, rgba(26, 93, 26, 0.05) 0%, rgba(26, 93, 26, 0.02) 100%);
+            border: 2px solid rgba(26, 93, 26, 0.2);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+            margin-top: var(--spacing-lg);
+        }
+
+        .featured-section .category-header {
+            color: var(--primary-color);
+            border-bottom-color: rgba(26, 93, 26, 0.3);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .featured-section .tool-link {
+            background-color: white;
+            border-left: 4px solid var(--primary-color);
+            box-shadow: var(--shadow-md);
+        }
+
+        .featured-section .tool-link:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+            border-left-width: 5px;
+        }
+
+        .featured-section .tool-icon {
+            background-color: rgba(26, 93, 26, 0.15);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation (injected via js/sidebar.js) -->
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+                    <h1 class="page-title">Reports & Tools</h1>
+                    <p class="page-subtitle">Browse reports and tools for your D2L Brightspace environment.</p>
+                </div>
+            </header>
+
+            <div role="status" style="display:flex; gap:1rem; align-items:flex-start; padding:1.1rem 1.25rem; margin-bottom:1.5rem; background:#fff; border:1px solid var(--border-color); border-left:4px solid var(--primary-color); border-radius:12px;">
+                <div style="width:40px; height:40px; display:inline-flex; align-items:center; justify-content:center; border-radius:10px; background:#e8f5e9; color:var(--primary-color); flex-shrink:0;">
+                    <i class="fa-solid fa-calendar-check" aria-hidden="true"></i>
+                </div>
+                <div>
+                    <p style="margin:0 0 0.25rem; font-weight:700;">Not sure which report to open?</p>
+                    <p style="margin:0; color:var(--text-secondary); font-size:0.95rem;">
+                        The <a href="admin-guide.html" style="color:var(--primary-color); font-weight:600;">admin guide</a> lists what to run every day, before the term, in the first week, at mid-semester, at the end of the term, and between sessions.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Faculty Success Path -->
+            <div class="tool-category featured-section">
+                <div class="category-header">
+                    <i class="fa-solid fa-route text-primary"></i> Faculty Success Path <span class="beta-badge">Beta</span>
+                </div>
+                <div class="tools-grid">
+                    <a href="faculty-onboarding/command-center.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-gauge-high"></i></div>
+                        <span class="tool-name">Command Center</span>
+                    </a>
+                    <a href="faculty-onboarding/new-instructor-intake.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-user-plus"></i></div>
+                        <span class="tool-name">New Instructor Intake</span>
+                    </a>
+                    <a href="faculty-onboarding/communication-hub.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-envelope"></i></div>
+                        <span class="tool-name">Communication Hub (Outlook)</span>
+                    </a>
+                    <a href="faculty-onboarding/automation-runner.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-robot"></i></div>
+                        <span class="tool-name">Automation Runner</span>
+                    </a>
+                    <a href="faculty-onboarding/leadership-report.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-chart-pie"></i></div>
+                        <span class="tool-name">Leadership Report</span>
+                    </a>
+                    <a href="faculty-orientation-not-enrolled.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-user-clock"></i></div>
+                        <span class="tool-name">Faculty Not in Orientation</span>
+                    </a>
+                    <a href="onboarding-instructors.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-list-check"></i></div>
+                        <span class="tool-name">Action Queue</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Featured/Primary Reports Section -->
+            <div class="tool-category featured-section">
+                <div class="category-header">
+                    <i class="fa-solid fa-star text-primary"></i> Reports and Processes
+                </div>
+                <div class="tools-grid">
+                    <a href="reports/empty-course-audit.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-box-open"></i></div>
+                        <span class="tool-name">Empty Course Audit</span>
+                    </a>
+                   
+                    <a href="reports/enrollment-checker-insights.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-user-check"></i></div>
+                        <span class="tool-name">User Adds & Drops Audit (Insights)</span>
+                    </a>
+                    <a href="reports/cxld-course-tool.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-ban"></i></div>
+                        <span class="tool-name">Cancelled Courses</span>
+                    </a>
+
+                    <a href="reports/incomplete-students-mailto.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-envelope"></i></div>
+                        <span class="tool-name">Incomplete Student Tool (Open in Outlook)</span>
+                    </a>
+                    <a href="reports/zzstudent-provision.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-user-plus"></i></div>
+                        <span class="tool-name">Provision ZZStudents</span>
+                    </a>
+                    <a href="reports/new-student-audit.html" class="tool-link tool-link--stacked">
+                        <div class="tool-icon"><i class="fa-solid fa-user-graduate"></i></div>
+                        <span class="tool-link-text">
+                            <span class="tool-name">New Student Audit</span>
+                            <span class="tool-desc">CSV in → check OrgDefinedId in D2L → create missing student accounts.</span>
+                        </span>
+                    </a>
+                    <a href="reports/course-merge-verifier.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-object-group"></i></div>
+                        <span class="tool-name">Course Merge Verifier</span>
+                    </a>
+                    <a href="reports/course-merge-updater.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                        <span class="tool-name">Course Merge Updater</span>
+                    </a>
+                    <a href="reports/division-csv-splitter.html" class="tool-link tool-link--stacked">
+                        <div class="tool-icon"><i class="fa-solid fa-file-excel"></i></div>
+                        <span class="tool-link-text">
+                            <span class="tool-name">Division CSV Splitter</span>
+                            <span class="tool-desc">Split a CSV into one Excel file per Division (e.g. social_sciences_26FA.xlsx).</span>
+                        </span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="tool-category">
+                <div class="category-header">
+                    <i class="fa-solid fa-chart-line text-primary"></i> Reports
+                </div>
+                <div class="tools-grid">
+                    <a href="reports/course-access-report.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-laptop-file"></i></div>
+                        <span class="tool-name">Course Access Report</span>
+                    </a>
+                    <a href="reports/incomplete-student-report.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-user-clock"></i></div>
+                        <span class="tool-name">Incomplete Student Report</span>
+                    </a>
+                    <a href="reports/learner-usage-report.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-book-reader"></i></div>
+                        <span class="tool-link-text">
+                            <span class="tool-name">Learner Usage Report</span>
+                            <span class="tool-desc">LDAA lookup by OrgUnit ID for enrolled or previously removed students.</span>
+                        </span>
+                    </a>
+                    <a href="reports/student-activity-log.html" class="tool-link tool-link--stacked">
+                        <div class="tool-icon"><i class="fa-solid fa-timeline"></i></div>
+                        <span class="tool-link-text">
+                            <span class="tool-name">Student Activity Log</span>
+                            <span class="tool-desc">One student, one course: every timestamped assignment, quiz, discussion, content, login, and enrollment record Brightspace will return.</span>
+                        </span>
+                    </a>
+                    <a href="reports/dual-enrollment-last-access.html" class="tool-link tool-link--stacked">
+                        <div class="tool-icon"><i class="fa-solid fa-user-graduate"></i></div>
+                        <span class="tool-link-text">
+                            <span class="tool-name">Dual Enrollment Last Access</span>
+                            <span class="tool-desc">CSV of OrgDefinedIds × semester → 7xx/8xx course last access, D2L login, and branded student PDFs.</span>
+                        </span>
+                    </a>
+                    <a href="reports/access-data-lookup.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-filter"></i></div>
+                        <span class="tool-name">Access Data Lookup</span>
+                    </a>
+                    <a href="reports/system-access-log.html" class="tool-link tool-link--stacked">
+                        <div class="tool-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                        <span class="tool-link-text">
+                            <span class="tool-name">System Access Log</span>
+                            <span class="tool-desc">Data Hub CSV → filter by OrgDefinedId, export sessions with UserId converted to OrgDefinedId.</span>
+                        </span>
+                    </a>
+                    <a href="reports/course-module-completion-report.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-clipboard-check"></i></div>
+                        <span class="tool-name">Course Module Completion</span>
+                    </a>
+                    <a href="reports/issued-awards-report.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-ribbon"></i></div>
+                        <span class="tool-name">Issued Awards / Badges (by course)</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="tool-category">
+                <div class="category-header">
+                    <i class="fa-solid fa-building text-primary"></i> Organization
+                </div>
+                <div class="tools-grid">
+                    <a href="reports/org-types.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-sitemap"></i></div>
+                        <span class="tool-name">Organization Types</span>
+                    </a>
+                    <a href="reports/semester-list.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-calendar-days"></i></div>
+                        <span class="tool-name">Semester List</span>
+                    </a>
+                    <a href="reports/course-list-by-semester.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-list-ol"></i></div>
+                        <span class="tool-name">Course List by Semester</span>
+                    </a>
+                    <a href="reports/sis-d2l-course-gap.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-table-list"></i></div>
+                        <span class="tool-name">SIS vs D2L Course Gap</span>
+                    </a>
+                    <a href="reports/enrollment-statistics.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-users-viewfinder"></i></div>
+                        <span class="tool-name">Enrollment Statistics</span>
+                    </a>
+                    <a href="reports/role-checker.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-check-double"></i></div>
+                        <span class="tool-name">Role Checker Reports</span>
+                    </a>
+                    <a href="reports/user-roles.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-id-badge"></i></div>
+                        <span class="tool-name">User Roles</span>
+                    </a>
+                    <a href="reports/deleted-users-report.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-user-xmark"></i></div>
+                        <span class="tool-name">Deleted Users Report</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="tool-category" id="user-merge-tool">
+                <div class="category-header">
+                    <i class="fa-solid fa-user-group text-primary"></i> Duplicate user accounts
+                </div>
+                <p class="category-subtitle">This merges two <strong>Brightspace user records</strong> (duplicate logins), not course sections and not Office Hours Chat. Course-section combines stay under Course Merge Verifier / Updater.</p>
+                <div class="tools-grid">
+                    <a href="reports/user-merge.html" class="tool-link tool-link--stacked">
+                        <div class="tool-icon"><i class="fa-solid fa-object-ungroup"></i></div>
+                        <span class="tool-link-text">
+                            <span class="tool-name">Merge duplicate users</span>
+                            <span class="tool-desc">Look up source + destination, preview enrollments, then POST /users/merge (awards and/or enrollments).</span>
+                        </span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="tool-category" id="retirement-workflow">
+                <div class="category-header">
+                    <i class="fa-solid fa-user-clock text-primary"></i> Retirement (.retired. usernames)
+                </div>
+                <p class="category-subtitle">Retirement here means <strong>inactivate + rename</strong> with a <code>.retired.</code> segment (not the same as "inactive" from long-ago logins). Use these together: retire &rarr; export or audit &rarr; reactivate when someone returns.</p>
+                <div class="tools-grid">
+                    <a href="reports/retire-users.html" class="tool-link tool-link--stacked">
+                        <div class="tool-icon"><i class="fa-solid fa-user-slash"></i></div>
+                        <span class="tool-link-text">
+                            <span class="tool-name">Retire accounts (bulk)</span>
+                            <span class="tool-desc">CSV in → set Inactive and append <code>.retired.</code> to username.</span>
+                        </span>
+                    </a>
+                    <a href="reports/retirement-report.html" class="tool-link tool-link--stacked">
+                        <div class="tool-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+                        <span class="tool-link-text">
+                            <span class="tool-name">List retired usernames</span>
+                            <span class="tool-desc">Export everyone whose username contains <code>.retired.</code>.</span>
+                        </span>
+                    </a>
+                    <a href="reports/incorrectly-retired-report.html" class="tool-link tool-link--stacked">
+                        <div class="tool-icon"><i class="fa-solid fa-user-check"></i></div>
+                        <span class="tool-link-text">
+                            <span class="tool-name">Audit wrong retirement pattern</span>
+                            <span class="tool-desc">Match enrollment CSV to Data Hub; flag unexpected <code>.retired.</code> rows.</span>
+                        </span>
+                    </a>
+                    <a href="reports/retired-return-reactivation.html" class="tool-link tool-link--stacked">
+                        <div class="tool-icon"><i class="fa-solid fa-rotate-left"></i></div>
+                        <span class="tool-link-text">
+                            <span class="tool-name">Reactivate returned retirees</span>
+                            <span class="tool-desc">Compare a retired snapshot to Data Hub + API, then turn selected accounts back on.</span>
+                        </span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="tool-category" id="inactive-dormant-accounts">
+                <div class="category-header">
+                    <i class="fa-solid fa-sliders text-primary"></i> Inactive accounts vs dormant logins
+                </div>
+                <p class="category-subtitle">Brightspace uses "inactive" in two ways: <strong>account switched off</strong> (<code>IsActive = false</code>), versus <strong>still-on accounts</strong> with no login for years. Pick the report that matches what you mean.</p>
+                <div class="tools-grid">
+                    <a href="reports/inactive-status-report.html" class="tool-link tool-link--stacked">
+                        <div class="tool-icon"><i class="fa-solid fa-ban"></i></div>
+                        <span class="tool-link-text">
+                            <span class="tool-name">Turned-off accounts (<code>IsActive</code> = no)</span>
+                            <span class="tool-desc">All roles; optional filter to hide <code>.retired.</code> usernames.</span>
+                        </span>
+                    </a>
+                    <a href="reports/inactive-student-reactivation.html" class="tool-link tool-link--stacked">
+                        <div class="tool-icon"><i class="fa-solid fa-user-check"></i></div>
+                        <span class="tool-link-text">
+                            <span class="tool-name">Reactivate students (<code>IsActive</code> = no)</span>
+                            <span class="tool-desc">Students only; fetch inactive list, select rows, bulk turn on; optional strip <code>.retired.*</code>.</span>
+                        </span>
+                    </a>
+                    <a href="reports/bulk-user-activation.html" class="tool-link tool-link--stacked">
+                        <div class="tool-icon"><i class="fa-solid fa-file-import"></i></div>
+                        <span class="tool-link-text">
+                            <span class="tool-name">Bulk activate from UserId CSV</span>
+                            <span class="tool-desc">Headerless CSV of UserIds → set INACTIVE accounts to ACTIVE (any role).</span>
+                        </span>
+                    </a>
+                    <a href="reports/inactive-users.html" class="tool-link tool-link--stacked">
+                        <div class="tool-icon"><i class="fa-solid fa-moon"></i></div>
+                        <span class="tool-link-text">
+                            <span class="tool-name">Dormant logins (accounts still on)</span>
+                            <span class="tool-desc">Students & instructors with no login for N years; accounts remain active.</span>
+                        </span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="tool-category" id="june-enrollment-monitoring">
+                <div class="category-header">
+                    <i class="fa-solid fa-clipboard-list text-primary"></i> June 2026 enrollment monitoring
+                </div>
+                <p class="category-subtitle">Live Brightspace enrollment-log and login-tracking APIs (LP 1.61+). These are incremental course/semester scans, not the Data Hub lifetime Never Logged In extract, not User Merge, and not Office Hours Chat.</p>
+                <div class="tools-grid">
+                    <a href="reports/recently-enrolled-never-logged-in.html" class="tool-link tool-link--stacked">
+                        <div class="tool-icon"><i class="fa-solid fa-user-slash"></i></div>
+                        <span class="tool-link-text">
+                            <span class="tool-name">Recently enrolled, never logged in</span>
+                            <span class="tool-desc">Enroll event in the last N days + no system login in the last 31 days.</span>
+                        </span>
+                    </a>
+                    <a href="reports/enrollment-watch-list.html" class="tool-link tool-link--stacked">
+                        <div class="tool-icon"><i class="fa-solid fa-binoculars"></i></div>
+                        <span class="tool-link-text">
+                            <span class="tool-name">Enrollment watch list</span>
+                            <span class="tool-desc">Classlist + enrollment logs since last run — SIS/ILP overnight adds and drops.</span>
+                        </span>
+                    </a>
+                    <a href="reports/access-data-lookup.html" class="tool-link tool-link--stacked">
+                        <div class="tool-icon"><i class="fa-solid fa-filter"></i></div>
+                        <span class="tool-link-text">
+                            <span class="tool-name">Access Data Lookup</span>
+                            <span class="tool-desc">Per-user system login history (tracking logs) or course-access CSV.</span>
+                        </span>
+                    </a>
+                    <a href="reports/system-access-log.html" class="tool-link tool-link--stacked">
+                        <div class="tool-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                        <span class="tool-link-text">
+                            <span class="tool-name">System Access Log</span>
+                            <span class="tool-desc">Pulse/web session CSV from Data Hub, filtered to one OrgDefinedId.</span>
+                        </span>
+                    </a>
+                    <a href="reports/never-logged-in.html" class="tool-link tool-link--stacked">
+                        <div class="tool-icon"><i class="fa-solid fa-clock"></i></div>
+                        <span class="tool-link-text">
+                            <span class="tool-name">Never Logged In (Data Hub)</span>
+                            <span class="tool-desc">Full-org extract where First Login Date is blank — lifetime, not incremental.</span>
+                        </span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="tool-category">
+                <div class="category-header">
+                    <i class="fa-solid fa-graduation-cap text-primary"></i> Course Related
+                </div>
+                <div class="tools-grid">
+                    <a href="reports/debug-enrollments.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-bug"></i></div>
+                        <span class="tool-name">Enrollments Debug Report</span>
+                    </a>
+                    <a href="reports/no-instructor-activity.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-user-clock"></i></div>
+                        <span class="tool-name">No Instructor Activity</span>
+                    </a>
+                    <a href="reports/never-enrolled-1001.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-user-minus"></i></div>
+                        <span class="tool-name">Never Enrolled</span>
+                    </a>
+                    <a href="reports/never-logged-in.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-clock"></i></div>
+                        <span class="tool-name">Never Logged In</span>
+                    </a>
+                    <a href="reports/merged-course-classlist.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-object-group"></i></div>
+                        <span class="tool-name">MERGED Course Classlist → Simple Syllabus Use</span>
+                    </a>
+                    <a href="reports/broken-links.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-link-slash"></i></div>
+                        <span class="tool-name">Broken / Missing Links</span>
+                    </a>
+                    <a href="reports/section-profile-builder.html" class="tool-link tool-link--stacked">
+                        <div class="tool-icon"><i class="fa-solid fa-id-card"></i></div>
+                        <span class="tool-link-text">
+                            <span class="tool-name">Section Profile Config Builder</span>
+                            <span class="tool-desc">Map course sections to instructor profiles; publish JSON + photos for the Section Profile Widget.</span>
+                        </span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="tool-category">
+                <div class="category-header">
+                    <i class="fa-solid fa-toolbox text-primary"></i> Tools
+                </div>
+                <div class="tools-grid">
+                    <a href="reports/sandbox-dummy-course-launcher.html" class="tool-link tool-link--stacked">
+                        <div class="tool-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                        <span class="tool-link-text">
+                            <span class="tool-name">Sandbox Dummy Course Launcher</span>
+                            <span class="tool-desc">Build a 7-week Michigan History sandbox with content, tools, and dummy students; download student-work files and quiz CSVs.</span>
+                        </span>
+                    </a>
+                    <a href="reports/course-repair-workbench.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+                        <span class="tool-name">Course Repair Workbench</span>
+                    </a>
+                    <a href="reports/watermark-adjunct-report.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-file-csv"></i></div>
+                        <span class="tool-name">Watermark Adjunct Report</span>
+                    </a>
+                    <a href="reports/missing-end-date.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-calendar-xmark"></i></div>
+                        <span class="tool-name">Missing End Dates</span>
+                    </a>
+                    <a href="reports/IA-email-checker.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-envelope-open-text"></i></div>
+                        <span class="tool-name">Intelligent Agent Email Checker</span>
+                    </a>
+                    <a href="reports/role-switch-tool.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-right-left"></i></div>
+                        <span class="tool-name">Role Switch Tool</span>
+                    </a>
+                    <a href="reports/semester-dates-to-csv.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-file-csv"></i></div>
+                        <span class="tool-name">Semester Dates to CSV</span>
+                    </a>
+                    <a href="reports/orgdefinedid-user-loader.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-id-card"></i></div>
+                        <span class="tool-name">OrgDefinedId User Loader</span>
+                    </a>
+                    <a href="reports/homepage-audit.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-house-circle-check"></i></div>
+                        <span class="tool-name">Homepage Audit by Semester</span>
+                    </a>
+                    <a href="reports/navbar-audit.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-bars-staggered"></i></div>
+                        <span class="tool-name">Navigation Bar Audit by Semester</span>
+                    </a>
+                    <a href="reports/content-experience-audit.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-book-open-reader"></i></div>
+                        <span class="tool-name">Content Experience Audit by Semester</span>
+                    </a>
+                    <a href="reports/faculty-profile-audit.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-user-circle"></i></div>
+                        <span class="tool-name">Faculty Profile Widget Audit by Semester</span>
+                    </a>
+                    <a href="reports/copy-course-module.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-copy"></i></div>
+                        <span class="tool-name">Copy One Module to Many Courses</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="tool-category">
+                <div class="category-header">
+                    <i class="fa-solid fa-person-digging text-primary"></i> Work-in-Progress
+                </div>
+                <div class="tools-grid">
+                    <a href="course-management-stats.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+                        <span class="tool-name">Course Overview</span>
+                    </a>
+                    <a href="faculty-feedback.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-comment-dots"></i></div>
+                        <span class="tool-name">Faculty Feedback Check</span>
+                    </a>
+                    <a href="reports/faculty-feedback-report.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-clock"></i></div>
+                        <span class="tool-name">Faculty Feedback Timeliness</span>
+                    </a>
+                    <a href="reports/grade-submission-assessment.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-clipboard-question"></i></div>
+                        <span class="tool-name">Grade Submission Assessment</span>
+                    </a>
+                    <a href="reports/grade-submission.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-file-pen"></i></div>
+                        <span class="tool-name">Grade Submission Report</span>
+                    </a>
+                    <a href="reports/system-usage-report.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-chart-pie"></i></div>
+                        <span class="tool-name">System Usage Analytics</span>
+                    </a>
+                    <a href="reports/completion-report.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-clipboard-check"></i></div>
+                        <span class="tool-name">Completion Report</span>
+                    </a>
+                    <a href="reports/course-section-merge.html" class="tool-link">
+                        <div class="tool-icon"><i class="fa-solid fa-object-group"></i></div>
+                        <span class="tool-name">Course Section Association (Merge)</span>
+                    </a>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="js/sidebar.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

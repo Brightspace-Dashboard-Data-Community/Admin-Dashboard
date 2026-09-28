@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enrollment watch list - D2L Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="../css/june-enrollment-reports.css">
+</head>
+
+<body class="june-logs-page">
+    <div class="app-container">
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html#june-enrollment-monitoring" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports &amp; Tools
+                    </a>
+                    <h1 class="page-title">Enrollment watch list</h1>
+                    <p class="page-subtitle">
+                        Classlist for a course or 26FA-style semester offering, then enrollment logs
+                        <strong>since the last successful run</strong> (June 2026
+                        <code>/users/{id}/enrollmentlogs/</code>).
+                        Built for SIS/ILP “what changed overnight?” — enrolls and drops, with who performed them.
+                        Not a course-section merge and not Office Hours Chat.
+                    </p>
+                </div>
+            </header>
+
+            <div class="info-box">
+                The API is per user, not org-wide. This tool snapshots each course’s classlist in this browser
+                so the next run can still see people who were dropped. First run on a course only sees people
+                still enrolled; the next run catches overnight adds and drops.
+            </div>
+
+            <div class="card">
+                <h2 class="card-title" style="margin-top: 0;">Scope</h2>
+                <div class="controls-row">
+                    <div class="field" style="min-width: 240px;">
+                        <label for="semesterSelect">Semester (to load courses)</label>
+                        <select id="semesterSelect"></select>
+                    </div>
+                    <div class="field" style="min-width: 180px;">
+                        <label for="orgUnitId">Or paste OrgUnit ID</label>
+                        <input id="orgUnitId" type="text" inputmode="numeric" placeholder="e.g. 3012345">
+                    </div>
+                    <button type="button" class="btn-secondary" id="loadCoursesBtn">
+                        <i class="fa-solid fa-list"></i> Load courses
+                    </button>
+                </div>
+                <label class="checkbox-option">
+                    <input type="checkbox" id="hideIgnored" checked>
+                    <span>Hide Sandbox / CXLD course names from the picker</span>
+                </label>
+                <div id="coursePickerWrap" class="hidden">
+                    <div class="controls-row" style="margin-top: var(--spacing-md);">
+                        <div class="field" style="flex: 2;">
+                            <label for="courseFilter">Filter loaded courses</label>
+                            <input id="courseFilter" type="text" placeholder="Code or name">
+                        </div>
+                        <button type="button" class="btn-secondary" id="selectVisibleBtn">Select visible</button>
+                        <button type="button" class="btn-secondary" id="clearSelectedBtn">Clear</button>
+                        <span class="selected-count" id="selectedCount">0 selected</span>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="picker-table">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>OrgUnitId</th>
+                                    <th>Code</th>
+                                    <th>Name</th>
+                                </tr>
+                            </thead>
+                            <tbody id="coursePickerBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title" style="margin-top: 0;">Since last run</h2>
+                <div class="controls-row">
+                    <div class="field" style="min-width: 240px;">
+                        <label for="sinceMode">Look for changes since</label>
+                        <select id="sinceMode">
+                            <option value="last-run" selected>Last successful run (per course)</option>
+                            <option value="24">Last 24 hours</option>
+                            <option value="7">Last 7 days</option>
+                            <option value="custom">Custom start</option>
+                        </select>
+                    </div>
+                    <div class="field hidden" id="customSinceWrap" style="min-width: 220px;">
+                        <label for="customSince">Custom start (local)</label>
+                        <input id="customSince" type="datetime-local">
+                    </div>
+                    <div class="field" style="min-width: 180px;">
+                        <label for="actionFilter">Show</label>
+                        <select id="actionFilter">
+                            <option value="both">Enrolls and drops</option>
+                            <option value="1">Enrolls only</option>
+                            <option value="0">Drops only</option>
+                        </select>
+                    </div>
+                </div>
+                <p class="hint" id="lastRunHint">No courses selected yet. Last-run timestamps are stored in this browser per OrgUnit ID.</p>
+                <div class="form-actions">
+                    <button type="button" class="btn-primary" id="runBtn">
+                        <i class="fa-solid fa-play"></i> Scan for changes
+                    </button>
+                    <button type="button" class="btn-secondary hidden" id="csvBtn">
+                        <i class="fa-solid fa-download"></i> Download CSV
+                    </button>
+                    <button type="button" class="btn-secondary" id="clearHistoryBtn">
+                        Clear saved snapshots
+                    </button>
+                </div>
+                <div id="statusLine" class="status-line">Choose a course, pick a time window, then scan.</div>
+            </div>
+
+            <div class="card hidden" id="resultsCard">
+                <div class="summary-pills" id="summaryPills"></div>
+                <table id="resultsTable" class="display" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>When (Detroit)</th>
+                            <th>Action</th>
+                            <th>OrgDefinedId</th>
+                            <th>Name</th>
+                            <th>Username</th>
+                            <th>UserId</th>
+                            <th>Course code</th>
+                            <th>Course name</th>
+                            <th>RoleId</th>
+                            <th>EnrolledBy</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/semester-config.js"></script>
+    <script src="../js/loading-utils.js"></script>
+    <script src="../js/june-enrollment-logs-api.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <script src="../js/enrollment-watch-list.js"></script>
+</body>
+
+</html>

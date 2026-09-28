@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Merge Updater - D2L Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+    <style>
+        .back-link { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; background:#f0f0f0; color:var(--text-primary); text-decoration:none; border-radius:var(--radius-sm); font-size:13px; font-weight:500; margin-bottom:var(--spacing-md); }
+        .back-link:hover { background:#e0e0e0; transform:translateX(-2px); }
+        .page-subtitle { margin-top:var(--spacing-sm); margin-bottom:var(--spacing-lg); color:var(--text-secondary); }
+        .card { margin-bottom:var(--spacing-xl); }
+        .input-group { margin-bottom:var(--spacing-md); }
+        .input-group label { display:block; margin-bottom:var(--spacing-xs); font-size:var(--font-size-sm); font-weight:600; }
+        .input-group select, .input-group input[type="file"] { width:100%; max-width:550px; padding:10px 12px; border:1px solid var(--border-color); border-radius:var(--radius-sm); background:var(--surface-color); }
+        .form-actions { display:flex; gap:var(--spacing-md); flex-wrap:wrap; margin-top:var(--spacing-md); }
+        .btn-primary, .btn-secondary { display:inline-flex; align-items:center; gap:8px; padding:10px 18px; border-radius:var(--radius-sm); border:1px solid transparent; cursor:pointer; font-weight:500; }
+        .btn-primary { background:var(--primary-color); color:#fff; }
+        .btn-secondary { background:var(--surface-color); color:var(--text-primary); border-color:var(--border-color); }
+        .btn-primary:disabled, .btn-secondary:disabled { opacity:0.6; cursor:not-allowed; }
+        .note { padding:12px 14px; border-left:4px solid var(--primary-color); background:var(--bg-color); border-radius:var(--radius-sm); margin-bottom:var(--spacing-md); }
+        #resultsCard { display:none; }
+        #resultsWrap { overflow-x:auto; }
+        .tabs { display:flex; gap:var(--spacing-sm); margin:var(--spacing-md) 0 var(--spacing-lg); border-bottom:2px solid var(--border-color); }
+        .tab-button { padding:10px 20px; background:var(--surface-color); border:none; border-radius:var(--radius-sm) var(--radius-sm) 0 0; cursor:pointer; font-weight:500; color:var(--text-primary); transition:all .2s ease; }
+        .tab-button.active { background:var(--primary-color); color:#fff; }
+        .tab-content { display:none; }
+        .tab-content.active { display:block; }
+        .results-table { width:100%; min-width:1200px; border-collapse:collapse; font-size:var(--font-size-sm); }
+        .results-table th, .results-table td { border:1px solid var(--border-color); padding:8px 10px; text-align:left; vertical-align:top; }
+        .results-table th { background:var(--primary-color); color:#fff; }
+        .results-table tbody tr:nth-child(even) { background:var(--bg-color); }
+        .danger { color:#9b1c1c; font-weight:600; }
+        .ok { color:#176534; font-weight:600; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle"><button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button></div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Reports & Tools</a>
+                    <h1 class="page-title">Course Merge Updater</h1>
+                    <p class="page-subtitle">Process approved merge requests: deactivate merge courses, post merge news, and update main course names.</p>
+                </div>
+            </header>
+
+            <div class="card">
+                <div class="tabs">
+                    <button class="tab-button active" onclick="openTab('tabCsvMerge')"><i class="fas fa-file-csv"></i> CSV Merge Requests</button>
+                    <button class="tab-button" onclick="openTab('tabMergedAudit')"><i class="fas fa-calendar-alt"></i> Semester MERGED Search</button>
+                </div>
+
+                <div id="tabCsvMerge" class="tab-content active">
+                    <div class="note">
+                        Upload the Zoho merge request CSV and run preview first. Processing updates D2L course names, activity state, and posts a merge news item in merged courses.
+                    </div>
+                    <div class="input-group">
+                        <label for="semesterSelect">Semester</label>
+                        <select id="semesterSelect"><option value="">Loading...</option></select>
+                    </div>
+                    <div class="input-group">
+                        <label for="csvFile">Upload Zoho CSV File</label>
+                        <input type="file" id="csvFile" accept=".csv">
+                    </div>
+                    <div class="form-actions">
+                        <button id="previewBtn" class="btn-primary"><i class="fas fa-eye"></i> Preview Updates</button>
+                        <button id="processBtn" class="btn-secondary" disabled><i class="fas fa-play"></i> Process Updates</button>
+                        <button id="downloadLogBtn" class="btn-secondary" disabled><i class="fas fa-download"></i> Download Log CSV</button>
+                    </div>
+                </div>
+
+                <div id="tabMergedAudit" class="tab-content">
+                    <div class="note">
+                        Search a semester for courses with <strong>MERGED</strong> in the title. Preview whether each course is inactive and has the merged news post, then update in bulk or one-by-one.
+                    </div>
+                    <div class="input-group">
+                        <label for="auditSemesterSelect">Semester</label>
+                        <select id="auditSemesterSelect"><option value="">Loading...</option></select>
+                    </div>
+                    <div class="form-actions">
+                        <button id="previewMergedBtn" class="btn-primary"><i class="fas fa-search"></i> Preview MERGED Courses</button>
+                        <button id="processMergedBulkBtn" class="btn-secondary" disabled><i class="fas fa-play"></i> Bulk Update Needed Courses</button>
+                    </div>
+                </div>
+                <div id="loadingContainer"></div>
+            </div>
+
+            <div id="resultsCard" class="card">
+                <h2 style="margin-top:0;">Preview / Results</h2>
+                <div id="resultsWrap"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/semester-config.js"></script>
+    <script src="../js/loading-utils.js"></script>
+    <script src="../js/course-merge-updater.js"></script>
+</body>
+</html>

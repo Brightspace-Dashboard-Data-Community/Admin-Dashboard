@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dual Enrollment Last Access - D2L Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/forms.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
+
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            white-space: nowrap;
+        }
+
+        .back-link:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-2px);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+            line-height: 1.5;
+        }
+
+        .card {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .card:hover {
+            transform: none;
+        }
+
+        .info-box {
+            background-color: var(--bg-color);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-sm);
+            margin: 0 0 var(--spacing-lg);
+            border-left: 4px solid var(--primary-color);
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.55;
+        }
+
+        .ferpa-note {
+            background: #f8fafc;
+            border-left: 4px solid var(--primary-color);
+            padding: 12px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .input-row {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .input-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .input-group.narrow {
+            flex: 0 0 160px;
+            min-width: 140px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .input-group input[type="text"],
+        .input-group input[type="number"],
+        .input-group input[type="file"],
+        .input-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-base);
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+        }
+
+        .checks {
+            display: flex;
+            gap: var(--spacing-md);
+            flex-wrap: wrap;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .checks label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-light);
+        }
+
+        .btn-primary:disabled,
+        .btn-secondary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: var(--bg-color);
+            border-color: var(--text-primary);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+            margin-top: var(--spacing-sm);
+        }
+
+        .status-line {
+            margin-top: var(--spacing-md);
+            font-size: 14px;
+            color: var(--text-secondary);
+            min-height: 1.4em;
+        }
+
+        .summary-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #eef6f3;
+            color: var(--primary-color);
+        }
+
+        .flag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            margin: 0 2px 2px 0;
+            white-space: nowrap;
+        }
+
+        .flag-ok { background: #e8f5f0; color: #005749; }
+        .flag-never-course { background: #fef2f2; color: #991b1b; }
+        .flag-never-d2l { background: #fff7ed; color: #9a3412; }
+        .flag-stale { background: #fefce8; color: #854d0e; }
+        .flag-none { background: #f1f5f9; color: #475569; }
+        .flag-missing { background: #f1f5f9; color: #334155; }
+
+        .table-wrap { overflow-x: auto; }
+
+        .pdf-row {
+            display: flex;
+            gap: var(--spacing-md);
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        #studentFilter {
+            min-width: 280px;
+        }
+
+        .hint {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin: 0 0 var(--spacing-md);
+            line-height: 1.5;
+        }
+
+        code {
+            font-size: 12px;
+            background: #f1f5f9;
+            padding: 1px 5px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports &amp; Tools
+                    </a>
+                    <h1 class="page-title">Dual Enrollment Last Access</h1>
+                    <p class="page-subtitle">
+                        Upload a CSV of student <strong>OrgDefinedId</strong> values, pick a semester, and scan
+                        <strong>7xx / 8xx</strong> dual-enrollment sections from the <strong>Course Name</strong>
+                        (for example <code>HEALTH CARE ETHICS - PHL-215W-FA820/FA830/FA840-26/FA</code>).
+                        Child offerings titled <code>MERGED -</code> are skipped so each student appears on the academic course once.
+                    </p>
+                </div>
+            </header>
+
+            <div class="info-box">
+                This report reads <strong>Course Name</strong>, not Course Code. Merged parents keep every
+                section in the name (<code>FA820/FA830/FA840</code>) while the code often stays on a single
+                section. Offerings whose name starts with <code>MERGED -</code> are ignored.
+                The scan keeps courses whose name includes the selected term (such as <code>26/FA</code>)
+                and a 7xx/8xx token. Course last access comes from Brightspace classlist / access APIs.
+                Org-level D2L login uses the same <code>LastAccessedDate</code> as Search User.
+                Course start and end dates come from the simplified courses CSV when you upload it.
+            </div>
+
+            <div class="card">
+                <h2 class="form-section-title" style="margin-top:0;">Run report</h2>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="csvFile">CSV of OrgDefinedIds</label>
+                        <input type="file" id="csvFile" accept=".csv,text/csv">
+                    </div>
+                    <div class="input-group">
+                        <label for="coursesCsvFile">Simplified courses CSV</label>
+                        <input type="file" id="coursesCsvFile" accept=".csv,text/csv">
+                    </div>
+                    <div class="input-group">
+                        <label for="semesterSelect">Semester</label>
+                        <select id="semesterSelect"></select>
+                    </div>
+                    <div class="input-group narrow">
+                        <label for="termCode">Term in course name</label>
+                        <input type="text" id="termCode" placeholder="26/FA" autocomplete="off">
+                    </div>
+                    <div class="input-group narrow">
+                        <label for="inactiveDays">Inactive after (days)</label>
+                        <input type="number" id="inactiveDays" min="1" max="365" value="14">
+                    </div>
+                </div>
+                <p class="hint">
+                    Student CSV may be a single column of IDs, or a file with a header named
+                    <code>OrgDefinedId</code>, <code>person_id</code>, or <code>Student ID</code>.
+                    Leading zeros are tried automatically.
+                    Upload the same simplified courses file used by Empty Course Audit
+                    (<code>Combined Depts, Course Number, Section, Term</code>,
+                    <code>Start Date</code>, <code>End Date</code>) to fill course dates.
+                    Prefixed headers such as <code>course sec meetings simplified → Start Date</code> still work.
+                </p>
+                <div class="checks">
+                    <label><input type="checkbox" id="include7xx" checked> Include 7xx sections</label>
+                    <label><input type="checkbox" id="include8xx" checked> Include 8xx sections</label>
+                    <label><input type="checkbox" id="flaggedOnly"> Show flagged rows only</label>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-primary" id="runBtn">
+                        <i class="fa-solid fa-play"></i> Run report
+                    </button>
+                    <button type="button" class="btn-secondary" id="csvBtn" disabled>
+                        <i class="fa-solid fa-download"></i> Download CSV
+                    </button>
+                </div>
+                <div id="loadingContainer" class="loading-container" style="display:none;margin-top:16px;">
+                    <div class="loading-bar-row">
+                        <div class="loading-bar">
+                            <div class="loading-bar-fill"></div>
+                        </div>
+                        <span class="loading-percent">0%</span>
+                    </div>
+                    <div class="loading-status"></div>
+                </div>
+                <div id="statusLine" class="status-line">Upload a CSV and choose a semester, then run.</div>
+            </div>
+
+            <div class="card" id="resultsCard" hidden>
+                <div class="summary-pills" id="summaryPills"></div>
+                <div class="table-wrap">
+                    <table id="resultsTable" class="display" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>OrgDefinedId</th>
+                                <th>Name</th>
+                                <th>Course name</th>
+                                <th>Section</th>
+                                <th>Start</th>
+                                <th>End</th>
+                                <th>Course code</th>
+                                <th>Course last access</th>
+                                <th>Days since course</th>
+                                <th>D2L last login</th>
+                                <th>Days since D2L</th>
+                                <th>Flags</th>
+                                <th>PDF</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card" id="pdfCard" hidden>
+                <h2 class="form-section-title" style="margin-top:0;">Student PDF</h2>
+                <p class="ferpa-note">
+                    <strong>FERPA:</strong> The branded PDF is an education record. Use it only for
+                    authorized Dual Enrollment follow-up. It includes course last access, D2L login,
+                    submitted assignments/quizzes/discussions, and last date of academic activity.
+                </p>
+                <div class="pdf-row">
+                    <div class="input-group">
+                        <label for="studentFilter">Find student by name</label>
+                        <input type="text" id="studentFilter" list="studentNameList" placeholder="Type a last name or first name" autocomplete="off">
+                        <datalist id="studentNameList"></datalist>
+                    </div>
+                    <button type="button" class="btn-primary" id="pdfBtn">
+                        <i class="fa-solid fa-file-pdf"></i> Download branded PDF
+                    </button>
+                </div>
+                <p class="hint" id="pdfStatus" style="margin-top:12px;"></p>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/semester-config.js"></script>
+    <script src="../js/loading-utils.js"></script>
+    <script src="../js/ldaa-brightspace-api.js"></script>
+    <script src="../js/pdf-brand.js"></script>
+    <script src="../js/ldaa-report.js"></script>
+    <script src="../js/dual-enrollment-last-access.js"></script>
+</body>
+
+</html>

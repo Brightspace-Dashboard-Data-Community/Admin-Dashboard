@@ -1,0 +1,137 @@
+<!--
+  Faculty Onboarding Progress Widget
+  Paste into a D2L HTML widget on the faculty homepage.
+  Requires faculty enrollment in the onboarding hub course shell for JSON read access.
+-->
+<div id="fsp-progress-widget" style="font-family:Arial,sans-serif;padding:12px;border:1px solid #dbe3ef;border-radius:8px;background:#fff;">
+  <div style="font-weight:700;color:#003366;font-size:16px;margin-bottom:8px;">Your Onboarding Progress</div>
+  <div id="fsp-widget-loading" style="color:#666;font-size:13px;">Loading your progress…</div>
+  <div id="fsp-widget-content" style="display:none;">
+    <div style="font-size:13px;color:#334155;margin-bottom:6px;">
+      <span id="fsp-phase-label"></span> — <strong id="fsp-pct-label">0%</strong> complete
+    </div>
+    <div style="height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin-bottom:10px;">
+      <div id="fsp-progress-bar" style="height:100%;background:#0ea5e9;width:0%;transition:width 0.3s;"></div>
+    </div>
+    <div style="font-weight:600;font-size:13px;color:#0f3d6d;margin-bottom:6px;">Your Next Steps</div>
+    <ul id="fsp-next-steps" style="margin:0;padding-left:18px;font-size:13px;color:#334155;"></ul>
+    <div style="margin-top:10px;font-size:12px;">
+      <a id="fsp-orient-link" href="#" style="color:#0066cc;margin-right:12px;">Faculty Orientation</a>
+      <a href="https://your-brightspace.example.edu" style="color:#0066cc;">Contact eLearning</a>
+    </div>
+  </div>
+  <div id="fsp-widget-empty" style="display:none;color:#666;font-size:13px;">
+    No onboarding record found. Contact the eLearning Office if you are a new instructor.
+  </div>
+</div>
+<p><script>
+(function() {
+  if (window.fspProgressWidgetLoaded) return;
+  window.fspProgressWidgetLoaded = true;
+
+  var ORG_UNIT_ID = "1000001";
+  var API_VERSION = "1.49";
+  var CONFIG_BASE = "https://your-brightspace.example.edu/content/admin-dashboard/faculty-onboarding/";
+
+  function getCsrf() {
+    return localStorage.getItem("XSRF.Token") || sessionStorage.getItem("XSRF.Token");
+  }
+
+  function fetchJson(url, opts) {
+    opts = opts || {};
+    var headers = opts.headers || {};
+    var csrf = getCsrf();
+    if (csrf) headers["X-Csrf-Token"] = csrf;
+    return fetch(url, { credentials: "include", headers: headers }).then(function(r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    });
+  }
+
+  function sanitize(v) {
+    return String(v || "").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  }
+
+  function buildFileName(orgId, first, last) {
+    return orgId + "-" + sanitize(first) + "-" + sanitize(last) + ".json";
+  }
+
+  function tryLoadRecord(orgId, first, last) {
+    var fileName = buildFileName(orgId, first, last);
+    var folders = ["inprogress-onboarding", "faculty-logs"];
+    var chain = Promise.reject();
+    folders.forEach(function(folder) {
+      chain = chain.catch(function() {
+        var path = "/" + folder + "/" + fileName;
+        var url = "/d2l/api/lp/" + API_VERSION + "/" + ORG_UNIT_ID + "/managefiles/file?path=" + encodeURIComponent(path);
+        return fetch(url, { credentials: "include" }).then(function(r) {
+          if (!r.ok) throw new Error("not found");
+          return r.text().then(JSON.parse);
+        });
+      });
+    });
+    return chain;
+  }
+
+  function renderWidget(record, phases) {
+    document.getElementById("fsp-widget-loading").style.display = "none";
+    document.getElementById("fsp-widget-content").style.display = "block";
+
+    var lifecycle = record.lifecycle || {};
+    var total = 0, checked = 0;
+    var currentPhase = "phase1";
+    (phases || []).forEach(function(phase) {
+      var items = phase.items || [];
+      var pChecked = 0;
+      items.forEach(function(item) {
+        var label = typeof item === "string" ? item : item.label;
+        total++;
+        if (lifecycle[phase.key] && lifecycle[phase.key][label]) { checked++; pChecked++; }
+      });
+      if (pChecked < items.length && currentPhase === "phase1" || (items.length && pChecked < items.length)) {
+        if (items.length && pChecked < items.length) currentPhase = phase.key;
+      }
+    });
+    var pct = total ? Math.round((checked / total) * 100) : 0;
+    document.getElementById("fsp-pct-label").textContent = pct + "%";
+    document.getElementById("fsp-progress-bar").style.width = pct + "%";
+    var phaseTitle = (phases.find(function(p) { return p.key === (record.currentPhase || currentPhase); }) || {}).title || "Onboarding";
+    document.getElementById("fsp-phase-label").textContent = phaseTitle;
+
+    var steps = [];
+    (phases || []).forEach(function(phase) {
+      (phase.items || []).forEach(function(item) {
+        if (steps.length >= 3) return;
+        var label = typeof item === "string" ? item : item.label;
+        var visible = typeof item === "object" && item.facultyVisible;
+        if (!visible) return;
+        if (!lifecycle[phase.key] || !lifecycle[phase.key][label]) {
+          steps.push(label);
+        }
+      });
+    });
+    var ul = document.getElementById("fsp-next-steps");
+    ul.innerHTML = steps.length
+      ? steps.map(function(s) { return "<li>" + s + "</li>"; }).join("")
+      : "<li style=\"list-style:none;margin-left:-18px;color:#17692c;\">Great job — you are on track!</li>";
+  }
+
+  fetchJson("/d2l/api/lp/" + API_VERSION + "/users/whoami").then(function(me) {
+    return fetchJson("/d2l/api/lp/" + API_VERSION + "/users/" + me.Identifier).then(function(user) {
+      var orgId = String(user.OrgDefinedId || "").trim();
+      var first = user.FirstName || "";
+      var last = user.LastName || "";
+      return fetch(CONFIG_BASE + "config/phases.json", { credentials: "include" })
+        .then(function(r) { return r.json(); })
+        .then(function(cfg) {
+          return tryLoadRecord(orgId, first, last).then(function(record) {
+            renderWidget(record, cfg.phases || []);
+          });
+        });
+    });
+  }).catch(function() {
+    document.getElementById("fsp-widget-loading").style.display = "none";
+    document.getElementById("fsp-widget-empty").style.display = "block";
+  });
+})();
+</script></p>

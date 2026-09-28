@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Usage Analytics - D2L Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
+
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            margin-left: 0;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            overflow: visible;
+        }
+
+        .back-link:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-2px);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .tabs {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin: var(--spacing-md) 0 var(--spacing-lg);
+        }
+
+        .tab-button {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 999px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+        }
+
+        .tab-button.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .controls-row {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .field label {
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .field select {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-base);
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+        }
+
+        .status-message {
+            margin: var(--spacing-md) 0;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            background-color: #e8f4fd;
+            border: 1px solid #c5e0fa;
+            color: #0366d6;
+        }
+
+        .muted-text {
+            color: var(--text-secondary);
+            font-size: var(--font-size-sm);
+        }
+
+        /* Button Styles - Consistent with design system */
+        .btn-primary,
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: var(--bg-color);
+            border-color: var(--text-primary);
+        }
+
+        .btn-secondary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Card spacing - consistent spacing between cards */
+        .card {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .card:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Table styling - better organization and readability */
+        #usageTable,
+        #usageCourseTable {
+            width: 100% !important;
+        }
+
+        #usageTable thead th,
+        #usageCourseTable thead th {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-weight: 600;
+            padding: 12px 8px;
+            border-bottom: 2px solid var(--border-color);
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        #usageTable tbody td,
+        #usageCourseTable tbody td {
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: top;
+        }
+
+        #usageTable tbody tr,
+        #usageCourseTable tbody tr {
+            background-color: var(--surface-color);
+        }
+
+        #usageTable tbody tr:hover,
+        #usageCourseTable tbody tr:hover {
+            background-color: var(--bg-color);
+        }
+
+        #usageTable tbody tr:nth-child(even),
+        #usageCourseTable tbody tr:nth-child(even) {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        #usageTable tbody tr:nth-child(even):hover,
+        #usageCourseTable tbody tr:nth-child(even):hover {
+            background-color: var(--bg-color);
+        }
+
+        /* DataTables pagination styling */
+        .dataTables_wrapper .dataTables_paginate {
+            margin-top: var(--spacing-md);
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            padding: 6px 12px;
+            margin: 0 2px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background-color: var(--surface-color);
+            color: var(--text-primary) !important;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background-color: var(--bg-color);
+            border-color: var(--text-primary);
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background-color: var(--primary-color);
+            color: white !important;
+            border-color: var(--primary-color);
+        }
+
+        .dataTables_wrapper .dataTables_length select,
+        .dataTables_wrapper .dataTables_filter input {
+            padding: 6px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+        }
+
+        .dataTables_wrapper .dataTables_info {
+            color: var(--text-secondary);
+            padding-top: var(--spacing-sm);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation (injected via js/sidebar.js) -->
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports & Tools
+                    </a>
+                    <h1 class="page-title">System Usage Analytics</h1>
+                    <p class="page-subtitle">Quantify adoption and activity across Brightspace for a selected semester. Use tabs to switch summaries.</p>
+                </div>
+            </header>
+
+            <!-- Tabs -->
+            <div class="tabs" role="tablist">
+                <button class="tab-button active" data-tab="usage-overview" role="tab">Overview</button>
+                <button class="tab-button" data-tab="usage-bycourse" role="tab">By Course</button>
+            </div>
+
+            <!-- Overview Tab -->
+            <section id="usage-overview" class="tab-content active">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fa-solid fa-circle-info"></i> About this report
+                        </h2>
+                    </div>
+                    <div class="status-message" id="usageStatus">
+                        <div>
+                            <strong>What this pulls:</strong>
+                            <div class="muted-text" style="margin-top: var(--spacing-xs);">
+                                • Unique logins by day (from login/last-access sources).<br/>
+                                • Active courses accessed per day.<br/>
+                                • Recency buckets (≤7d, >30d) for user logins.<br/>
+                                • Optional tool indicators: Content views, Quiz attempts, Discussion posts.<br/>
+                                <span>Select a semester and click <b>Run</b> to populate the table.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fa-solid fa-filter"></i> Filters & Actions
+                        </h2>
+                    </div>
+                    <div class="controls-row">
+                        <div class="field">
+                            <label for="usageSemester">Semester</label>
+                            <select id="usageSemester">
+                                <option>Loading…</option>
+                            </select>
+                        </div>
+                        <div class="field" style="flex: 1 1 auto;">
+                            <label>&nbsp;</label>
+                            <div style="display: flex; gap: var(--spacing-sm);">
+                                <button id="usageRun" class="btn-primary">
+                                    <i class="fa-solid fa-rotate-right"></i> Run
+                                </button>
+                                <button id="usageDownload" class="btn-secondary">
+                                    <i class="fa-solid fa-download"></i> Download CSV
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Daily Usage Summary</h2>
+                    </div>
+                    <table id="usageTable" class="display" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Unique Users</th>
+                                <th>Active Courses</th>
+                                <th>Content Views</th>
+                                <th>Quiz Attempts</th>
+                                <th>Discussion Posts</th>
+                                <th>Assignments</th>
+                                <th>Other</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- By Course Tab -->
+            <section id="usage-bycourse" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fa-solid fa-filter"></i> Filters & Actions
+                        </h2>
+                    </div>
+                    <div class="controls-row">
+                        <div class="field">
+                            <label for="usageSemester2">Semester</label>
+                            <select id="usageSemester2">
+                                <option>Loading…</option>
+                            </select>
+                        </div>
+                        <div class="field" style="flex: 1 1 auto;">
+                            <label>&nbsp;</label>
+                            <div style="display: flex; gap: var(--spacing-sm);">
+                                <button id="usageRun2" class="btn-primary">
+                                    <i class="fa-solid fa-rotate-right"></i> Run
+                                </button>
+                                <button id="usageDownload2" class="btn-secondary">
+                                    <i class="fa-solid fa-download"></i> Download CSV
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Usage by Course</h2>
+                    </div>
+                    <table id="usageCourseTable" class="display" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>OrgUnitId</th>
+                                <th>Course Code</th>
+                                <th>Course Name</th>
+                                <th>Unique Users</th>
+                                <th>Last Activity</th>
+                                <th>Content Views</th>
+                                <th>Quiz Attempts</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <!-- D2L API - Must be loaded first -->
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/semester-config.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <script src="../js/loading-utils.js"></script>
+    <script src="../js/system-usage-report.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,301 @@
+:root {
+    /* Use theme colors from variables.css - Green Theme */
+    --primary-hover: var(--primary-dark);
+    --accent-color: #f8f9fa;
+    --border-radius: var(--radius-md);
+    --box-shadow: var(--shadow-md);
+    --transition: all var(--transition-speed) ease;
+  }
+  
+  body { 
+    font-family: var(--font-family); 
+    margin: 20px; 
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    line-height: 1.6;
+  }
+  
+  h1 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.5rem;
+  }
+  
+  .filters { 
+    margin-bottom: 20px;
+    background-color: var(--surface-color);
+    padding: 15px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+  
+  .filters label {
+    margin-right: 8px;
+    font-weight: 500;
+  }
+  
+  .filters select {
+    padding: 6px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+  }
+  
+  /* DataTables styling */
+  .dataTables_wrapper {
+    background-color: var(--surface-color);
+    padding: 15px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    margin-bottom: 20px;
+  }
+  
+  table.dataTable {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  table.dataTable thead th {
+    background-color: var(--accent-color);
+    color: var(--primary-color);
+    font-weight: 600;
+  }
+  
+  table.dataTable tbody tr:hover {
+    background-color: rgba(26, 93, 26, 0.05);
+  }
+  
+  /* Modal styling */
+  .modal {
+    display: none; 
+    position: fixed; 
+    z-index: 1000; 
+    left: 0; 
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.6);
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.3s;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  .modal-content {
+    background-color: var(--surface-color); 
+    margin: 5% auto; 
+    padding: 25px 30px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    width: 80%;
+    max-width: 900px;
+    animation: slideDown 0.4s;
+    position: relative;
+  }
+  
+  @keyframes slideDown {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  
+  .close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    color: var(--text-secondary);
+    float: right;
+    font-size: 28px;
+    font-weight: 300;
+    transition: var(--transition);
+  }
+  
+  .close:hover, .close:focus { 
+    color: var(--text-primary); 
+    text-decoration: none; 
+    cursor: pointer; 
+  }
+  
+  /* 2-column grid layout */
+  .modal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 30px;
+    margin-top: 20px;
+  }
+  
+  .modal-header {
+    grid-column: 1 / -1;
+  }
+  
+  .modal-left-column,
+  .modal-right-column {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  #modalBody h2 {
+    color: var(--primary-color);
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+    grid-column: 1 / -1;
+  }
+  
+  #modalBody h3 {
+    color: var(--text-primary);
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  #modalBody p {
+    margin-bottom: 12px;
+  }
+  
+  #modalBody a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: var(--transition);
+  }
+  
+  #modalBody a:hover {
+    color: var(--primary-hover);
+    text-decoration: underline;
+  }
+  
+  #modalBody ul {
+    padding-left: 20px;
+    margin-bottom: 20px;
+    margin-top: 0;
+  }
+  
+  #modalBody li {
+    margin-bottom: 10px;
+  }
+  
+  /* Modal section styling */
+  .modal-section {
+    background-color: var(--bg-color);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .contact-details {
+    margin-bottom: 0;
+  }
+  
+  .contact-icon {
+    margin-right: 5px;
+    display: inline-block;
+    color: var(--text-secondary);
+  }
+  
+  .division-cell { 
+    cursor: pointer; 
+    color: var(--primary-color); 
+    text-decoration: underline;
+    transition: var(--transition);
+    font-weight: 500;
+  }
+  
+  .division-cell:hover { 
+    color: var(--primary-hover); 
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .modal-content {
+      width: 95%;
+      margin: 5% auto;
+      padding: 20px;
+    }
+    
+    .modal-grid {
+      grid-template-columns: 1fr;
+      grid-gap: 20px;
+    }
+    
+    .filters {
+      flex-direction: column;
+      gap: 10px;
+    }
+  }
+  
+  /* Expandable rows styling */
+  .course-details {
+    display: none;
+    padding: 15px;
+    background-color: var(--bg-color);
+    border-top: 1px solid var(--border-color);
+    margin-top: 5px;
+  }
+  
+  .course-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+  
+  .course-table th, 
+  .course-table td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .course-table th {
+    background-color: var(--accent-color);
+    color: var(--primary-color);
+    font-weight: 600;
+    border-bottom: 2px solid var(--primary-color);
+  }
+  
+  .prefix-cell {
+    cursor: pointer;
+    color: var(--primary-color);
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+  }
+  
+  .prefix-cell:hover {
+    color: var(--primary-light);
+  }
+  
+  .prefix-cell::after {
+    content: "▼";
+    font-size: 10px;
+    margin-left: 5px;
+    transition: transform 0.3s;
+  }
+  
+  .prefix-cell.expanded::after {
+    transform: rotate(180deg);
+  }
+  
+  .loading-indicator {
+    text-align: center;
+    padding: 10px;
+    font-style: italic;
+    color: var(--text-secondary);
+  }
+
+  /* Adds space below DataTables controls */
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter {
+  margin-bottom: 15px;
+}

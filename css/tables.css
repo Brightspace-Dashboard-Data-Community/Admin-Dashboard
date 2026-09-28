@@ -1,0 +1,240 @@
+/* Data Tables */
+.table-container {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    overflow-x: auto;
+    /* Allow horizontal scroll on small screens */
+    margin-top: var(--spacing-md);
+}
+
+/* Shared table styles: .data-table and any table inside .table-container (e.g. Search Courses) */
+.data-table,
+.table-container .table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    color: var(--text-primary);
+    table-layout: auto;
+}
+
+.data-table th,
+.data-table td,
+.table-container .table th,
+.table-container .table td {
+    padding: 12px 18px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+    vertical-align: middle;
+}
+
+/* Min-widths so content isn't scrunched; columns can grow for long text */
+.data-table th:first-child,
+.data-table td:first-child,
+.table-container .table th:first-child,
+.table-container .table td:first-child {
+    min-width: 84px;
+}
+
+.data-table th:nth-child(2),
+.data-table td:nth-child(2),
+.table-container .table th:nth-child(2),
+.table-container .table td:nth-child(2) {
+    min-width: 180px;
+}
+
+.data-table th:nth-child(3),
+.data-table td:nth-child(3),
+.table-container .table th:nth-child(3),
+.table-container .table td:nth-child(3) {
+    min-width: 180px;
+}
+
+/* Long course names/codes wrap instead of overflowing */
+.data-table td:nth-child(2),
+.data-table td:nth-child(3),
+.table-container .table td:nth-child(2),
+.table-container .table td:nth-child(3) {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.data-table th:nth-child(4),
+.data-table td:nth-child(4),
+.data-table th:nth-child(5),
+.data-table td:nth-child(5),
+.table-container .table th:nth-child(4),
+.table-container .table td:nth-child(4),
+.table-container .table th:nth-child(5),
+.table-container .table td:nth-child(5) {
+    min-width: 100px;
+}
+
+.data-table th:nth-child(6),
+.data-table td:nth-child(6),
+.table-container .table th:nth-child(6),
+.table-container .table td:nth-child(6) {
+    min-width: 120px;
+}
+
+.data-table th:last-child,
+.data-table td:last-child,
+.table-container .table th:last-child,
+.table-container .table td:last-child {
+    min-width: 100px;
+    white-space: nowrap;
+}
+
+.data-table th,
+.table-container .table th {
+    background-color: var(--primary-color);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: none;
+    letter-spacing: 0;
+    border-bottom: none;
+}
+
+/* Alternating row background so rows are easy to follow */
+.data-table tbody tr:nth-child(even),
+.table-container .table tbody tr:nth-child(even) {
+    background-color: #f5faf5;
+}
+
+.data-table tbody tr:hover,
+.table-container .table tbody tr:hover {
+    background-color: rgba(26, 93, 26, 0.08);
+}
+
+.data-table tbody tr:last-child td,
+.table-container .table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Empty State / Message Row */
+.table-message-row {
+    background-color: #f9f9f9;
+}
+
+.table-message {
+    text-align: center;
+    padding: 32px !important;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* Actions column: buttons/links not scrunched */
+.table-actions,
+.table-container .table .action-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: nowrap;
+    align-items: center;
+    padding: 2px 0;
+}
+
+.table-container .table td .action-buttons a {
+    flex-shrink: 0;
+}
+
+.btn-icon-small {
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 4px;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-icon-small:hover {
+    background-color: var(--primary-light);
+    color: #fff;
+    border-color: var(--primary-light);
+}
+
+/* Pagination / Footer */
+.table-footer {
+    padding: 16px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    background-color: #fff;
+    border-top: 1px solid var(--border-color);
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.rows-per-page {
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    font-size: 13px;
+}
+
+/* Broken / Missing Links (broken-links.html) tweaks */
+#results-table.data-table {
+    table-layout: fixed; /* keeps long strings from widening the table */
+}
+
+#results-table.data-table th,
+#results-table.data-table td {
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    vertical-align: top;
+}
+
+/* DataTables column class hook (added via JS) */
+.cell-wrap {
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+/* Make DataTables length dropdown match the report controls */
+#results-table_wrapper .dataTables_length select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 10px 36px 10px 12px;
+    background-color: #fff;
+    font-size: 14px;
+    color: var(--text-primary);
+    background-image:
+        linear-gradient(45deg, transparent 50%, var(--text-secondary) 50%),
+        linear-gradient(135deg, var(--text-secondary) 50%, transparent 50%);
+    background-position:
+        calc(100% - 18px) 50%,
+        calc(100% - 13px) 50%;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+}
+
+/* Space between DataTables search/length controls and the table header */
+#results-table_wrapper .dataTables_length,
+#results-table_wrapper .dataTables_filter {
+    margin-bottom: 10px;
+}
+
+/* Some DataTables layouts don't honor margins on controls (floats/flex); ensure table has top gap too. */
+#results-table_wrapper > div + table,
+#results-table_wrapper table {
+    margin-top: 4px;
+}
+
+/* Topic Title review link styling */
+#results-table .topic-review-link {
+    color: var(--primary-color);
+    font-weight: 600;
+    text-decoration: underline;
+    display: inline-block;
+    max-width: 100%;
+    cursor: pointer;
+}

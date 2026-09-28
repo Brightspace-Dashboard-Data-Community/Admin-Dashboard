@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Course Management Overview — lookups, shells, sandboxes, and course reports">
+    <title>Course Overview - D2L Admin</title>
+
+    <link rel="icon" href="favicon.ico">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+
+    <link rel="prefetch" href="search-course.html">
+    <link rel="prefetch" href="reports-tools.html">
+</head>
+
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <div class="app-container">
+        <!-- Sidebar Navigation (injected via js/sidebar.js) -->
+
+        <main id="main-content" class="main-content">
+            <header class="top-bar home-top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn" type="button" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+                </div>
+            </header>
+
+            <section class="home-hero" aria-labelledby="overview-hero-title">
+                <div class="home-hero-copy">
+                    <p class="home-hero-eyebrow">Course Mgt</p>
+                    <h1 id="overview-hero-title" class="page-title">Course Overview</h1>
+                    <p class="home-hero-lead">
+                        Find offerings, provision sandboxes, and create shells. Use the audits below for empty courses, merges, cancelled sections, and content issues.
+                    </p>
+                    <div class="home-hero-actions">
+                        <a href="search-course.html" class="launch-tool-btn">
+                            <span>Search a course</span>
+                            <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                        </a>
+                        <a href="reports-tools.html" class="launch-tool-btn launch-tool-btn-secondary">
+                            <span>All course reports</span>
+                            <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </div>
+                <aside class="home-hero-aside">
+                    <span class="home-semester-label" id="home-semester-label">Current term</span>
+                    <p class="home-hero-aside-text">
+                        This page is a map of course tools — not live org-unit counts.
+                        Run an audit when you need numbers; results appear on that report.
+                    </p>
+                </aside>
+            </section>
+
+            <section class="home-section" aria-labelledby="course-frequent-title">
+                <div class="home-section-header">
+                    <h2 id="course-frequent-title" class="home-section-title">Start here</h2>
+                    <span class="home-section-kicker">Daily work</span>
+                </div>
+                <div class="home-section-separator"></div>
+                <p class="home-section-intro">Look up an offering first, then create a sandbox or shell if one does not exist.</p>
+
+                <div class="home-frequent-grid">
+                    <a href="search-course.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-magnifying-glass"></i></div>
+                        <h3 class="home-tool-card-title">Search for Courses</h3>
+                        <p class="home-tool-card-text">Look up a course offering, sandbox, or org unit.</p>
+                    </a>
+                    <a href="create-sandbox.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-flask"></i></div>
+                        <h3 class="home-tool-card-title">Create a Sandbox</h3>
+                        <p class="home-tool-card-text">Provision a practice course for an instructor.</p>
+                    </a>
+                    <a href="create-course.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-plus-circle"></i></div>
+                        <h3 class="home-tool-card-title">Create a Course Shell</h3>
+                        <p class="home-tool-card-text">Make an empty offering when SIS has not created one.</p>
+                    </a>
+                    <a href="course-list.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-list"></i></div>
+                        <h3 class="home-tool-card-title">View Course List</h3>
+                        <p class="home-tool-card-text">Browse courses for a semester from this dashboard.</p>
+                    </a>
+                </div>
+            </section>
+
+            <section class="home-section" aria-labelledby="course-guide-title">
+                <div class="home-section-header">
+                    <h2 id="course-guide-title" class="home-section-title">When to use which</h2>
+                    <span class="home-section-kicker">Choose a path</span>
+                </div>
+                <div class="home-section-separator"></div>
+                <p class="home-section-intro">Match the request to the tool. Each row opens the right page.</p>
+
+                <div class="overview-guide">
+                    <a href="search-course.html" class="overview-guide-item">
+                        <p class="overview-guide-if">Need the org unit ID, code, or home page for an offering</p>
+                        <span class="overview-guide-then">Search Course <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+                    </a>
+                    <a href="create-sandbox.html" class="overview-guide-item">
+                        <p class="overview-guide-if">Instructor needs a practice space, not a live section</p>
+                        <span class="overview-guide-then">Create Sandbox <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+                    </a>
+                    <a href="reports/empty-course-audit.html" class="overview-guide-item">
+                        <p class="overview-guide-if">Shells that still have no content for the term</p>
+                        <span class="overview-guide-then">Empty Course Audit <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+                    </a>
+                    <a href="reports/course-merge-verifier.html" class="overview-guide-item">
+                        <p class="overview-guide-if">Confirm section associations before or after a merge</p>
+                        <span class="overview-guide-then">Merge Verifier <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+                    </a>
+                    <a href="reports/cxld-course-tool.html" class="overview-guide-item">
+                        <p class="overview-guide-if">Cancelled (CXLD) offerings that still need cleanup</p>
+                        <span class="overview-guide-then">Cancelled Courses <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+                    </a>
+                    <a href="reports/sis-d2l-course-gap.html" class="overview-guide-item">
+                        <p class="overview-guide-if">SIS has a section that is missing in Brightspace, or the reverse</p>
+                        <span class="overview-guide-then">SIS vs D2L Gap <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+                    </a>
+                </div>
+            </section>
+
+            <section class="home-section" aria-labelledby="course-reports-title">
+                <div class="home-section-header">
+                    <h2 id="course-reports-title" class="home-section-title">Quick reports</h2>
+                    <span class="home-section-kicker">Run when needed</span>
+                </div>
+                <div class="home-section-separator"></div>
+                <p class="home-section-intro">Data comes from running the report. Export CSV from that page if you need a file.</p>
+
+                <div class="home-frequent-grid">
+                    <a href="reports/empty-course-audit.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-box-open"></i></div>
+                        <h3 class="home-tool-card-title">Empty Course Audit</h3>
+                        <p class="home-tool-card-text">Find shells with no content, news, or grade items.</p>
+                    </a>
+                    <a href="reports/course-merge-verifier.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-object-group"></i></div>
+                        <h3 class="home-tool-card-title">Course Merge Verifier</h3>
+                        <p class="home-tool-card-text">Review merged courses and section associations.</p>
+                    </a>
+                    <a href="reports/course-merge-updater.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                        <h3 class="home-tool-card-title">Course Merge Updater</h3>
+                        <p class="home-tool-card-text">Apply merge updates after verification.</p>
+                    </a>
+                    <a href="reports/cxld-course-tool.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-ban"></i></div>
+                        <h3 class="home-tool-card-title">Cancelled Courses</h3>
+                        <p class="home-tool-card-text">Review and update CXLD offerings for the term.</p>
+                    </a>
+                    <a href="reports/no-instructor-activity.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-user-clock"></i></div>
+                        <h3 class="home-tool-card-title">No Instructor Activity</h3>
+                        <p class="home-tool-card-text">Instructors who have not accessed their course (7 / 14 / 30+ days).</p>
+                    </a>
+                    <a href="reports/broken-links.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-link-slash"></i></div>
+                        <h3 class="home-tool-card-title">Broken / Missing Links</h3>
+                        <p class="home-tool-card-text">Scan course content for broken or missing links.</p>
+                    </a>
+                    <a href="reports/course-list-by-semester.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-list-ol"></i></div>
+                        <h3 class="home-tool-card-title">Course List by Semester</h3>
+                        <p class="home-tool-card-text">View or export the course list for a selected term.</p>
+                    </a>
+                    <a href="reports/course-repair-workbench.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+                        <h3 class="home-tool-card-title">Course Repair Workbench</h3>
+                        <p class="home-tool-card-text">Fix common offering issues from one workbench.</p>
+                    </a>
+                </div>
+            </section>
+
+            <section class="home-section" aria-labelledby="course-more-title">
+                <div class="home-orient-card">
+                    <div class="home-orient-icon" aria-hidden="true">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <div class="home-orient-copy">
+                        <h2 id="course-more-title" class="home-orient-title">Need a different course report?</h2>
+                        <p class="home-orient-text">
+                            Homepage, navbar, and content-experience audits, plus copy-module and sandbox launcher, live in Reports &amp; Tools.
+                        </p>
+                    </div>
+                    <a href="reports-tools.html" class="launch-tool-btn">
+                        <span>Browse all reports</span>
+                        <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/d2l-api.js"></script>
+    <script src="js/semester-config.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/section-overview.js"></script>
+</body>
+
+</html>

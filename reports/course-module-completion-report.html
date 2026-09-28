@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Module Completion - D2L Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/forms.css">
+    <link rel="stylesheet" href="../css/tables.css">
+
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            margin-left: 0;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .back-link:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-2px);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: var(--bg-color);
+            border-color: var(--text-primary);
+        }
+
+        .btn-secondary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .card {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .card:last-child {
+            margin-bottom: 0;
+        }
+
+        #log {
+            max-height: 280px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            padding: var(--spacing-md);
+            margin-top: var(--spacing-md);
+            background: var(--bg-color);
+            border-radius: var(--radius-sm);
+            font-family: ui-monospace, monospace;
+            font-size: var(--font-size-sm);
+        }
+
+        #log p {
+            margin: 5px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        #log p:last-child {
+            border-bottom: none;
+        }
+
+        #results .module-report-heading {
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: var(--spacing-md) 0 var(--spacing-sm);
+        }
+
+        #results .module-report-heading-spaced {
+            margin-top: var(--spacing-xl);
+        }
+
+        #results .module-report-meta {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        #results .module-report-table th[scope="row"] {
+            width: 200px;
+            background-color: var(--bg-color);
+            font-weight: 600;
+        }
+
+        #results .module-report-table tbody tr:nth-child(even) {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        #results .status-ok {
+            color: var(--primary-color, #1a5d1a);
+            font-weight: 600;
+        }
+
+        #results .status-warn {
+            color: #b45309;
+            font-weight: 600;
+        }
+
+        #results .module-report-error {
+            background: #fff4f4;
+            border: 1px solid #f5c2c2;
+            padding: var(--spacing-md);
+            border-radius: var(--radius-sm);
+            margin-top: var(--spacing-md);
+            color: var(--text-primary);
+        }
+
+        #results .module-report-error p {
+            margin: var(--spacing-sm) 0 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn" type="button"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports & Tools
+                    </a>
+                    <h1 class="page-title">Course Module Completion</h1>
+                    <p class="page-subtitle">Per-student topic completion for one course offering: one learner by Org Defined ID, or everyone on the classlist. Uses Brightspace content completion data.</p>
+                </div>
+            </header>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fa-solid fa-list-check"></i> Run report
+                    </h2>
+                </div>
+
+                <div class="border-l-warning mb-4 text-sm">
+                    Requires <strong>completion tracking</strong> on course topics. Run this tool while signed into Brightspace in the same browser (same origin as the APIs). <strong>Classlist mode</strong> calls the completion API for every topic × every learner and can take several minutes on large sections.
+                </div>
+
+                <div class="form-group">
+                    <label class="text-sm" style="font-weight: 600; display: block; margin-bottom: var(--spacing-xs);">Report scope</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="reportMode" id="reportModeSingle" value="single" checked>
+                        <label class="form-check-label" for="reportModeSingle">Single learner (Org Defined ID below)</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="reportMode" id="reportModeClasslist" value="classlist">
+                        <label class="form-check-label" for="reportModeClasslist">Entire classlist for this course</label>
+                    </div>
+                </div>
+
+                <div id="classlistOptions" class="form-group" hidden>
+                    <label for="classlistRoleFilter">Who to include</label>
+                    <select id="classlistRoleFilter" class="form-control">
+                        <option value="learners">Learners only (exclude Instructor 105 &amp; Designer 106)</option>
+                        <option value="all">Everyone on the classlist</option>
+                    </select>
+                    <div class="form-text">If your org maps faculty to other role IDs, choose “Everyone” or ask for an expanded filter.</div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="orgUnitId">Course OrgUnit ID</label>
+                        <input id="orgUnitId" class="form-control" type="text" inputmode="numeric" placeholder="e.g. 3009837" autocomplete="off">
+                    </div>
+                    <div class="form-group" id="singleStudentFieldGroup">
+                        <label for="studentId">Student Org Defined ID</label>
+                        <input id="studentId" class="form-control" type="text" placeholder="College student ID" autocomplete="off">
+                        <div class="form-text">Used only for single-learner scope.</div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button id="generateBtn" type="button" class="btn-primary">
+                        <i class="fa-solid fa-play"></i> Generate report
+                    </button>
+                    <button id="exportBtn" type="button" class="btn-secondary">
+                        <i class="fa-solid fa-download"></i> Download CSV
+                    </button>
+                </div>
+
+                <div class="status-message" style="margin-top: var(--spacing-lg); padding: var(--spacing-md); border-radius: var(--radius-sm); background-color: #e8f4fd; border: 1px solid #c5e0fa; color: #0366d6; font-size: var(--font-size-sm);">
+                    <strong>What this uses</strong>
+                    <p class="text-sm" style="margin: var(--spacing-xs) 0 0; color: inherit;">
+                        Course TOC from LE Content, then each topic’s completion record per user. Classlist mode loads enrollments from the classlist API, then repeats those checks for each member. If a topic has no completion record or your role cannot read it, that row shows as not completed.
+                    </p>
+                </div>
+
+                <h3 class="card-title" style="margin-top: var(--spacing-xl); font-size: 1rem;">
+                    <i class="fa-solid fa-terminal"></i> Process log
+                </h3>
+                <div id="log"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fa-solid fa-table"></i> Results
+                    </h2>
+                </div>
+                <div id="results">
+                    <p class="text-muted text-sm">Results appear here after you generate the report.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/course-module-completion-report.js"></script>
+</body>
+
+</html>

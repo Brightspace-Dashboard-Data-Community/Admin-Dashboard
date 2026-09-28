@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Broken / Missing Links - D2L Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/forms.css">
+    <link rel="stylesheet" href="../css/tables.css">
+
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation (injected via js/sidebar.js) -->
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <h1 class="page-title">Broken / Missing Links</h1>
+                    <p class="page-subtitle">Scan courses for broken external links and missing file attachments</p>
+                </div>
+                <div class="header-actions">
+                    <button id="download-csv-btn" class="btn btn-outline"><i class="fa-solid fa-download"></i> Download CSV</button>
+                </div>
+            </header>
+
+            <!-- Scan Controls -->
+            <div class="card" style="margin-bottom: var(--spacing-lg);">
+                <div class="card-header">
+                    <h3 class="card-title">Link Scan</h3>
+                </div>
+                <div class="card-body">
+                    <div style="display: flex; gap: var(--spacing-md); align-items: flex-end; flex-wrap: wrap;">
+                        <div>
+                            <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: 500;">Semester</label>
+                            <select id="semester-select" class="form-control report-select" style="min-width: 200px;">
+                                <option value="">Loading...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: 500;">Scan Limit</label>
+                            <select id="scan-limit" class="form-control report-select" style="min-width: 150px;">
+                                <option value="50">50 courses</option>
+                                <option value="100" selected>100 courses</option>
+                                <option value="250">250 courses</option>
+                                <option value="500">500 courses</option>
+                                <option value="1000">1,000 courses</option>
+                                <option value="2000">2,000 courses</option>
+                                <option value="5000">5,000 courses</option>
+                                <option value="0">All courses</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1;"></div>
+                        <div>
+                            <button id="run-scan-btn" class="btn btn-primary">
+                                <i class="fa-solid fa-play"></i> Run Link Scan
+                            </button>
+                        </div>
+                    </div>
+                    <div style="margin-top: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-secondary, #f5f5f5); border-radius: var(--radius-sm, 4px);">
+                        <p style="margin: 0; font-size: 13px; color: var(--text-secondary);">
+                            <i class="fa-solid fa-info-circle"></i>
+                            <strong>Note:</strong> This scan uses D2L's built-in <code>IsBroken</code> property (LE API 1.72+) to detect broken links
+                            where the activity cannot be found. It also checks for file topics with missing file paths.
+                            External URLs are only flagged if D2L has marked them as broken.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Scan Results</h3>
+                    <div id="results-count" class="text-muted" style="font-size: 14px;">No scan run yet</div>
+                </div>
+                <div class="card-body">
+                    <div id="loading-indicator" style="text-align: center; padding: 40px; display: none;">
+                        <i class="fa-solid fa-spinner fa-spin"></i> <span id="loading-text">Preparing scan...</span>
+                    </div>
+                    <div id="results-container" style="display: none;">
+                        <div class="table-container" style="margin-top: 0;">
+                            <table id="results-table" class="display data-table" style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th>OrgUnitId</th>
+                                        <th>Course Code</th>
+                                        <th>Topic Title</th>
+                                        <th>Link Type</th>
+                                        <th>Link URL / File</th>
+                                        <th>Status</th>
+                                        <th>Error Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="empty-message" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                        Select a semester and click "Run Link Scan" to begin scanning courses for broken links.
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Topic Review Modal (opened when clicking Topic Title) -->
+        <div id="topic-review-overlay" class="modal-overlay" aria-hidden="true">
+            <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="topic-review-title">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="topic-review-title">
+                        <i class="fa-solid fa-magnifying-glass"></i> Topic Review
+                    </h3>
+                    <button id="topic-review-close" class="modal-close" aria-label="Close modal">
+                        &times;
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert-detail-item">
+                        <div class="alert-detail-label">OrgUnitId</div>
+                        <div class="alert-detail-value" id="review-orgunitid"></div>
+                    </div>
+                    <div class="alert-detail-item">
+                        <div class="alert-detail-label">Course Code</div>
+                        <div class="alert-detail-value" id="review-course-code"></div>
+                    </div>
+                    <div class="alert-detail-item">
+                        <div class="alert-detail-label">Topic Title</div>
+                        <div class="alert-detail-value" id="review-topic-title"></div>
+                    </div>
+                    <div class="alert-detail-item">
+                        <div class="alert-detail-label">Module</div>
+                        <div class="alert-detail-value" id="review-module-title"></div>
+                    </div>
+                    <div class="alert-detail-item">
+                        <div class="alert-detail-label">Topic Hidden?</div>
+                        <div class="alert-detail-value" id="review-topic-hidden"></div>
+                    </div>
+                    <div class="alert-detail-item">
+                        <div class="alert-detail-label">Module Hidden?</div>
+                        <div class="alert-detail-value" id="review-module-hidden"></div>
+                    </div>
+                    <div class="alert-detail-item">
+                        <div class="alert-detail-label">Topic Id</div>
+                        <div class="alert-detail-value" id="review-topic-id"></div>
+                    </div>
+                    <div class="alert-detail-item">
+                        <div class="alert-detail-label">Link Type</div>
+                        <div class="alert-detail-value" id="review-link-type"></div>
+                    </div>
+                    <div class="alert-detail-item">
+                        <div class="alert-detail-label">Link URL / File</div>
+                        <div class="alert-detail-value" id="review-link-url"></div>
+                    </div>
+                    <div class="alert-detail-item">
+                        <div class="alert-detail-label">Status</div>
+                        <div class="alert-detail-value" id="review-status"></div>
+                    </div>
+                    <div class="alert-detail-item">
+                        <div class="alert-detail-label">Error Details</div>
+                        <div class="alert-detail-value" id="review-error-details" style="white-space: pre-wrap;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery (required for DataTables) -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+
+    <!-- Core Scripts -->
+    <script src="../js/supabase.js"></script>
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/semester-config.js"></script>
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/broken-links.js"></script>
+
+</body>
+
+</html>
+

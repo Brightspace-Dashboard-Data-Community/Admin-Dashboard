@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "defaultInstructorKey": "instructor_a",
+  "instructors": {
+    "instructor_a": {
+      "name": "Alex Smith",
+      "firstName": "Alex",
+      "lastName": "Smith",
+      "title": "Instructor",
+      "email": "alex.smith@example.edu",
+      "phone": "555-0101",
+      "office": "A-210",
+      "officeHours": "Monday and Wednesday, 1:00–3:00 PM",
+      "bio": "I enjoy helping students succeed and reach their goals.",
+      "image": "sample-instructor-a.jpg"
+    },
+    "instructor_b": {
+      "name": "Jordan Jones",
+      "firstName": "Jordan",
+      "lastName": "Jones",
+      "title": "Instructor",
+      "email": "jordan.jones@example.edu",
+      "phone": "555-0102",
+      "office": "B-115",
+      "officeHours": "Tuesday and Thursday, 10:00 AM–12:00 PM",
+      "bio": "Dedicated to student success and engagement.",
+      "image": "sample-instructor-b.jpg"
+    }
+  },
+  "sections": {
+    "REPLACE_WITH_SECTION_1_ID": "instructor_a",
+    "REPLACE_WITH_SECTION_2_ID": "instructor_b",
+    "Section 1": "instructor_a",
+    "Section 2": "instructor_b"
+  }
+}

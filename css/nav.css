@@ -1,0 +1,296 @@
+/* Sidebar Navigation */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: var(--sidebar-width);
+    background-color: var(--surface-color);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    transition: width var(--transition-speed) ease, transform var(--transition-speed) ease;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.sidebar-header {
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--spacing-lg);
+    margin-top: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-weight: 700;
+    font-size: var(--font-size-lg);
+    color: var(--primary-color);
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.logo i {
+    font-size: 24px;
+    min-width: 24px;
+}
+
+.sidebar-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 18px;
+    padding: 4px;
+    border-radius: var(--radius-sm);
+    transition: background-color 0.2s;
+}
+
+.sidebar-toggle:hover {
+    background-color: var(--bg-color);
+    color: var(--primary-color);
+}
+
+/* Nav Links */
+.nav-links {
+    flex: 1;
+    padding: 0 var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.nav-item {
+    border-radius: var(--radius-sm);
+    transition: background-color 0.2s;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-md) var(--spacing-sm);
+    color: var(--text-secondary);
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+    overflow: hidden;
+    position: relative;
+    height: 48px;
+    /* Fixed height for consistency */
+}
+
+.nav-link i {
+    min-width: 24px;
+    font-size: 18px;
+    /* Slightly larger icon */
+    text-align: center;
+    margin-right: var(--spacing-md);
+}
+
+.link-text {
+    transition: opacity 0.2s;
+}
+
+.nav-item:hover .nav-link {
+    background-color: var(--bg-color);
+    color: var(--primary-color);
+}
+
+.nav-item.active .nav-link {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.nav-item.active .nav-link i {
+    color: white;
+}
+
+.submenu-icon {
+    margin-left: auto;
+    font-size: 12px;
+    transition: transform 0.3s ease;
+}
+
+/* Submenu Styles */
+.submenu {
+    display: none;
+    background-color: #f8f9fa;
+    /* Slightly darker than sidebar surface */
+    border-radius: var(--radius-sm);
+    margin: 0 var(--spacing-sm) var(--spacing-sm);
+    padding: var(--spacing-xs) 0;
+}
+
+.nav-item.open .submenu {
+    display: block;
+}
+
+.nav-item.open .nav-link {
+    /* Keep parent active look if expanded? Or just open. */
+    /* background-color: var(--bg-color); */
+}
+
+.nav-item.open .submenu-icon {
+    transform: rotate(180deg);
+}
+
+.submenu-link {
+    display: block;
+    padding: 8px 16px 8px 48px;
+    /* Indent + space for icon alignment */
+    color: var(--text-secondary);
+    font-size: 13px;
+    transition: color 0.2s;
+}
+
+.submenu-link:hover {
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+/* Ensure submenu is hidden when sidebar is collapsed (desktop) */
+body.sidebar-collapsed .submenu {
+    display: none !important;
+}
+
+/* User Profile at Bottom */
+.sidebar-footer {
+    padding: var(--spacing-lg);
+    border-top: 1px solid var(--border-color);
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.avatar {
+    width: 36px;
+    height: 36px;
+    background-color: var(--primary-light);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 600;
+    font-size: 14px;
+    min-width: 36px;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-details .name {
+    font-weight: 600;
+    font-size: var(--font-size-sm);
+}
+
+.user-details .role {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* Collapsed State (Desktop) */
+body.sidebar-collapsed .sidebar {
+    width: var(--sidebar-collapsed-width);
+}
+
+body.sidebar-collapsed .logo-text,
+body.sidebar-collapsed .link-text,
+body.sidebar-collapsed .submenu-icon,
+body.sidebar-collapsed .user-details {
+    opacity: 0;
+    width: 0;
+    display: none;
+    /* Hide completely to prevent layout issues */
+}
+
+body.sidebar-collapsed .sidebar-header {
+    justify-content: center;
+    padding: 0;
+}
+
+body.sidebar-collapsed .logo {
+    display: none;
+    /* Hide logo text/icon combo in header, keep toggle */
+}
+
+/* Re-show just the icon or handle header differently if needed. 
+   Usually in collapsed state, header might just show the toggle or logo icon.
+   Let's just hide the logo text but keep the logo icon visible if structure permits. 
+   Actually, let's adjust: */
+
+body.sidebar-collapsed .logo {
+    display: flex;
+}
+
+body.sidebar-collapsed .logo-text {
+    display: none;
+}
+
+body.sidebar-collapsed .sidebar-toggle {
+    display: none;
+    /* Hide toggle inside sidebar, move it? Or keep it? 
+                     Common pattern: Header toggle moves or stays. 
+                     Let's keep the toggle visible and center it. */
+    display: block;
+    position: absolute;
+    top: 20px;
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Wait, the toggle is inside .sidebar-header together with .logo. 
+   Let's simplify: in collapsed mode, hide logo, center toggle. */
+
+body.sidebar-collapsed .sidebar-header .logo {
+    display: none;
+}
+
+body.sidebar-collapsed .sidebar-footer {
+    padding: var(--spacing-lg) var(--spacing-sm);
+    justify-content: center;
+}
+
+/* Mobile State */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+        width: var(--sidebar-width);
+        /* Always full width when open on mobile */
+    }
+
+    body.mobile-nav-open .sidebar {
+        transform: translateX(0);
+    }
+
+    /* Overlay for mobile */
+    body.mobile-nav-open::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 90;
+    }
+
+    /* Hide desktop toggle on mobile sidebar */
+    .sidebar-toggle {
+        display: none;
+    }
+}

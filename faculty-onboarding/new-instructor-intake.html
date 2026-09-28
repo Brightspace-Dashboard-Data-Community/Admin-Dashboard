@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Instructor Intake - D2L Admin</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/forms.css">
+    <link rel="stylesheet" href="../css/tables.css">
+    <link rel="stylesheet" href="css/fsp-common.css">
+    <style>
+        .intake-form { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md); }
+        .intake-form .form-group.full-width { grid-column: 1 / -1; }
+        .faculty-roster { margin-top: var(--spacing-lg); }
+        .roster-actions { display: flex; gap: var(--spacing-sm); flex-wrap: wrap; margin-bottom: var(--spacing-md); }
+        .badge-active { background: var(--success-light, #d1fae5); color: var(--success-dark, #065f46); padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; }
+        .badge-inactive { background: var(--danger-light, #fee2e2); color: var(--danger-dark, #991b1b); padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; }
+        .edit-btn, .delete-btn { cursor: pointer; background: none; border: none; padding: 4px 8px; border-radius: 4px; }
+        .edit-btn:hover { background: var(--primary-light, #dbeafe); }
+        .delete-btn:hover { background: var(--danger-light, #fee2e2); }
+        .form-row-inline { display: flex; gap: var(--spacing-sm); align-items: end; }
+        .form-row-inline .form-group { flex: 1; }
+        #intakeForm { transition: opacity 0.2s; }
+        #intakeForm.editing { border-left: 4px solid var(--primary, #2563eb); padding-left: var(--spacing-md); }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn" type="button" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="command-center.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Command Center</a>
+                    <h1 class="page-title">New Instructor Intake <span class="beta-badge">Beta</span></h1>
+                    <p class="page-subtitle">Manually create and manage faculty onboarding records.</p>
+                </div>
+            </header>
+
+            <!-- Create / Edit Form -->
+            <div class="fsp-card card-static" style="margin-bottom: var(--spacing-lg);">
+                <h2 id="formTitle"><i class="fa-solid fa-user-plus"></i> Create Faculty Record</h2>
+                <form id="intakeForm" autocomplete="off">
+                    <div class="intake-form">
+                        <div class="form-group">
+                            <label class="form-label" for="facultyId">Faculty ID <span style="color:var(--danger)">*</span></label>
+                            <input id="facultyId" class="form-control" type="text" placeholder="e.g. F10042 or D2L OrgDefinedId" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="facultyName">Full Name <span style="color:var(--danger)">*</span></label>
+                            <input id="facultyName" class="form-control" type="text" placeholder="First Last" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="facultyEmail">Email <span style="color:var(--danger)">*</span></label>
+                            <input id="facultyEmail" class="form-control" type="email" placeholder="name@example.edu" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="department">Department</label>
+                            <input id="department" class="form-control" type="text" placeholder="e.g. Business, Nursing">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="dean">Dean / Associate Dean</label>
+                            <input id="dean" class="form-control" type="text" placeholder="Name of dean">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="facultyType">Faculty Type</label>
+                            <select id="facultyType" class="form-control">
+                                <option value="adjunct">Adjunct</option>
+                                <option value="full-time">Full-Time</option>
+                                <option value="visiting">Visiting</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="hireDate">Hire Date</label>
+                            <input id="hireDate" class="form-control" type="date">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="activeStatus">Status</label>
+                            <select id="activeStatus" class="form-control">
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="currentTrack">Current Track</label>
+                            <input id="currentTrack" class="form-control" type="text" placeholder="e.g. Standard Onboarding, Accelerated">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="successStatus">Success Status</label>
+                            <select id="successStatus" class="form-control">
+                                <option value="not-started">Not Started</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="on-track">On Track</option>
+                                <option value="at-risk">At Risk</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="lastContact">Last Contact</label>
+                            <input id="lastContact" class="form-control" type="date">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="nextContact">Next Contact</label>
+                            <input id="nextContact" class="form-control" type="date">
+                        </div>
+                    </div>
+                    <div class="toolbar" style="margin-top: var(--spacing-md);">
+                        <button id="saveBtn" class="btn btn-success" type="submit"><i class="fa-solid fa-floppy-disk"></i> Save Record</button>
+                        <button id="cancelEditBtn" class="btn btn-outline" type="button" style="display:none;"><i class="fa-solid fa-xmark"></i> Cancel Edit</button>
+                        <button id="clearFormBtn" class="btn btn-outline" type="button"><i class="fa-solid fa-eraser"></i> Clear Form</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="status" class="status-message" role="status"></div>
+
+            <!-- Faculty Roster -->
+            <div class="fsp-card card-static faculty-roster">
+                <h2><i class="fa-solid fa-users"></i> Faculty Roster</h2>
+                <div class="roster-actions">
+                    <button id="refreshBtn" class="btn btn-primary" type="button"><i class="fa-solid fa-rotate"></i> Refresh Roster</button>
+                    <button id="exportCsvBtn" class="btn btn-outline" type="button"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+                    <div class="form-group" style="margin:0; min-width:200px;">
+                        <input id="searchInput" class="form-control" type="text" placeholder="Search by name, ID, department…">
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Faculty ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Department</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Success</th>
+                                <th>Last Contact</th>
+                                <th>Next Contact</th>
+                                <th style="width:90px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rosterBody">
+                            <tr><td colspan="10">Click "Refresh Roster" to load records.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="rosterCounts" class="text-muted" style="margin-top:var(--spacing-sm);"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/loading-utils.js"></script>
+    <script src="js/faculty-record-service.js"></script>
+    <script>
+    const ORG_UNIT_ID = '1000001';
+    const API_VERSION = '1.49';
+    const TARGET_FOLDER = 'faculty-logs';
+    const CHECK_FOLDERS = ['faculty-logs', 'inprogress-onboarding', 'finished-onboarding'];
+
+    const state = {
+        records: [],
+        editingFileName: null,
+        editingFolder: null
+    };
+
+    // DOM refs
+    const form = document.getElementById('intakeForm');
+    const formTitle = document.getElementById('formTitle');
+    const saveBtn = document.getElementById('saveBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+    const clearFormBtn = document.getElementById('clearFormBtn');
+    const statusEl = document.getElementById('status');
+    const rosterBody = document.getElementById('rosterBody');
+    const rosterCounts = document.getElementById('rosterCounts');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const exportCsvBtn = document.getElementById('exportCsvBtn');
+    const searchInput = document.getElementById('searchInput');
+
+    // Field refs
+    const fields = {
+        facultyId: document.getElementById('facultyId'),
+        facultyName: document.getElementById('facultyName'),
+        facultyEmail: document.getElementById('facultyEmail'),
+        department: document.getElementById('department'),
+        dean: document.getElementById('dean'),
+        facultyType: document.getElementById('facultyType'),
+        hireDate: document.getElementById('hireDate'),
+        activeStatus: document.getElementById('activeStatus'),
+        currentTrack: document.getElementById('currentTrack'),
+        successStatus: document.getElementById('successStatus'),
+        lastContact: document.getElementById('lastContact'),
+        nextContact: document.getElementById('nextContact')
+    };
+
+    // Init
+    fields.hireDate.value = toYmd(new Date());
+    refreshBtn.addEventListener('click', loadRoster);
+    exportCsvBtn.addEventListener('click', exportCsv);
+    form.addEventListener('submit', handleSave);
+    cancelEditBtn.addEventListener('click', cancelEdit);
+    clearFormBtn.addEventListener('click', clearForm);
+    searchInput.addEventListener('input', renderRoster);
+
+    loadRoster();
+
+    function toYmd(date) {
+        return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+    }
+
+    function setStatus(message, type) {
+        statusEl.className = `status-message show ${type}`;
+        statusEl.innerHTML = message;
+        setTimeout(() => { statusEl.className = 'status-message'; statusEl.innerHTML = ''; }, 6000);
+    }
+
+    function setBusy(busy, msg) {
+        saveBtn.disabled = busy;
+        refreshBtn.disabled = busy;
+        if (typeof LoadingUtils === 'undefined') return;
+        busy ? LoadingUtils.showLoadingModal(msg || 'Working…') : LoadingUtils.hideLoadingModal();
+    }
+
+    function sanitize(val) {
+        return String(val || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    }
+
+    function buildFileName(id, name) {
+        const parts = name.trim().split(/\s+/);
+        const first = sanitize(parts[0] || '');
+        const last = sanitize(parts.slice(1).join(' ') || '');
+        return `${sanitize(id)}-${first}-${last}.json`;
+    }
+
+    function splitName(fullName) {
+        const parts = fullName.trim().split(/\s+/);
+        return { first: parts[0] || '', last: parts.slice(1).join(' ') || '' };
+    }
+
+    function formToRecord() {
+        const { first, last } = splitName(fields.facultyName.value);
+        const today = toYmd(new Date());
+        return {
+            orgDefinedId: fields.facultyId.value.trim(),
+            firstName: first,
+            lastName: last,
+            username: '',
+            email: fields.facultyEmail.value.trim(),
+            department: fields.department.value.trim(),
+            dean: fields.dean.value.trim(),
+            facultyType: fields.facultyType.value,
+            hireDate: fields.hireDate.value || today,
+            activeStatus: fields.activeStatus.value,
+            currentTrack: fields.currentTrack.value.trim(),
+            successStatus: fields.successStatus.value,
+            lastContact: fields.lastContact.value || null,
+            nextContact: fields.nextContact.value || null,
+            createdDate: today,
+            lastModified: new Date().toISOString(),
+            division: fields.department.value.trim(),
+            employmentType: fields.facultyType.value,
+            assignedSpecialist: 'eLearning Office',
+            currentPhase: 'phase1',
+            lifecycle: typeof FacultyRecordService !== 'undefined' ? FacultyRecordService.buildDefaultLifecycle() : {},
+            automatedChecks: {
+                lastChecked: null, hasLoggedIn: false, lastLoginDate: null,
+                orientationEnrolled: false, orientationComplete: false,
+                sandboxExists: false, profileComplete: false, recentActivity: false,
+                coursesForSemester: []
+            },
+            meetings: [],
+            emailLog: [],
+            reminders: [],
+            notes: [{ date: today, author: 'Admin', note: 'Faculty record created via manual intake.' }],
+            onboardingStatus: { orientationComplete: false, sandboxCreated: false, trainingComplete: false, profileSetupComplete: false },
+            workflow: { currentFolder: TARGET_FOLDER, started: false }
+        };
+    }
+
+    function populateForm(data) {
+        fields.facultyId.value = data.orgDefinedId || '';
+        fields.facultyName.value = `${data.firstName || ''} ${data.lastName || ''}`.trim();
+        fields.facultyEmail.value = data.email || '';
+        fields.department.value = data.department || data.division || '';
+        fields.dean.value = data.dean || '';
+        fields.facultyType.value = data.facultyType || data.employmentType || 'adjunct';
+        fields.hireDate.value = data.hireDate || '';
+        fields.activeStatus.value = data.activeStatus || 'active';
+        fields.currentTrack.value = data.currentTrack || '';
+        fields.successStatus.value = data.successStatus || 'not-started';
+        fields.lastContact.value = data.lastContact || '';
+        fields.nextContact.value = data.nextContact || '';
+    }
+
+    function clearForm() {
+        form.reset();
+        fields.hireDate.value = toYmd(new Date());
+        cancelEdit();
+    }
+
+    function enterEditMode(fileName, folder) {
+        state.editingFileName = fileName;
+        state.editingFolder = folder;
+        formTitle.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Edit Faculty Record';
+        saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update Record';
+        cancelEditBtn.style.display = '';
+        form.classList.add('editing');
+        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function cancelEdit() {
+        state.editingFileName = null;
+        state.editingFolder = null;
+        formTitle.innerHTML = '<i class="fa-solid fa-user-plus"></i> Create Faculty Record';
+        saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Record';
+        cancelEditBtn.style.display = 'none';
+        form.classList.remove('editing');
+    }
+
+    function getCsrfToken() {
+        const match = document.cookie.match(/(?:^|;\s*)XSRF\.Token=([^;]+)/);
+        if (match && match[1]) return decodeURIComponent(match[1]);
+        return localStorage.getItem('XSRF.Token');
+    }
+
+    async function ensureFolderExists(folderName) {
+        const csrfToken = getCsrfToken();
+        const url = `/d2l/api/lp/${API_VERSION}/${ORG_UNIT_ID}/managefiles/folder`;
+        const resp = await fetch(url, {
+            method: 'POST',
+            headers: { 'X-Csrf-Token': csrfToken, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ Path: `/${folderName}` }),
+            credentials: 'same-origin'
+        });
+        if (resp.ok || resp.status === 409 || resp.status === 400) return;
+        throw new Error(`Could not ensure folder ${folderName} (${resp.status})`);
+    }
+
+    async function uploadJson(fileName, jsonObject, folder) {
+        const csrfToken = getCsrfToken();
+        if (!csrfToken) throw new Error('Missing XSRF token.');
+        await ensureFolderExists(folder);
+
+        const text = JSON.stringify(jsonObject, null, 2);
+        const blob = new Blob([text], { type: 'application/json' });
+
+        const initUrl = `/d2l/api/lp/${API_VERSION}/${ORG_UNIT_ID}/managefiles/file/upload`;
+        const initResp = await fetch(initUrl, {
+            method: 'POST',
+            headers: {
+                'X-Csrf-Token': csrfToken,
+                'X-Upload-Content-Type': 'application/json',
+                'X-Upload-Content-Length': String(blob.size),
+                'X-Upload-File-Name': fileName
+            },
+            credentials: 'same-origin'
+        });
+
+        const loc = initResp.headers.get('Location');
+        const uploadUrl = loc ? new URL(loc, window.location.origin).toString() : initResp.url;
+        if (!uploadUrl || !uploadUrl.includes('/d2l/upload/')) throw new Error(`Upload init failed (${initResp.status})`);
+
+        const chunkResp = await fetch(uploadUrl, {
+            method: 'POST',
+            headers: {
+                'X-Csrf-Token': csrfToken,
+                'Content-Type': 'application/json',
+                'Content-Range': `bytes 0-${blob.size - 1}/${blob.size}`
+            },
+            body: blob,
+            credentials: 'same-origin'
+        });
+        if (!chunkResp.ok) throw new Error(`Upload failed (${chunkResp.status})`);
+
+        const fileKey = uploadUrl.replace(/\/+$/, '').split('/').pop();
+        const saveUrl = `/d2l/api/lp/${API_VERSION}/${ORG_UNIT_ID}/managefiles/file/save?overwriteFile=true`;
+        const formData = new URLSearchParams();
+        formData.set('fileKey', fileKey);
+        formData.set('relativePath', folder);
+        formData.set('name', fileName);
+
+        const saveResp = await fetch(saveUrl, {
+            method: 'POST',
+            headers: { 'X-Csrf-Token': csrfToken, 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData.toString(),
+            credentials: 'same-origin'
+        });
+        if (!saveResp.ok) throw new Error(`Save failed (${saveResp.status})`);
+    }
+
+    async function deleteJsonFile(folder, fileName) {
+        const csrfToken = getCsrfToken();
+        const path = `/${folder}/${fileName}`;
+        const url = `/d2l/api/lp/${API_VERSION}/${ORG_UNIT_ID}/managefiles/file?path=${encodeURIComponent(path)}`;
+        const resp = await fetch(url, {
+            method: 'DELETE',
+            headers: { 'X-Csrf-Token': csrfToken },
+            credentials: 'same-origin'
+        });
+        if (!resp.ok && resp.status !== 404) throw new Error(`Delete failed (${resp.status})`);
+    }
+
+    async function handleSave(e) {
+        e.preventDefault();
+        if (!fields.facultyId.value.trim() || !fields.facultyName.value.trim() || !fields.facultyEmail.value.trim()) {
+            setStatus('Faculty ID, Name, and Email are required.', 'error');
+            return;
+        }
+        setBusy(true, 'Saving record…');
+        try {
+            const record = formToRecord();
+
+            if (state.editingFileName) {
+                // Update existing — merge with old data to preserve notes, meetings, etc.
+                const folder = state.editingFolder || TARGET_FOLDER;
+                let existing = {};
+                try {
+                    const path = `/${folder}/${state.editingFileName}`;
+                    const url = `/d2l/api/lp/${API_VERSION}/${ORG_UNIT_ID}/managefiles/file?path=${encodeURIComponent(path)}`;
+                    const resp = await fetch(url, { credentials: 'same-origin' });
+                    if (resp.ok) existing = JSON.parse(await resp.text());
+                } catch (_) {}
+
+                const merged = {
+                    ...existing,
+                    ...record,
+                    meetings: existing.meetings || record.meetings,
+                    emailLog: existing.emailLog || record.emailLog,
+                    reminders: existing.reminders || record.reminders,
+                    notes: existing.notes || record.notes,
+                    lifecycle: existing.lifecycle || record.lifecycle,
+                    automatedChecks: existing.automatedChecks || record.automatedChecks,
+                    createdDate: existing.createdDate || record.createdDate,
+                    lastModified: new Date().toISOString(),
+                    workflow: { ...(existing.workflow || {}), currentFolder: folder }
+                };
+
+                const newFileName = buildFileName(record.orgDefinedId, `${record.firstName} ${record.lastName}`);
+
+                if (newFileName !== state.editingFileName) {
+                    await uploadJson(newFileName, merged, folder);
+                    await deleteJsonFile(folder, state.editingFileName).catch(() => {});
+                } else {
+                    await uploadJson(state.editingFileName, merged, folder);
+                }
+
+                setStatus(`Updated record for <strong>${record.firstName} ${record.lastName}</strong>.`, 'success');
+            } else {
+                // New record
+                const fileName = buildFileName(record.orgDefinedId, `${record.firstName} ${record.lastName}`);
+                await uploadJson(fileName, record, TARGET_FOLDER);
+                setStatus(`Created record for <strong>${record.firstName} ${record.lastName}</strong>.`, 'success');
+            }
+
+            clearForm();
+            await loadRoster();
+        } catch (err) {
+            console.error(err);
+            setStatus(`Save failed: ${err.message}`, 'error');
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    async function loadRoster() {
+        setBusy(true, 'Loading faculty roster…');
+        try {
+            if (typeof FacultyRecordService !== 'undefined') {
+                await FacultyRecordService.loadConfig();
+                state.records = await FacultyRecordService.loadAllRecords();
+            } else {
+                state.records = [];
+                for (const folder of CHECK_FOLDERS) {
+                    try {
+                        const url = `/d2l/api/lp/${API_VERSION}/${ORG_UNIT_ID}/managefiles/?path=/${folder}`;
+                        const resp = await fetch(url, { credentials: 'same-origin' });
+                        if (!resp.ok) continue;
+                        const items = await resp.json();
+                        const files = (Array.isArray(items) ? items : items.Items || items.Objects || [])
+                            .map(i => i.FileName || i.Name || '').filter(n => n.endsWith('.json'));
+                        for (const f of files) {
+                            try {
+                                const fResp = await fetch(`/d2l/api/lp/${API_VERSION}/${ORG_UNIT_ID}/managefiles/file?path=${encodeURIComponent('/' + folder + '/' + f)}`, { credentials: 'same-origin' });
+                                if (!fResp.ok) continue;
+                                const data = JSON.parse(await fResp.text());
+                                state.records.push({ folder, fileName: f, data });
+                            } catch (_) {}
+                        }
+                    } catch (_) {}
+                }
+            }
+            renderRoster();
+        } catch (err) {
+            console.error(err);
+            setStatus(`Failed to load roster: ${err.message}`, 'error');
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    function renderRoster() {
+        const query = searchInput.value.toLowerCase().trim();
+        const filtered = state.records.filter(r => {
+            if (!query) return true;
+            const d = r.data;
+            const haystack = [d.orgDefinedId, d.firstName, d.lastName, d.email, d.department, d.division, d.dean, d.facultyType, d.employmentType].join(' ').toLowerCase();
+            return haystack.includes(query);
+        });
+
+        if (!filtered.length) {
+            rosterBody.innerHTML = `<tr><td colspan="10">${state.records.length ? 'No records match your search.' : 'No faculty records found.'}</td></tr>`;
+            rosterCounts.textContent = `${state.records.length} total record(s)`;
+            return;
+        }
+
+        rosterBody.innerHTML = filtered.map((r, i) => {
+            const d = r.data;
+            const name = `${d.firstName || ''} ${d.lastName || ''}`.trim() || '-';
+            const status = d.activeStatus || 'active';
+            const badgeClass = status === 'active' ? 'badge-active' : 'badge-inactive';
+            const success = d.successStatus || 'not-started';
+            return `<tr>
+                <td><strong>${d.orgDefinedId || '-'}</strong></td>
+                <td>${name}</td>
+                <td>${d.email || '-'}</td>
+                <td>${d.department || d.division || '-'}</td>
+                <td>${d.facultyType || d.employmentType || '-'}</td>
+                <td><span class="${badgeClass}">${status}</span></td>
+                <td>${success}</td>
+                <td>${d.lastContact || '-'}</td>
+                <td>${d.nextContact || '-'}</td>
+                <td>
+                    <button class="edit-btn" title="Edit" data-folder="${r.folder}" data-file="${r.fileName}"><i class="fa-solid fa-pen"></i></button>
+                    <button class="delete-btn" title="Delete" data-folder="${r.folder}" data-file="${r.fileName}" data-name="${name}"><i class="fa-solid fa-trash"></i></button>
+                </td>
+            </tr>`;
+        }).join('');
+
+        rosterBody.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.addEventListener('click', () => editRecord(btn.dataset.folder, btn.dataset.file));
+        });
+        rosterBody.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', () => handleDelete(btn.dataset.folder, btn.dataset.file, btn.dataset.name));
+        });
+
+        const active = filtered.filter(r => (r.data.activeStatus || 'active') === 'active').length;
+        rosterCounts.textContent = `Showing ${filtered.length} of ${state.records.length} record(s) · ${active} active`;
+    }
+
+    async function editRecord(folder, fileName) {
+        const rec = state.records.find(r => r.folder === folder && r.fileName === fileName);
+        if (!rec) return;
+        populateForm(rec.data);
+        enterEditMode(fileName, folder);
+    }
+
+    async function handleDelete(folder, fileName, name) {
+        if (!confirm(`Delete the record for ${name}?\n\nThis will permanently remove the JSON file from ${folder}/.`)) return;
+        setBusy(true, 'Deleting…');
+        try {
+            await deleteJsonFile(folder, fileName);
+            setStatus(`Deleted record for <strong>${name}</strong>.`, 'success');
+            await loadRoster();
+        } catch (err) {
+            setStatus(`Delete failed: ${err.message}`, 'error');
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    function exportCsv() {
+        if (!state.records.length) { setStatus('No records to export.', 'error'); return; }
+        const headers = ['Faculty ID','First Name','Last Name','Email','Department','Dean','Faculty Type','Hire Date','Status','Current Track','Success Status','Last Contact','Next Contact','Folder'];
+        const rows = state.records.map(r => {
+            const d = r.data;
+            return [d.orgDefinedId, d.firstName, d.lastName, d.email, d.department || d.division, d.dean, d.facultyType || d.employmentType, d.hireDate, d.activeStatus, d.currentTrack, d.successStatus, d.lastContact, d.nextContact, r.folder];
+        });
+        const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+        const csv = [headers.join(','), ...rows.map(r => r.map(esc).join(','))].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `faculty-roster-${toYmd(new Date())}.csv`;
+        a.click();
+    }
+    </script>
+</body>
+</html>

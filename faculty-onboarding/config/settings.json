@@ -1,0 +1,23 @@
+{
+  "orgUnitId": "1000001",
+  "apiVersion": "1.49",
+  "facultyOrientationOrgUnitId": 1000001,
+  "instructorRoleId": 102,
+  "institutionOrgUnitId": 1001,
+  "folders": {
+    "new": "faculty-logs",
+    "inProgress": "inprogress-onboarding",
+    "finished": "finished-onboarding",
+    "config": "config",
+    "reports": "reports"
+  },
+  "priorityWeights": {
+    "overdueReminder": 10,
+    "failedAutoCheck": 5,
+    "daysSinceMeeting": 3,
+    "noEmailIn14Days": 2
+  },
+  "orientationCourseUrl": "/d2l/home/1000001",
+  "elearningContactEmail": "elearning@example.edu",
+  "loginUrl": "https://your-brightspace.example.edu"
+}

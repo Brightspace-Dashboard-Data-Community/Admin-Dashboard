@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leadership Report - D2L Admin</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/forms.css">
+    <link rel="stylesheet" href="../css/tables.css">
+    <link rel="stylesheet" href="css/fsp-common.css">
+</head>
+<body>
+    <div class="app-container">
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn" type="button" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="command-center.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Command Center</a>
+                    <h1 class="page-title">Leadership Report <span class="beta-badge">Beta</span></h1>
+                    <p class="page-subtitle">Pipeline metrics and CSV exports for Associate Deans and the Dean of eLearning.</p>
+                </div>
+                <div class="header-actions header-actions-row">
+                    <button id="refreshBtn" class="btn btn-primary" type="button">
+                        <i class="fa-solid fa-arrows-rotate"></i> Refresh
+                    </button>
+                    <button id="exportPipelineBtn" class="btn btn-outline" type="button">
+                        <i class="fa-solid fa-download"></i> Pipeline CSV
+                    </button>
+                    <button id="exportReadinessBtn" class="btn btn-outline" type="button">
+                        <i class="fa-solid fa-download"></i> Readiness CSV
+                    </button>
+                </div>
+            </header>
+
+            <div id="status" class="status-message" role="status"></div>
+            <div id="loadingSlot"></div>
+
+            <div class="fsp-grid-4" style="margin-bottom: var(--spacing-lg);">
+                <div class="fsp-stat"><div class="fsp-stat-value" id="funnelNew">—</div><div class="fsp-stat-label">New (not started)</div></div>
+                <div class="fsp-stat"><div class="fsp-stat-value" id="funnelActive">—</div><div class="fsp-stat-label">Active onboarding</div></div>
+                <div class="fsp-stat"><div class="fsp-stat-value" id="funnelFinished">—</div><div class="fsp-stat-label">Completed</div></div>
+                <div class="fsp-stat"><div class="fsp-stat-value" id="funnelTotal">—</div><div class="fsp-stat-label">Total records</div></div>
+            </div>
+
+            <div class="fsp-card card-static" style="margin-bottom: var(--spacing-lg);">
+                <h2>Phase Distribution (Active)</h2>
+                <div id="phaseChart" class="fsp-grid-4"></div>
+            </div>
+
+            <div class="fsp-card card-static" style="margin-bottom: var(--spacing-lg);">
+                <h2>Division Summary</h2>
+                <div id="divisionTable" class="table-container"></div>
+            </div>
+
+            <div class="fsp-card card-static">
+                <h2>Full Pipeline</h2>
+                <div id="pipelineTable" class="table-container" style="max-height:500px; overflow:auto;"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/loading-utils.js"></script>
+    <script src="js/faculty-record-service.js"></script>
+    <script src="js/onboarding-queue-service.js"></script>
+    <script>
+    let records = [];
+
+    function showStatus(msg, type) {
+      const el = document.getElementById('status');
+      el.className = `status-message show ${type}`;
+      el.innerHTML = msg;
+    }
+
+    function downloadCsv(filename, csv) {
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+    }
+
+    async function refresh() {
+      if (typeof LoadingUtils !== 'undefined' && !document.getElementById('loadingContainer')) {
+        const slot = document.getElementById('loadingSlot');
+        if (slot) slot.appendChild(LoadingUtils.createLoadingBar());
+      }
+      if (typeof LoadingUtils !== 'undefined') LoadingUtils.updateLoadingBar(20, 'Loading records…');
+      showStatus('Loading records…', 'info');
+      try {
+      await FacultyRecordService.loadConfig();
+      records = await FacultyRecordService.loadAllRecords();
+      const funnel = OnboardingQueueService.getFunnelStats(records);
+      document.getElementById('funnelNew').textContent = funnel.newCount;
+      document.getElementById('funnelActive').textContent = funnel.inProgress;
+      document.getElementById('funnelFinished').textContent = funnel.finished;
+      document.getElementById('funnelTotal').textContent = funnel.total;
+
+      document.getElementById('phaseChart').innerHTML = FacultyRecordService.getPhases().map(p => `
+        <div class="fsp-stat"><div class="fsp-stat-value">${funnel.phaseCounts[p.key] || 0}</div><div class="fsp-stat-label">${p.title.split('-')[0].trim()}</div></div>
+      `).join('');
+
+      const byDivision = {};
+      records.forEach(r => {
+        const div = r.data.division || 'Unknown';
+        if (!byDivision[div]) byDivision[div] = { count: 0, totalPct: 0 };
+        byDivision[div].count++;
+        byDivision[div].totalPct += FacultyRecordService.getLifecycleStats(r.data.lifecycle || {}).overallPct;
+      });
+      document.getElementById('divisionTable').innerHTML = `
+        <table class="data-table">
+          <thead><tr><th>Division</th><th>Count</th><th>Avg Progress</th></tr></thead>
+          <tbody>
+          ${Object.entries(byDivision).map(([div, s]) => `
+            <tr><td>${div}</td>
+            <td>${s.count}</td>
+            <td>${Math.round(s.totalPct / s.count)}%</td></tr>
+          `).join('')}
+          </tbody>
+        </table>`;
+
+      document.getElementById('pipelineTable').innerHTML = `
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Name</th><th>ID</th><th>Division</th><th>Phase</th><th>Progress</th><th>Folder</th><th>Specialist</th>
+            </tr>
+          </thead>
+          <tbody>
+          ${records.map(r => {
+            const stats = FacultyRecordService.getLifecycleStats(r.data.lifecycle || {});
+            return `<tr>
+              <td>${r.data.firstName} ${r.data.lastName}</td>
+              <td>${r.data.orgDefinedId}</td>
+              <td>${r.data.division || '—'}</td>
+              <td>${r.data.currentPhase || '—'}</td>
+              <td>
+                <div class="progress-bar" style="margin:0; min-width:80px;">
+                  <div class="progress-fill" style="width:${stats.overallPct}%"></div>
+                </div>
+                <span class="text-muted">${stats.overallPct}%</span>
+              </td>
+              <td>${r.folder}</td>
+              <td>${r.data.assignedSpecialist || '—'}</td>
+            </tr>`;
+          }).join('')}
+          </tbody>
+        </table>`;
+      showStatus(`Loaded ${records.length} records.`, 'success');
+      } catch (err) {
+        showStatus(err.message, 'error');
+      } finally {
+        if (typeof LoadingUtils !== 'undefined') LoadingUtils.hideLoadingBar();
+      }
+    }
+
+    document.getElementById('refreshBtn').addEventListener('click', refresh);
+    document.getElementById('exportPipelineBtn').addEventListener('click', () => {
+      downloadCsv(`faculty-pipeline-${new Date().toISOString().split('T')[0]}.csv`, FacultyRecordService.exportRecordsToCsv(records));
+    });
+    document.getElementById('exportReadinessBtn').addEventListener('click', () => {
+      const active = records.filter(r => r.folder === FacultyRecordService.FOLDER_IN_PROGRESS);
+      const headers = ['orgDefinedId','firstName','lastName','division','firstTeachingSemester','phase1Pct','phase2Pct','orientationEnrolled','sandboxExists','profileComplete'];
+      const rows = active.map(r => {
+        const stats = FacultyRecordService.getLifecycleStats(r.data.lifecycle || {});
+        const p1 = stats.phaseStats.find(s => s.key === 'phase1');
+        const p2 = stats.phaseStats.find(s => s.key === 'phase2');
+        const c = r.data.automatedChecks || {};
+        return [r.data.orgDefinedId, r.data.firstName, r.data.lastName, r.data.division, r.data.firstTeachingSemester,
+          p1?.pct || 0, p2?.pct || 0, c.orientationEnrolled, c.sandboxExists, c.profileComplete];
+      });
+      const esc = v => `"${String(v ?? '').replace(/"/g,'""')}"`;
+      downloadCsv(`faculty-readiness-${new Date().toISOString().split('T')[0]}.csv`,
+        [headers.join(','), ...rows.map(r => r.map(esc).join(','))].join('\n'));
+    });
+
+    document.addEventListener('DOMContentLoaded', refresh);
+    </script>
+</body>
+</html>

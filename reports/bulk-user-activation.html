@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk activate users (CSV UserIds) - D2L Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            transition: all 0.2s ease;
+        }
+
+        .back-link:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-2px);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+            line-height: 1.5;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+        }
+
+        .input-group input[type="file"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background: var(--surface-color);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+            flex-wrap: wrap;
+        }
+
+        .summary-box {
+            margin: var(--spacing-md) 0;
+            padding: var(--spacing-md);
+            background-color: var(--bg-color);
+            border-left: 4px solid var(--primary-color);
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+        }
+
+        .warning-box {
+            margin: var(--spacing-md) 0;
+            padding: var(--spacing-md);
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            font-size: var(--font-size-sm);
+            color: #856404;
+        }
+
+        .checkbox-row {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+            margin: var(--spacing-md) 0;
+        }
+
+        .checkbox-option {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: var(--font-size-sm);
+            cursor: pointer;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        #previewTable {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        #previewTable th,
+        #previewTable td {
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 12px;
+        }
+
+        .results-log {
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: ui-monospace, monospace;
+            font-size: 12px;
+            padding: var(--spacing-md);
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            white-space: pre-wrap;
+        }
+
+        .results-log .ok { color: #0a6b0a; }
+        .results-log .err { color: #c00; }
+        .results-log .skip { color: #666; }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html#inactive-dormant-accounts" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports & Tools
+                    </a>
+                    <h1 class="page-title">Bulk activate users (CSV UserIds)</h1>
+                    <p class="page-subtitle">
+                        Upload a <strong>headerless</strong> CSV with one Brightspace <strong>UserId</strong> per line
+                        to set accounts from <strong>INACTIVE</strong> to <strong>ACTIVE</strong>.
+                        Export UserIds from
+                        <a href="inactive-status-report.html">Turned-off accounts</a> or
+                        <a href="inactive-student-reactivation.html">Reactivate students</a>
+                        if you need a list first.
+                    </p>
+                </div>
+            </header>
+
+            <div class="warning-box">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <strong>Warning:</strong> This turns on every UserId in your file. Double-check the CSV before running.
+                You need permission to update user activation in D2L.
+            </div>
+
+            <div class="card">
+                <div class="input-group">
+                    <label for="csvFile">CSV file (no headers — one UserId per line):</label>
+                    <input type="file" id="csvFile" accept=".csv,.txt,text/csv,text/plain">
+                </div>
+
+                <div class="checkbox-row">
+                    <label class="checkbox-option">
+                        <input type="checkbox" id="skipAlreadyActive" checked />
+                        <span>Skip users who are already active (still logs them as skipped)</span>
+                    </label>
+                    <label class="checkbox-option" title="For usernames like john.doe.retired.2026, restores john.doe and activates in one PUT.">
+                        <input type="checkbox" id="stripRetiredOnActivate" checked />
+                        <span>Strip <code>.retired.*</code> from username when activating retired accounts</span>
+                    </label>
+                </div>
+
+                <div class="form-actions">
+                    <button id="runBtn" class="btn-primary" disabled>
+                        <i class="fas fa-user-check"></i> Activate Users
+                    </button>
+                    <button id="clearBtn" class="btn-secondary" style="display: none;">
+                        <i class="fas fa-times"></i> Clear
+                    </button>
+                    <button id="downloadResults" class="btn-secondary" style="display: none;">
+                        <i class="fas fa-download"></i> Download Results CSV
+                    </button>
+                </div>
+
+                <div id="summary" class="summary-box">
+                    Upload a headerless CSV with one Brightspace UserId per line (no column headers).
+                </div>
+            </div>
+
+            <div class="card" id="previewCard" style="display: none;">
+                <h3 style="margin-top: 0;">Preview (first 25 UserIds)</h3>
+                <table id="previewTable">
+                    <thead>
+                        <tr><th>UserId</th></tr>
+                    </thead>
+                    <tbody id="previewBody"></tbody>
+                </table>
+            </div>
+
+            <div class="card" id="resultsCard" style="display: none;">
+                <h3 style="margin-top: 0;">Results</h3>
+                <div id="resultsLog" class="results-log"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/loading-utils.js"></script>
+    <script src="../js/bulk-user-activation.js"></script>
+</body>
+
+</html>

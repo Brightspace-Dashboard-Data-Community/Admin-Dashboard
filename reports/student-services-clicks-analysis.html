@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Services Hub — Click Analysis | Your College</title>
+  <style>
+    @page {
+      size: letter;
+      margin: 0.55in 0.6in 0.65in 0.6in;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      color: #1c1c1c;
+      background: #fff;
+      font: 10.5pt/1.45 "Inter", "Segoe UI", Helvetica, Arial, sans-serif;
+    }
+    h1, h2, h3 { page-break-after: avoid; }
+    h1 {
+      font-size: 20pt;
+      line-height: 1.2;
+      margin: 0 0 4px;
+      color: #fff;
+      font-weight: 650;
+    }
+    h2 {
+      font-size: 13.5pt;
+      color: #005b4d;
+      margin: 18px 0 8px;
+      padding-bottom: 3px;
+      border-bottom: 2px solid #005b4d;
+    }
+    h3 {
+      font-size: 11pt;
+      color: #17332f;
+      margin: 14px 0 6px;
+    }
+    p { margin: 0 0 8px; }
+    .muted { color: #555; }
+    .small { font-size: 8.5pt; color: #555; }
+    header.banner {
+      background: #005b4d;
+      color: #fff;
+      padding: 16px 18px 14px;
+      margin: 0 0 14px;
+    }
+    header.banner .kicker {
+      font-size: 8.5pt;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      opacity: 0.85;
+      margin-bottom: 4px;
+    }
+    header.banner .sub { font-size: 9.5pt; opacity: 0.92; margin: 0; }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .kpi {
+      border: 1px solid #d6ddd9;
+      padding: 8px 10px;
+      background: #f4f7f6;
+    }
+    .kpi b {
+      display: block;
+      font-size: 16pt;
+      color: #005b4d;
+      line-height: 1.1;
+    }
+    .kpi span { font-size: 8pt; color: #444; }
+    .callout {
+      border-left: 4px solid #005b4d;
+      background: #f3f7f5;
+      padding: 8px 12px;
+      margin: 10px 0 12px;
+    }
+    .callout.warn {
+      border-left-color: #b45309;
+      background: #fbf6ee;
+    }
+    .callout strong { display: block; margin-bottom: 2px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 9pt;
+      margin: 0 0 10px;
+      page-break-inside: auto;
+    }
+    thead { display: table-header-group; }
+    tr { page-break-inside: avoid; }
+    th {
+      background: #005b4d;
+      color: #fff;
+      text-align: left;
+      padding: 5px 7px;
+      font-weight: 600;
+    }
+    td {
+      padding: 4px 7px;
+      border-bottom: 1px solid #e3e8e6;
+      vertical-align: top;
+    }
+    tbody tr:nth-child(even) { background: #f7faf9; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .bar-row {
+      display: grid;
+      grid-template-columns: 150px 1fr 42px;
+      gap: 6px;
+      align-items: center;
+      margin: 2px 0;
+      font-size: 9pt;
+    }
+    .bar-track {
+      height: 10px;
+      background: #e7eeeb;
+      position: relative;
+    }
+    .bar-fill {
+      height: 100%;
+      background: #005b4d;
+    }
+    .bar-fill.alt { background: #3d8b7a; }
+    .two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .week-chart {
+      display: grid;
+      grid-template-columns: repeat(23, 1fr);
+      gap: 2px;
+      align-items: end;
+      height: 90px;
+      margin: 4px 0 2px;
+      border-bottom: 1px solid #ccc;
+    }
+    .week-col {
+      background: #005b4d;
+      min-height: 2px;
+    }
+    .week-labels {
+      display: grid;
+      grid-template-columns: repeat(23, 1fr);
+      gap: 2px;
+      font-size: 6pt;
+      color: #555;
+    }
+    .week-labels span {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      height: 42px;
+      overflow: hidden;
+    }
+    .split { display: flex; gap: 10px; margin: 6px 0 10px; }
+    .split .seg { padding: 6px 8px; color: #fff; font-size: 8.5pt; }
+    ol.findings { padding-left: 18px; margin: 6px 0 10px; }
+    ol.findings li { margin-bottom: 6px; }
+    footer.meta {
+      margin-top: 16px;
+      padding-top: 8px;
+      border-top: 1px solid #ccc;
+      font-size: 8pt;
+      color: #555;
+    }
+    .avoid { page-break-inside: avoid; }
+  </style>
+</head>
+<body>
+  <header class="banner">
+    <div class="kicker">Your College · eLearning · Brightspace Student Services</div>
+    <h1>Student Services hub: click analysis</h1>
+    <p class="sub">Anonymous usage of /content/student-services/index.html · 31 Mar 2026 – 1 Sep 2026, 8:30 a.m. Eastern · Semesters aligned to academic-calendar.json (updated 6 Aug 2026)</p>
+  </header>
+
+  <div class="kpis">
+    <div class="kpi"><b>12,911</b><span>Total events</span></div>
+    <div class="kpi"><b>5,911</b><span>Unique sessions (visits)</span></div>
+    <div class="kpi"><b>40%</b><span>Sessions that clicked</span></div>
+    <div class="kpi"><b>425</b><span>Fall events / day so far</span></div>
+    <div class="kpi"><b>60%</b><span>View-only visits</span></div>
+  </div>
+
+  <div class="callout">
+    <strong>What this file records</strong>
+    Each visit writes one page_view, then a click when someone hits a link, button, FAQ, or category toggle. There are no student names, emails, or D2L user IDs — only a random session id and user agent. Expanding a tile counts as a click even if the student never leaves the page. Production traffic is 12,768 of 12,911 events (99%); the rest is layout prototypes and local testing.
+  </div>
+
+  <h2>How usage lines up with the academic calendar</h2>
+  <p>Tracking did not exist for most of Winter. It starts 31 March — week 12 of Winter 2026 (classes began 10 January, ended 1 May). Spring Summer is the only complete term in the file. Fall 2026 opened Saturday 29 August; this export covers the first four days, and 1 September is only a morning slice.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Calendar window</th>
+        <th>Dates</th>
+        <th class="num">Events</th>
+        <th class="num">Sessions</th>
+        <th class="num">Per active day</th>
+        <th>Coverage</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Winter 2026</td><td>Jan 10 – May 1</td><td class="num">1,373</td><td class="num">920</td><td class="num">43</td><td>Last 32 of 112 days</td></tr>
+      <tr><td>Break (grades due May 5)</td><td>May 2 – May 10</td><td class="num">675</td><td class="num">475</td><td class="num">75</td><td>Full 9-day gap</td></tr>
+      <tr><td>Spring Summer 2026</td><td>May 11 – Aug 20</td><td class="num">7,440</td><td class="num">3,000</td><td class="num">73</td><td>Full 15-week term</td></tr>
+      <tr><td>&nbsp;&nbsp;Early summer (SP)</td><td>May 11 – Jun 28</td><td class="num">2,901</td><td class="num">—</td><td class="num">—</td><td>First session</td></tr>
+      <tr><td>&nbsp;&nbsp;Late summer (SU)</td><td>Jun 29 – Aug 20</td><td class="num">4,539</td><td class="num">—</td><td class="num">—</td><td>Second session</td></tr>
+      <tr><td>Break (Learning Days + SS grades)</td><td>Aug 21 – Aug 28</td><td class="num">1,723</td><td class="num">724</td><td class="num">215</td><td>Full 8-day gap</td></tr>
+      <tr><td>Fall 2026</td><td>Aug 29 – Dec 20</td><td class="num">1,700</td><td class="num">796</td><td class="num">425</td><td>First 4 of ~114 days</td></tr>
+    </tbody>
+  </table>
+
+  <p>Two patterns stand out. The hub gets busier <em>between</em> terms than during a typical Winter class week — students come here when registering, checking aid, or finding campus services. Late summer already outpaced early summer (4,539 vs 2,901 events). The pre-Fall week jumped to 215 events/day, and the first Fall class days jumped again to 425/day — about six times the Spring Summer daily rate.</p>
+
+  <h3>Activity around dated calendar events</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Calendar event</th>
+        <th class="num">Events that day</th>
+        <th class="num">Events ±1 day</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Apr 5</td><td>No classes (Winter)</td><td class="num">29</td><td class="num">90</td></tr>
+      <tr><td>May 1</td><td>End of Winter</td><td class="num">58</td><td class="num">160</td></tr>
+      <tr><td>May 5</td><td>Winter grades due</td><td class="num">79</td><td class="num">273</td></tr>
+      <tr><td>May 11</td><td>Spring Summer classes begin</td><td class="num">161</td><td class="num">342</td></tr>
+      <tr><td>May 25</td><td>Memorial Day – no classes</td><td class="num">40</td><td class="num">122</td></tr>
+      <tr><td>Jun 29</td><td>Summer (SU) starts</td><td class="num">111</td><td class="num">229</td></tr>
+      <tr><td>Jul 2–5</td><td>No classes</td><td class="num">172</td><td class="num">329</td></tr>
+      <tr><td>Aug 20</td><td>Spring Summer classes end</td><td class="num">129</td><td class="num">392</td></tr>
+      <tr><td>Aug 24–26</td><td>Fall Learning Days</td><td class="num">855</td><td class="num">1,285</td></tr>
+      <tr><td>Aug 25</td><td>SS grades due (inside Learning Days)</td><td class="num">296</td><td class="num">855</td></tr>
+      <tr><td>Aug 29</td><td>Fall classes begin</td><td class="num">366</td><td class="num">1,063</td></tr>
+      <tr><td>Aug 31</td><td>First full Fall weekday (Monday)</td><td class="num">838</td><td class="num">—</td></tr>
+    </tbody>
+  </table>
+  <p class="small">Timestamps converted to America/Detroit. Calendar events from academic-calendar.json 2026.</p>
+
+  <h2>Volume over the 22 tracked weeks</h2>
+  <p>Sessions stayed in a narrow band (~150–200/week) through late Winter, rose when Spring Summer opened in mid-May, dipped after Memorial Day, then climbed through July. The break is the week of 24 August (Fall Learning Days through Saturday class start): 984 sessions and 1,258 clicks — more than double any prior week. The week of 31 August is incomplete (Mon–Tue morning only) but already has 423 sessions.</p>
+
+  <p class="small" style="margin-bottom:2px">Weekly unique sessions (bar height; week of Aug 24 is the peak at 984)</p>
+  <div class="week-chart">
+    <div class="week-col" style="height:15%"></div>
+    <div class="week-col" style="height:20%"></div>
+    <div class="week-col" style="height:18%"></div>
+    <div class="week-col" style="height:19%"></div>
+    <div class="week-col" style="height:28%"></div>
+    <div class="week-col" style="height:40%"></div>
+    <div class="week-col" style="height:37%"></div>
+    <div class="week-col" style="height:26%"></div>
+    <div class="week-col" style="height:15%"></div>
+    <div class="week-col" style="height:15%"></div>
+    <div class="week-col" style="height:16%"></div>
+    <div class="week-col" style="height:13%"></div>
+    <div class="week-col" style="height:15%"></div>
+    <div class="week-col" style="height:15%"></div>
+    <div class="week-col" style="height:17%"></div>
+    <div class="week-col" style="height:18%"></div>
+    <div class="week-col" style="height:19%"></div>
+    <div class="week-col" style="height:21%"></div>
+    <div class="week-col" style="height:18%"></div>
+    <div class="week-col" style="height:33%"></div>
+    <div class="week-col" style="height:37%"></div>
+    <div class="week-col" style="height:100%"></div>
+    <div class="week-col" style="height:43%"></div>
+  </div>
+  <div class="week-labels">
+    <span>Mar 30</span><span>Apr 6</span><span>Apr 13</span><span>Apr 20</span><span>Apr 27</span>
+    <span>May 4</span><span>May 11</span><span>May 18</span><span>May 25</span><span>Jun 1</span>
+    <span>Jun 8</span><span>Jun 15</span><span>Jun 22</span><span>Jun 29</span><span>Jul 6</span>
+    <span>Jul 13</span><span>Jul 20</span><span>Jul 27</span><span>Aug 3</span><span>Aug 10</span>
+    <span>Aug 17</span><span>Aug 24</span><span>Aug 31</span>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Week starting</th>
+        <th class="num">Sessions</th>
+        <th class="num">Clicks</th>
+        <th>Week starting</th>
+        <th class="num">Sessions</th>
+        <th class="num">Clicks</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Mar 30</td><td class="num">167</td><td class="num">82</td><td>Jun 22</td><td class="num">151</td><td class="num">256</td></tr>
+      <tr><td>Apr 6</td><td class="num">195</td><td class="num">85</td><td>Jun 29</td><td class="num">148</td><td class="num">287</td></tr>
+      <tr><td>Apr 13</td><td class="num">180</td><td class="num">104</td><td>Jul 6</td><td class="num">168</td><td class="num">293</td></tr>
+      <tr><td>Apr 20</td><td class="num">185</td><td class="num">89</td><td>Jul 13</td><td class="num">180</td><td class="num">294</td></tr>
+      <tr><td>Apr 27</td><td class="num">273</td><td class="num">122</td><td>Jul 20</td><td class="num">190</td><td class="num">432</td></tr>
+      <tr><td>May 4</td><td class="num">396</td><td class="num">171</td><td>Jul 27</td><td class="num">209</td><td class="num">348</td></tr>
+      <tr><td>May 11</td><td class="num">361</td><td class="num">141</td><td>Aug 3</td><td class="num">176</td><td class="num">276</td></tr>
+      <tr><td>May 18</td><td class="num">260</td><td class="num">213</td><td>Aug 10</td><td class="num">323</td><td class="num">568</td></tr>
+      <tr><td>May 25</td><td class="num">152</td><td class="num">151</td><td>Aug 17</td><td class="num">363</td><td class="num">575</td></tr>
+      <tr><td>Jun 1</td><td class="num">148</td><td class="num">229</td><td>Aug 24</td><td class="num">984</td><td class="num">1,258</td></tr>
+      <tr><td>Jun 8</td><td class="num">159</td><td class="num">359</td><td>Aug 31 (partial)</td><td class="num">423</td><td class="num">470</td></tr>
+      <tr><td>Jun 15</td><td class="num">132</td><td class="num">196</td><td></td><td></td><td></td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout warn">
+    <strong>Fall launch is a different product moment</strong>
+    Monday 31 August is the single largest day in the file: 838 events from 391 sessions. Saturday 29 August (official class start) already had 136 sessions. If Fall holds even half of this daily rate, the hub will see more traffic in one Fall month than in all of tracked Winter. Staffing, content accuracy, and broken-link checks matter most in the 10 days around Learning Days through week one.
+  </div>
+
+  <h2>What people actually do on the page</h2>
+  <p>Clicks are not all outbound. 60% are expand/collapse on support and resource tiles. Students browse the catalog, then a smaller set follow a “Go to …” action. That still produced 2,581 trips to other Delta sites.</p>
+
+  <p class="small" style="margin-bottom:4px">How the 6,999 clicks split</p>
+  <div class="split">
+    <div class="seg" style="background:#005b4d; flex:4219">Expand/collapse tile · 4,219 (60%)</div>
+    <div class="seg" style="background:#3d8b7a; flex:2581">Outbound / Go to link · 2,581 (37%)</div>
+    <div class="seg" style="background:#b45309; flex:199">FAQ expand · 199 (3%)</div>
+  </div>
+
+  <p>Median session is a single page view and nothing else. Mean is 2.2 events. 90th percentile is 4 events; the longest session is 54. About 2,365 of 5,911 sessions (40%) interact. Campus Resources tiles are opened nearly twice as often as Direct Support (2,804 vs 1,413 category toggles).</p>
+
+  <h3>Where outbound clicks go</h3>
+  <p>Advising, Student Self-Service, registration/records, financial aid, online learning, and the library are the core academic pathway. Campus-life links are present but an order of magnitude smaller.</p>
+
+  <div class="avoid">
+    <div class="bar-row"><span>Advising</span><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><span class="num">431</span></div>
+    <div class="bar-row"><span>Student Self-Service</span><div class="bar-track"><div class="bar-fill" style="width:76%"></div></div><span class="num">329</span></div>
+    <div class="bar-row"><span>Registration / records</span><div class="bar-track"><div class="bar-fill" style="width:50%"></div></div><span class="num">214</span></div>
+    <div class="bar-row"><span>Financial aid</span><div class="bar-track"><div class="bar-fill" style="width:46%"></div></div><span class="num">197</span></div>
+    <div class="bar-row"><span>Online learning / D2L help</span><div class="bar-track"><div class="bar-fill" style="width:41%"></div></div><span class="num">177</span></div>
+    <div class="bar-row"><span>Library</span><div class="bar-track"><div class="bar-fill" style="width:34%"></div></div><span class="num">146</span></div>
+    <div class="bar-row"><span>Bookstore</span><div class="bar-track"><div class="bar-fill alt" style="width:19%"></div></div><span class="num">80</span></div>
+    <div class="bar-row"><span>Transfer</span><div class="bar-track"><div class="bar-fill alt" style="width:14%"></div></div><span class="num">59</span></div>
+    <div class="bar-row"><span>Academic calendar</span><div class="bar-track"><div class="bar-fill alt" style="width:12%"></div></div><span class="num">53</span></div>
+    <div class="bar-row"><span>Scholarships</span><div class="bar-track"><div class="bar-fill alt" style="width:11%"></div></div><span class="num">46</span></div>
+    <div class="bar-row"><span>Fitness center</span><div class="bar-track"><div class="bar-fill alt" style="width:11%"></div></div><span class="num">46</span></div>
+    <div class="bar-row"><span>Tech services</span><div class="bar-track"><div class="bar-fill alt" style="width:10%"></div></div><span class="num">41</span></div>
+  </div>
+  <p class="small">Same destination combined across button labels. Source: 2,581 outbound clicks.</p>
+
+  <div class="callout warn">
+    <strong>Label vs. URL mismatch on billing</strong>
+    “Go to Tuition &amp; Billing” (94 clicks) and the Tuition &amp; Billing tile (29) both open the registration page (students.example.edu/records-registration/registration.html), not a billing/payment URL. Those 123 clicks are a large share of the 214 registration hits. Students looking for a bill may be landing on add/drop instructions.
+  </div>
+
+  <p>“Go to D2L Help” (96) also points at Online Learning (students.example.edu/online-learning/index.html), same URL as the Online Learning tile (47). That may be intentional, but D2L-help seekers are mixed into the online-learning count (177).</p>
+
+  <h3>Other destinations with 15+ outbound clicks</h3>
+  <table>
+    <thead>
+      <tr><th>Destination</th><th class="num">Clicks</th><th>Why it matters</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Clubs &amp; organizations</td><td class="num">40</td><td>Campus engagement, not academics</td></tr>
+      <tr><td>Writing Center</td><td class="num">38</td><td>Academic support after advising/tutoring</td></tr>
+      <tr><td>Campus safety</td><td class="num">37</td><td>Safety services page</td></tr>
+      <tr><td>Tutor.com</td><td class="num">35</td><td>External 24/7 tutoring</td></tr>
+      <tr><td>Career discovery</td><td class="num">34</td><td>Jobs/careers path</td></tr>
+      <tr><td>Health admissions</td><td class="num">33</td><td>Selective programs</td></tr>
+      <tr><td>Study abroad</td><td class="num">33</td><td>Niche but steady interest</td></tr>
+      <tr><td>Coordinated Care / basic needs</td><td class="num">33</td><td>Food, aid, wraparound</td></tr>
+      <tr><td>Campus jobs</td><td class="num">29</td><td>Student employment</td></tr>
+      <tr><td>Food pantry</td><td class="num">23</td><td>Basic-needs demand is real, not noise</td></tr>
+      <tr><td>Athletics (Pioneers)</td><td class="num">22</td><td>Student life</td></tr>
+      <tr><td>Counseling / wellness</td><td class="num">21</td><td>Lower than advising; still material</td></tr>
+      <tr><td>Transportation</td><td class="num">19</td><td>Matches FAQ interest in getting to campus</td></tr>
+      <tr><td>Honors</td><td class="num">19</td><td>Small specialized audience</td></tr>
+      <tr><td>Delta’s Closet</td><td class="num">15</td><td>Basic needs / clothing</td></tr>
+    </tbody>
+  </table>
+
+  <h3>FAQ questions students opened</h3>
+  <p>Only 199 FAQ expands, so this is a weak signal — but the ranking matches the outbound list: Self-Service, D2L access, registration timing, finding an advisor, and passwords.</p>
+  <table>
+    <thead><tr><th>FAQ opened</th><th class="num">Expands</th></tr></thead>
+    <tbody>
+      <tr><td>How do I access Student Self-Service and MyDelta?</td><td class="num">32</td></tr>
+      <tr><td>How do I access D2L Brightspace?</td><td class="num">24</td></tr>
+      <tr><td>When is course registration?</td><td class="num">17</td></tr>
+      <tr><td>How do I find my advisor?</td><td class="num">16</td></tr>
+      <tr><td>How do I reset my password?</td><td class="num">14</td></tr>
+      <tr><td>What is the Basic Needs / Coordinated Care Network?</td><td class="num">11</td></tr>
+      <tr><td>How can I get transportation help to campus?</td><td class="num">9</td></tr>
+      <tr><td>How do I request disability accommodations?</td><td class="num">9</td></tr>
+      <tr><td>Where can I find semester dates and deadlines?</td><td class="num">9</td></tr>
+      <tr><td>What financial aid options are available?</td><td class="num">8</td></tr>
+    </tbody>
+  </table>
+
+  <h2>When they visit</h2>
+  <p>Monday is the busiest weekday. Traffic falls through the week, dips on Friday, and stays meaningful on weekends (Sunday outranks Saturday). That weekend load fits a student hub used from home, not only between classes.</p>
+
+  <div class="two avoid">
+    <div>
+      <h3>Events by weekday (Eastern)</h3>
+      <div class="bar-row"><span>Monday</span><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><span class="num">2,975</span></div>
+      <div class="bar-row"><span>Tuesday</span><div class="bar-track"><div class="bar-fill" style="width:73%"></div></div><span class="num">2,178</span></div>
+      <div class="bar-row"><span>Wednesday</span><div class="bar-track"><div class="bar-fill" style="width:65%"></div></div><span class="num">1,929</span></div>
+      <div class="bar-row"><span>Thursday</span><div class="bar-track"><div class="bar-fill" style="width:67%"></div></div><span class="num">1,992</span></div>
+      <div class="bar-row"><span>Friday</span><div class="bar-track"><div class="bar-fill" style="width:42%"></div></div><span class="num">1,243</span></div>
+      <div class="bar-row"><span>Saturday</span><div class="bar-track"><div class="bar-fill alt" style="width:37%"></div></div><span class="num">1,100</span></div>
+      <div class="bar-row"><span>Sunday</span><div class="bar-track"><div class="bar-fill alt" style="width:50%"></div></div><span class="num">1,494</span></div>
+    </div>
+    <div>
+      <h3>Peak hours (Eastern)</h3>
+      <p>Quietest hour is 5 a.m. (41 events). Peak is 2 p.m. (966), with a plateau from 10 a.m. through 5 p.m. A second bump appears around 8 p.m. (759). Overnight traffic never fully stops.</p>
+      <table>
+        <thead><tr><th>Window</th><th class="num">Events</th></tr></thead>
+        <tbody>
+          <tr><td>12–5 a.m.</td><td class="num">753</td></tr>
+          <tr><td>6–8 a.m.</td><td class="num">857</td></tr>
+          <tr><td>9 a.m.–12 p.m.</td><td class="num">3,315</td></tr>
+          <tr><td>1–5 p.m.</td><td class="num">4,370</td></tr>
+          <tr><td>6–8 p.m.</td><td class="num">2,053</td></tr>
+          <tr><td>9–11 p.m.</td><td class="num">1,563</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <h2>How they visit</h2>
+  <p>This is mostly a desktop page inside Brightspace (lab, home computer, or the D2L desktop shell). Mobile is still 21% of events — enough that the catalog layout has to work on a phone, especially in week one of Fall. ChromeOS (~8%) is consistent with college-issued Chromebooks. iOS far outnumbers Android among phones.</p>
+
+  <div class="two">
+    <div>
+      <h3>Device and OS</h3>
+      <div class="bar-row"><span>Desktop</span><div class="bar-track"><div class="bar-fill" style="width:79%"></div></div><span class="num">10,164</span></div>
+      <div class="bar-row"><span>Mobile</span><div class="bar-track"><div class="bar-fill alt" style="width:21%"></div></div><span class="num">2,747</span></div>
+      <div class="bar-row"><span>Windows</span><div class="bar-track"><div class="bar-fill" style="width:50%"></div></div><span class="num">6,422</span></div>
+      <div class="bar-row"><span>macOS</span><div class="bar-track"><div class="bar-fill" style="width:20%"></div></div><span class="num">2,600</span></div>
+      <div class="bar-row"><span>iOS</span><div class="bar-track"><div class="bar-fill alt" style="width:16%"></div></div><span class="num">2,124</span></div>
+      <div class="bar-row"><span>ChromeOS</span><div class="bar-track"><div class="bar-fill alt" style="width:8%"></div></div><span class="num">993</span></div>
+      <div class="bar-row"><span>Android</span><div class="bar-track"><div class="bar-fill alt" style="width:5%"></div></div><span class="num">618</span></div>
+      <div class="bar-row"><span>Linux</span><div class="bar-track"><div class="bar-fill alt" style="width:1%"></div></div><span class="num">154</span></div>
+    </div>
+    <div>
+      <h3>Browser</h3>
+      <table>
+        <thead><tr><th>Browser</th><th class="num">Events</th><th class="num">Share</th></tr></thead>
+        <tbody>
+          <tr><td>Chrome</td><td class="num">6,014</td><td class="num">47%</td></tr>
+          <tr><td>Edge</td><td class="num">2,878</td><td class="num">22%</td></tr>
+          <tr><td>Safari</td><td class="num">2,588</td><td class="num">20%</td></tr>
+          <tr><td>Other / in-app</td><td class="num">602</td><td class="num">5%</td></tr>
+          <tr><td>Firefox</td><td class="num">446</td><td class="num">3%</td></tr>
+          <tr><td>Chrome on iOS</td><td class="num">196</td><td class="num">2%</td></tr>
+          <tr><td>Opera</td><td class="num">179</td><td class="num">1%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <h2>What the data is telling us</h2>
+  <ol class="findings">
+    <li>The hub is a registration-and-navigation tool more than a “while I’m in class” page. Spikes sit on term boundaries, grades due, Learning Days, and Fall opening — not mid-semester Mondays in April.</li>
+    <li>The primary student journey is Advising → Self-Service → Registration/Aid → D2L/Online Learning → Library. If those five links are wrong, slow, or mislabeled, that is where the pain shows up.</li>
+    <li>Most visits are shallow. Design for scanability: clear tile titles, a working search box, and correct “Go to” URLs beat adding more FAQ copy. Sixty percent never click; they may still have gotten the answer from the tile label.</li>
+    <li>Fall week one is the stress test. 391 sessions on the first Monday is not an anomaly next to Learning Days traffic the week before. Plan content freezes and link QA for the 24 Aug–7 Sep window every year.</li>
+    <li>Basic-needs and access links (food pantry, coordinated care, transportation, password reset, disability FAQ) are small in count and high in importance. They should stay visible, not buried behind the academic tiles that dominate volume.</li>
+    <li>Winter 2026 cannot be compared fairly to Spring Summer or Fall. Only the last month of Winter is in the database. Use Spring Summer 2026 as the baseline term, and treat Fall 2026 as a launch curve until more weeks accumulate.</li>
+  </ol>
+
+  <h2>Methodology and caveats</h2>
+  <p>Session id is created in the browser on page load. A refresh or a new device is a new session, so 5,911 is visits, not unique students. Element text is the first 200 characters of the clicked node, which is why some labels concatenate; destinations were rolled up by URL. Term assignment uses calendar start/end dates inclusive, in Eastern local date of created_at. Events between Winter end (1 May) and Spring start (11 May), and between SS end (20 Aug) and Fall start (29 Aug), are labeled as breaks. 1 September 2026 is truncated at 8:30 a.m. Eastern, so Fall “per day” (425) is pulled up by 29–31 August and will change when a full week exists.</p>
+
+  <footer class="meta">
+    Source: Supabase student_services_clicks CSV (12,911 rows) · Your College academic-calendar.json (updated 2026-08-06) · Prepared 1 Sep 2026 · Times in Eastern · No student identity is present in this table · Your College eLearning Office
+  </footer>
+</body>
+</html>

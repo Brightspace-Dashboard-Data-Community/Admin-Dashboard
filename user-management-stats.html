@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="User Management Overview — lookups, account tools, and user reports">
+    <title>User Overview - D2L Admin</title>
+
+    <link rel="icon" href="favicon.ico">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+
+    <link rel="prefetch" href="search-user.html">
+    <link rel="prefetch" href="reports-tools.html">
+</head>
+
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <div class="app-container">
+        <!-- Sidebar Navigation (injected via js/sidebar.js) -->
+
+        <main id="main-content" class="main-content">
+            <header class="top-bar home-top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn" type="button" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+                </div>
+            </header>
+
+            <section class="home-hero" aria-labelledby="overview-hero-title">
+                <div class="home-hero-copy">
+                    <p class="home-hero-eyebrow">User Mgt</p>
+                    <h1 id="overview-hero-title" class="page-title">User Overview</h1>
+                    <p class="home-hero-lead">
+                        Find, create, and repair Brightspace accounts. Start with a lookup for most tickets, then use the reports below for duplicates, inactive accounts, and retirement.
+                    </p>
+                    <div class="home-hero-actions">
+                        <a href="search-user.html" class="launch-tool-btn">
+                            <span>Search a user</span>
+                            <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                        </a>
+                        <a href="reports-tools.html" class="launch-tool-btn launch-tool-btn-secondary">
+                            <span>All user reports</span>
+                            <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </div>
+                <aside class="home-hero-aside">
+                    <span class="home-semester-label" id="home-semester-label">Current term</span>
+                    <p class="home-hero-aside-text">
+                        This page is a map of user tools — not live instance counts.
+                        Merge <strong>user records</strong> here; course-section combines stay under Course Mgt.
+                    </p>
+                </aside>
+            </section>
+
+            <section class="home-section" aria-labelledby="user-frequent-title">
+                <div class="home-section-header">
+                    <h2 id="user-frequent-title" class="home-section-title">Start here</h2>
+                    <span class="home-section-kicker">Daily work</span>
+                </div>
+                <div class="home-section-separator"></div>
+                <p class="home-section-intro">The four tools used most often for account tickets.</p>
+
+                <div class="home-frequent-grid">
+                    <a href="search-user.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-user"></i></div>
+                        <h3 class="home-tool-card-title">Search User</h3>
+                        <p class="home-tool-card-text">Find a person by name, username, or Org Defined ID.</p>
+                    </a>
+                    <a href="create-user.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-user-plus"></i></div>
+                        <h3 class="home-tool-card-title">Create User</h3>
+                        <p class="home-tool-card-text">Add an account that is not coming from SIS.</p>
+                    </a>
+                    <a href="reports/user-merge.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-object-ungroup"></i></div>
+                        <h3 class="home-tool-card-title">Merge Users</h3>
+                        <p class="home-tool-card-text">Combine two duplicate Brightspace logins into one record.</p>
+                    </a>
+                    <a href="user-list.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-list"></i></div>
+                        <h3 class="home-tool-card-title">User List</h3>
+                        <p class="home-tool-card-text">Browse accounts when you do not have a specific search term.</p>
+                    </a>
+                </div>
+            </section>
+
+            <section class="home-section" aria-labelledby="user-guide-title">
+                <div class="home-section-header">
+                    <h2 id="user-guide-title" class="home-section-title">When to use which</h2>
+                    <span class="home-section-kicker">Choose a path</span>
+                </div>
+                <div class="home-section-separator"></div>
+                <p class="home-section-intro">Match the ticket to the tool. Each row opens the right page.</p>
+
+                <div class="overview-guide">
+                    <a href="search-user.html" class="overview-guide-item">
+                        <p class="overview-guide-if">Looking up a person from a help ticket or email</p>
+                        <span class="overview-guide-then">Search User <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+                    </a>
+                    <a href="reports/user-merge.html" class="overview-guide-item">
+                        <p class="overview-guide-if">Two Brightspace logins for the same person (not course sections)</p>
+                        <span class="overview-guide-then">Merge Users <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+                    </a>
+                    <a href="create-user.html" class="overview-guide-item">
+                        <p class="overview-guide-if">Account is missing and SIS will not create it</p>
+                        <span class="overview-guide-then">Create User <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+                    </a>
+                    <a href="reports/new-student-audit.html" class="overview-guide-item">
+                        <p class="overview-guide-if">CSV of Org Defined IDs — check who is missing in Brightspace</p>
+                        <span class="overview-guide-then">New Student Audit <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+                    </a>
+                    <a href="reports-tools.html#inactive-dormant-accounts" class="overview-guide-item">
+                        <p class="overview-guide-if">Account switched off versus still-on with no login for years</p>
+                        <span class="overview-guide-then">Inactive vs dormant <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+                    </a>
+                    <a href="reports-tools.html#retirement-workflow" class="overview-guide-item">
+                        <p class="overview-guide-if">Retire a username, list retired accounts, or bring someone back</p>
+                        <span class="overview-guide-then">Retirement workflow <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+                    </a>
+                </div>
+            </section>
+
+            <section class="home-section" aria-labelledby="user-reports-title">
+                <div class="home-section-header">
+                    <h2 id="user-reports-title" class="home-section-title">Quick reports</h2>
+                    <span class="home-section-kicker">Run when needed</span>
+                </div>
+                <div class="home-section-separator"></div>
+                <p class="home-section-intro">Open a report to load its data. Counts live on the report page, not here.</p>
+
+                <div class="home-frequent-grid">
+                    <a href="reports/new-student-audit.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-user-graduate"></i></div>
+                        <h3 class="home-tool-card-title">New Student Audit</h3>
+                        <p class="home-tool-card-text">CSV in — check Org Defined IDs and create missing student accounts.</p>
+                    </a>
+                    <a href="reports/incomplete-students-mailto.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-envelope"></i></div>
+                        <h3 class="home-tool-card-title">Incomplete Students</h3>
+                        <p class="home-tool-card-text">List incomplete students and open outreach in Outlook.</p>
+                    </a>
+                    <a href="reports/inactive-status-report.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-ban"></i></div>
+                        <h3 class="home-tool-card-title">Turned-off accounts</h3>
+                        <p class="home-tool-card-text">IsActive = no. Optional filter to hide .retired. usernames.</p>
+                    </a>
+                    <a href="reports/inactive-users.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-moon"></i></div>
+                        <h3 class="home-tool-card-title">Dormant logins</h3>
+                        <p class="home-tool-card-text">Still-on students and instructors with no login for N years.</p>
+                    </a>
+                    <a href="reports/never-logged-in.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-clock"></i></div>
+                        <h3 class="home-tool-card-title">Never Logged In</h3>
+                        <p class="home-tool-card-text">Data Hub extract where First Login Date is blank.</p>
+                    </a>
+                    <a href="reports/deleted-users-report.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-user-xmark"></i></div>
+                        <h3 class="home-tool-card-title">Deleted Users</h3>
+                        <p class="home-tool-card-text">Review accounts that have been deleted from Brightspace.</p>
+                    </a>
+                    <a href="reports/retire-users.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-user-slash"></i></div>
+                        <h3 class="home-tool-card-title">Retire accounts</h3>
+                        <p class="home-tool-card-text">Bulk inactivate and append .retired. to the username.</p>
+                    </a>
+                    <a href="reports/zzstudent-provision.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-user-shield"></i></div>
+                        <h3 class="home-tool-card-title">Provision ZZStudents</h3>
+                        <p class="home-tool-card-text">Create or manage demo student accounts for testing.</p>
+                    </a>
+                </div>
+            </section>
+
+            <section class="home-section" aria-labelledby="user-more-title">
+                <div class="home-orient-card">
+                    <div class="home-orient-icon" aria-hidden="true">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <div class="home-orient-copy">
+                        <h2 id="user-more-title" class="home-orient-title">Need a different user report?</h2>
+                        <p class="home-orient-text">
+                            Role checker, bulk activation, and the full retirement set live in Reports &amp; Tools.
+                        </p>
+                    </div>
+                    <a href="reports-tools.html" class="launch-tool-btn">
+                        <span>Browse all reports</span>
+                        <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/d2l-api.js"></script>
+    <script src="js/semester-config.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/section-overview.js"></script>
+</body>
+
+</html>

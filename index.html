@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Your College D2L Admin Dashboard — lookups, enrollments, reports, and faculty success tools">
+    <title>D2L Admin Dashboard</title>
+
+    <link rel="icon" href="favicon.ico">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+
+    <link rel="prefetch" href="search-user.html">
+    <link rel="prefetch" href="reports-tools.html">
+    <link rel="prefetch" href="dashboard-orientation.html">
+</head>
+
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <div class="app-container">
+        <!-- Sidebar Navigation (injected via js/sidebar.js) -->
+
+        <main id="main-content" class="main-content">
+            <header class="top-bar home-top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn" type="button" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+                </div>
+            </header>
+
+            <section class="home-hero" aria-labelledby="home-hero-title">
+                <div class="home-hero-copy">
+                    <p class="home-hero-eyebrow">Your College eLearning</p>
+                    <h1 id="home-hero-title" class="page-title">Admin Dashboard</h1>
+                    <p id="welcome-message" class="home-hero-welcome">Welcome back</p>
+                    <p class="home-hero-lead">
+                        Your starting point for user and course lookups, enrollments, faculty onboarding, and operational reports — without hunting through Brightspace menus.
+                    </p>
+                    <div class="home-hero-actions">
+                        <a href="search-user.html" class="launch-tool-btn">
+                            <span>Search a user</span>
+                            <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                        </a>
+                        <a href="reports-tools.html" class="launch-tool-btn launch-tool-btn-secondary">
+                            <span>Browse reports &amp; tools</span>
+                            <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </div>
+                <aside class="home-hero-aside">
+                    <span class="home-semester-label" id="home-semester-label">Current term</span>
+                    <p class="home-hero-aside-text">
+                        Need a map of tools for a section? Open the
+                        <a href="user-management-stats.html">User</a>,
+                        <a href="course-management-stats.html">Course</a>, or
+                        <a href="enrollment-management-stats.html">Enrollment</a> overview.
+                    </p>
+                </aside>
+            </section>
+
+            <section class="home-section" aria-labelledby="home-frequent-title">
+                <div class="home-section-header">
+                    <h2 id="home-frequent-title" class="home-section-title">Frequently used</h2>
+                    <span class="home-section-kicker">Daily work</span>
+                </div>
+                <div class="home-section-separator"></div>
+                <p class="home-section-intro">Jump straight to the lookups and processes used most often.</p>
+
+                <div class="home-frequent-grid">
+                    <a href="search-user.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-user"></i></div>
+                        <h3 class="home-tool-card-title">Search User</h3>
+                        <p class="home-tool-card-text">Find a person by name, username, or Org Defined ID.</p>
+                    </a>
+                    <a href="search-course.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-magnifying-glass"></i></div>
+                        <h3 class="home-tool-card-title">Search Course</h3>
+                        <p class="home-tool-card-text">Look up a course offering, sandbox, or org unit.</p>
+                    </a>
+                    <a href="create-enrollment.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-user-plus"></i></div>
+                        <h3 class="home-tool-card-title">Enroll User</h3>
+                        <p class="home-tool-card-text">Add one person to a course with the right role.</p>
+                    </a>
+                    <a href="faculty-onboarding/command-center.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-gauge-high"></i></div>
+                        <h3 class="home-tool-card-title">Faculty Command Center <span class="beta-badge">Beta</span></h3>
+                        <p class="home-tool-card-text">Track new instructor onboarding, meetings, and follow-up.</p>
+                    </a>
+                    <a href="reports/empty-course-audit.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-box-open"></i></div>
+                        <h3 class="home-tool-card-title">Empty Course Audit</h3>
+                        <p class="home-tool-card-text">Find shells that still have no content for the term.</p>
+                    </a>
+                    <a href="reports/enrollment-checker-insights.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-user-check"></i></div>
+                        <h3 class="home-tool-card-title">Adds &amp; Drops Audit</h3>
+                        <p class="home-tool-card-text">Review recent enrollment changes from Insights data.</p>
+                    </a>
+                    <a href="create-sandbox.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-box"></i></div>
+                        <h3 class="home-tool-card-title">Create Sandbox</h3>
+                        <p class="home-tool-card-text">Provision a practice course for an instructor.</p>
+                    </a>
+                    <a href="reports/course-merge-verifier.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-object-group"></i></div>
+                        <h3 class="home-tool-card-title">Course Merge Verifier</h3>
+                        <p class="home-tool-card-text">Confirm section associations before or after a merge.</p>
+                    </a>
+                </div>
+            </section>
+
+            <section class="home-section" aria-labelledby="home-map-title">
+                <div class="home-section-header">
+                    <h2 id="home-map-title" class="home-section-title">What you can do here</h2>
+                </div>
+                <div class="home-section-separator"></div>
+                <p class="home-section-intro">Use the sidebar anytime, or jump into a section below.</p>
+
+                <div class="home-map-grid">
+                    <a href="user-management-stats.html" class="home-map-card">
+                        <div class="home-map-icon" aria-hidden="true"><i class="fa-solid fa-users"></i></div>
+                        <h3 class="home-map-card-title">User Management</h3>
+                        <p class="home-map-card-text">Search, create, list, and merge Brightspace user accounts.</p>
+                    </a>
+                    <a href="course-management-stats.html" class="home-map-card">
+                        <div class="home-map-icon" aria-hidden="true"><i class="fa-solid fa-chalkboard-user"></i></div>
+                        <h3 class="home-map-card-title">Course Management</h3>
+                        <p class="home-map-card-text">Find offerings, create shells, and provision sandboxes.</p>
+                    </a>
+                    <a href="enrollment-management-stats.html" class="home-map-card">
+                        <div class="home-map-icon" aria-hidden="true"><i class="fa-solid fa-user-graduate"></i></div>
+                        <h3 class="home-map-card-title">Enrollment Management</h3>
+                        <p class="home-map-card-text">Create, manage, or bulk-enroll users in courses.</p>
+                    </a>
+                    <a href="faculty-onboarding/command-center.html" class="home-map-card">
+                        <div class="home-map-icon" aria-hidden="true"><i class="fa-solid fa-route"></i></div>
+                        <h3 class="home-map-card-title">Faculty Success <span class="beta-badge">Beta</span></h3>
+                        <p class="home-map-card-text">Intake, communication, automation, and orientation tracking.</p>
+                    </a>
+                    <a href="reports-tools.html" class="home-map-card">
+                        <div class="home-map-icon" aria-hidden="true"><i class="fa-solid fa-chart-line"></i></div>
+                        <h3 class="home-map-card-title">Reports &amp; Tools</h3>
+                        <p class="home-map-card-text">Audits, repairs, retirement workflows, and one-off utilities.</p>
+                    </a>
+                    <a href="admin-guide.html" class="home-map-card">
+                        <div class="home-map-icon" aria-hidden="true"><i class="fa-solid fa-calendar-check"></i></div>
+                        <h3 class="home-map-card-title">Admin Guide</h3>
+                        <p class="home-map-card-text">Which reports to run daily, at the start, in week one, at midterm, and at the end.</p>
+                    </a>
+                    <a href="division-info.html" class="home-map-card">
+                        <div class="home-map-icon" aria-hidden="true"><i class="fa-solid fa-building"></i></div>
+                        <h3 class="home-map-card-title">Division Info</h3>
+                        <p class="home-map-card-text">Reference lists and contacts by academic division.</p>
+                    </a>
+                    <a href="tutorials.html" class="home-map-card">
+                        <div class="home-map-icon" aria-hidden="true"><i class="fa-solid fa-book-open"></i></div>
+                        <h3 class="home-map-card-title">Tutorials</h3>
+                        <p class="home-map-card-text">Staff walkthroughs for common Brightspace admin tasks.</p>
+                    </a>
+                </div>
+            </section>
+
+            <section class="home-section" aria-labelledby="home-orient-title">
+                <div class="home-orient-card">
+                    <div class="home-orient-icon" aria-hidden="true">
+                        <i class="fa-solid fa-compass"></i>
+                    </div>
+                    <div class="home-orient-copy">
+                        <h2 id="home-orient-title" class="home-orient-title">New here?</h2>
+                        <p class="home-orient-text">
+                            Take a guided walkthrough of each Admin Dashboard section, then come back here for the tools you use most.
+                        </p>
+                    </div>
+                    <a href="dashboard-orientation.html" class="launch-tool-btn">
+                        <span>Start dashboard walkthrough</span>
+                        <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="home-intro-modal" class="modal-overlay home-intro-modal" role="dialog" aria-labelledby="home-intro-title" aria-modal="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="home-intro-title">Welcome to the Admin Dashboard</h2>
+                <button class="modal-close" id="home-intro-close" type="button" aria-label="Close">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="home-intro-icon" aria-hidden="true">
+                    <i class="fa-solid fa-compass"></i>
+                </div>
+                <p>This home page is a map of tools — not live instance analytics. Search, enroll, audit, and faculty onboarding are a click away.</p>
+                <p style="margin-top: 0.75rem;">The first time through, the walkthrough is the fastest way to see what lives under each sidebar item.</p>
+                <div class="home-intro-actions">
+                    <a href="dashboard-orientation.html" class="launch-tool-btn" id="home-intro-start">
+                        <span>Start walkthrough</span>
+                        <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                    </a>
+                    <button type="button" class="launch-tool-btn launch-tool-btn-secondary" id="home-intro-skip">
+                        Skip for now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/d2l-api.js"></script>
+    <script src="js/semester-config.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/home.js"></script>
+</body>
+
+</html>

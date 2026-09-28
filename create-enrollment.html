@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Enrollment - D2L Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <link rel="stylesheet" href="css/tables.css">
+
+    <style>
+        .search-input-group {
+            display: flex;
+            gap: 0;
+        }
+
+        .search-input-group input {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            border-right: none;
+        }
+
+        .search-input-group button {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            padding: 0 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation (injected via js/sidebar.js) -->
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="index.html" class="back-link"
+                        style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background-color: #f0f0f0; color: var(--text-primary); text-decoration: none; border-radius: 4px; font-size: 13px; font-weight: 500; margin-bottom: var(--spacing-sm);"><i
+                            class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+                    <h1 class="page-title">Create Enrollment</h1>
+                    <p class="page-subtitle">Enroll users in courses</p>
+                </div>
+            </header>
+
+            <form id="single-enrollment-form" class="form-container">
+                <h2 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 20px;">Single
+                    Enrollment</h2>
+
+                <!-- Confirmation box (hidden until enrollment succeeds) -->
+                <div id="enrollmentConfirmation" class="form-section" style="display: none; background: rgba(76, 175, 80, 0.1); border-left: 4px solid var(--primary-color); margin-bottom: 20px; padding: 16px;">
+                    <h3 style="color: var(--primary-color); margin-top: 0;">Enrollment Successful</h3>
+                    <p id="confirmationMessage" style="margin-bottom: 12px; color: var(--text-primary);"></p>
+                    <p style="margin-bottom: 12px;">
+                        <a id="courseLink" href="#" target="_blank" rel="noopener noreferrer" style="color: var(--primary-color); font-weight: 600;">View Course in D2L</a>
+                    </p>
+                    <button type="button" id="closeConfirmation" class="btn btn-outline"><i class="fa-solid fa-xmark"></i> Close</button>
+                </div>
+
+                <div class="form-section">
+                    <h2 class="form-section-title">Enrollment Details</h2>
+
+                    <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 10px; color: var(--text-primary);">
+                        Select User</h3>
+                    <div class="form-grid">
+                        <div class="form-group form-grid-full">
+                            <label class="form-label" for="userSearch">Find User</label>
+                            <div class="search-input-group">
+                                <input type="text" id="userSearch" class="form-control" placeholder="Search by name, email, or ID">
+                                <button type="button" id="userSearchBtn" class="btn btn-primary"><i
+                                        class="fa-solid fa-magnifying-glass"></i></button>
+                            </div>
+                            <div id="userResults" class="table-container" style="display: none; margin-top: 12px;"></div>
+                            <div id="selectedUser" style="display: none; margin-top: 12px; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px;"></div>
+                        </div>
+                    </div>
+
+                    <h3 style="font-size: 14px; font-weight: 600; margin: 20px 0 10px; color: var(--text-primary);">
+                        Select Course</h3>
+                    <div class="form-grid">
+                        <div class="form-group form-grid-full">
+                            <label class="form-label" for="term">Semester</label>
+                            <select id="term" class="form-control" name="term">
+                                <option value="">Select a Semester</option>
+                            </select>
+                        </div>
+                        <div class="form-group form-grid-full">
+                            <label class="form-label" for="courseSearch">Find Course</label>
+                            <div class="search-input-group">
+                                <input type="text" id="courseSearch" class="form-control" placeholder="Search by course name or code">
+                                <button type="button" id="courseSearchBtn" class="btn btn-primary"><i
+                                        class="fa-solid fa-magnifying-glass"></i></button>
+                            </div>
+                            <div id="courseResults" class="table-container" style="display: none; margin-top: 12px;"></div>
+                            <div id="selectedCourse" style="display: none; margin-top: 12px; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2 class="form-section-title">Enrollment Role</h2>
+                    <div class="form-group form-grid-full">
+                        <label class="form-label" for="enrollmentRole">Role*</label>
+                        <select id="enrollmentRole" class="form-control" name="enrollmentRole" required>
+                            <option value="">Select Role</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa-solid fa-plus"></i> Create Enrollment
+                    </button>
+                    <button type="button" class="btn btn-outline" onclick="window.history.back()">
+                        <i class="fa-solid fa-xmark"></i> Cancel
+                    </button>
+                </div>
+
+            </form>
+        </main>
+    </div>
+
+    <script src="js/d2l-api.js"></script>
+    <script src="js/semester-config.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/create-enrollment.js"></script>
+</body>
+
+</html>

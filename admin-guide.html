@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Which Admin Dashboard reports to run daily, before the term, in week one, at midterm, at the end of the term, and on a periodic schedule">
+    <title>Admin Guide — Report Calendar</title>
+
+    <link rel="icon" href="favicon.ico">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+
+    <style>
+        .guide-wip {
+            display: inline-block;
+            margin-left: 0.35rem;
+            padding: 0.05rem 0.4rem;
+            border-radius: 999px;
+            background: #fff4e6;
+            color: #9a5b00;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            vertical-align: 0.1em;
+        }
+    </style>
+</head>
+
+<body class="orient-page">
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <div class="app-container">
+        <main id="main-content" class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn" type="button" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="index.html" class="orient-back"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back to Home</a>
+                    <h1 class="page-title">Admin guide: what to run, and when</h1>
+                    <p class="page-subtitle">A working calendar for the eLearning team. Open the report from the link, run it for the current session, and act on the exceptions. Ticket lookups (Search User, Search Course, one-student activity) stay available every day and are listed separately from the scheduled scans.</p>
+                </div>
+            </header>
+
+            <div class="orient-notice" role="status">
+                <div class="orient-notice-icon" aria-hidden="true">
+                    <i class="fa-solid fa-calendar-days"></i>
+                </div>
+                <div>
+                    <p class="orient-notice-title">Treat each session as its own term</p>
+                    <p class="orient-notice-text">
+                        Run the <strong>before the term</strong> and <strong>first week</strong> lists when the full semester opens and again when the second 8-week session starts.
+                        Run the <strong>end of term</strong> list when grades are due for that session.
+                        Items marked <span class="guide-wip">In progress</span> are on the dashboard and still being finished — use them, and expect the page to change.
+                    </p>
+                </div>
+            </div>
+
+            <nav class="orient-toc" aria-label="Report calendar">
+                <h2 class="orient-toc-title">Jump to a point in the term</h2>
+                <ol class="orient-toc-list">
+                    <li><a href="#daily">Every day the term is in session</a></li>
+                    <li><a href="#before">Before the semester starts</a></li>
+                    <li><a href="#week-one">First week</a></li>
+                    <li><a href="#mid">Mid-semester</a></li>
+                    <li><a href="#end">End of semester</a></li>
+                    <li><a href="#periodic">Periodic and between terms</a></li>
+                    <li><a href="#lookups">Ticket lookups (any day)</a></li>
+                    <li><a href="#names">Names that are easy to mix up</a></li>
+                </ol>
+            </nav>
+
+            <section class="orient-section" id="daily" aria-labelledby="daily-heading">
+                <h2 id="daily-heading" class="orient-section-title">
+                    <i class="fa-solid fa-sun" aria-hidden="true"></i>
+                    Every day the term is in session
+                </h2>
+                <p class="orient-section-desc">Overnight SIS and ILP changes are the daily job. Do these before working the ticket queue so adds, drops, and missing accounts are already visible.</p>
+                <ul class="orient-checklist">
+                    <li><a href="reports/enrollment-watch-list.html"><strong>Enrollment watch list</strong></a> — classlist plus enrollment logs since the last successful run. This is the “what changed overnight?” scan (adds and drops, and who performed them). The first run on a course only sees people still enrolled. The next run is the one that catches overnight drops, so start it the day before you need the diff.</li>
+                    <li><a href="reports/enrollment-checker-insights.html"><strong>User Adds &amp; Drops Audit (Insights)</strong></a> — upload the Ellucian Insights Roster Adds and Drops CSV and compare it to Brightspace. Use this when the Insights file is ready, including days the watch list already ran.</li>
+                    <li><a href="reports/recently-enrolled-never-logged-in.html"><strong>Recently enrolled, never logged in</strong></a> — students with an enroll event in the window you choose and no Brightspace system login in the last 31 days. This is the daily “new enrollments who have not signed in” list.</li>
+                    <li><a href="reports/new-student-audit.html"><strong>New Student Audit</strong></a> — when a new-students CSV arrives, check each ID against Org Defined ID and create the student accounts that are missing (role 101).</li>
+                    <li><a href="reports/cxld-course-tool.html"><strong>Cancelled Courses</strong></a> — compare D2L offerings to the college cancellation CSV and process CXLD courses. Run on days a new cancellation file arrives, not only at the start of the term.</li>
+                    <li><a href="faculty-onboarding/command-center.html"><strong>Faculty Command Center</strong></a> and the <a href="onboarding-instructors.html">Action Queue</a> — follow up on new instructors who still have open onboarding steps. Heavier during hiring; a quick check on other days.</li>
+                </ul>
+            </section>
+
+            <section class="orient-section" id="before" aria-labelledby="before-heading">
+                <h2 id="before-heading" class="orient-section-title">
+                    <i class="fa-solid fa-flag" aria-hidden="true"></i>
+                    Before the semester starts
+                </h2>
+                <p class="orient-section-desc">Work top to bottom. Shells and cancellations come first, then merges, then whether the course is actually ready for students, then the people who need accounts and roles.</p>
+                <ol class="orient-steps">
+                    <li><a href="reports/sis-d2l-course-gap.html"><strong>SIS vs D2L Course Gap</strong></a> — upload the SIS course list, pick the Brightspace semester, and find sections that are not course offerings yet.</li>
+                    <li><a href="reports/course-list-by-semester.html"><strong>Course List by Semester</strong></a> — export the offering list you will audit against. <a href="reports/semester-list.html">Semester List</a> is the reference if a term is missing from the dropdowns.</li>
+                    <li><a href="reports/missing-end-date.html"><strong>Missing Start or End Dates</strong></a> — offerings with a blank start or end date will not behave correctly for access and for later reports.</li>
+                    <li><a href="reports/cxld-course-tool.html"><strong>Cancelled Courses</strong></a> — match the college CSV and process cancellations before faculty and students land in dead shells.</li>
+                    <li><a href="reports/course-merge-verifier.html"><strong>Course Merge Verifier</strong></a>, then <a href="reports/course-merge-updater.html"><strong>Course Merge Updater</strong></a> — verifier checks course codes, Delta ID, ACTIVE/CXLD, and instructor assignment. Updater deactivates the merge courses, posts merge news, and updates the main course name. Verify before you update.</li>
+                    <li><a href="reports/empty-course-audit.html"><strong>Empty Course Audit</strong></a> — semester offerings (MERGED, CXLD, and sandboxes excluded) checked for news, content, and grade items. Upload the simplified courses CSV when you have it so start and end dates and a faculty-name fallback are on the export.</li>
+                    <li><a href="reports/homepage-audit.html"><strong>Homepage Audit</strong></a>, <a href="reports/navbar-audit.html"><strong>Navigation Bar Audit</strong></a>, <a href="reports/content-experience-audit.html"><strong>Content Experience Audit</strong></a>, and <a href="reports/faculty-profile-audit.html"><strong>Faculty Profile Widget Audit</strong></a> — default homepage, default nav bar, New vs Classic content, and whether the profile widget has a real name, photo, and bio.</li>
+                    <li><a href="reports/section-profile-builder.html"><strong>Section Profile Config Builder</strong></a> — map sections to instructor profiles and publish the JSON and photos the Section Profile widget reads.</li>
+                    <li><a href="reports/IA-email-checker.html"><strong>Intelligent Agent Reply-To Audit</strong></a> — for enabled agents, find a blank or default Reply-To and pull instructor emails from the classlist before agents start sending.</li>
+                    <li><a href="reports/role-checker.html"><strong>Role Checker</strong></a> — compare the faculty assignment CSV to live enrollments and bulk-fix anyone who is not Instructor on org 1001.</li>
+                    <li><a href="faculty-orientation-not-enrolled.html"><strong>Faculty Not Yet in Orientation</strong></a>, plus <a href="faculty-onboarding/new-instructor-intake.html">New Instructor Intake</a> — instructors in active onboarding who are not in the orientation course.</li>
+                    <li><a href="reports/new-student-audit.html"><strong>New Student Audit</strong></a> — create student accounts that exist in the new-student file and not yet in Brightspace.</li>
+                    <li><a href="reports/zzstudent-provision.html"><strong>Provision ZZStudents</strong></a> — create the per-course demo accounts for the semester. This tool creates the users and does not enroll them.</li>
+                    <li><a href="reports/copy-course-module.html"><strong>Copy One Module to Many Courses</strong></a> — only when a standard module (orientation, syllabus block, or similar) has to land in many shells before day one.</li>
+                    <li><a href="reports/division-csv-splitter.html"><strong>Division CSV Splitter</strong></a> — after an audit export has a Division column, split it into one Excel file per division to send to deans.</li>
+                </ol>
+            </section>
+
+            <section class="orient-section" id="week-one" aria-labelledby="week-one-heading">
+                <h2 id="week-one-heading" class="orient-section-title">
+                    <i class="fa-solid fa-1" aria-hidden="true"></i>
+                    First week
+                </h2>
+                <p class="orient-section-desc">Keep the daily enrollment list running. Add these checks so empty shells, silent instructors, and students who never enter the course are caught while there is still time to fix them. Repeat this list at the start of the second 8-week session.</p>
+                <ul class="orient-checklist">
+                    <li>Daily items still apply: <a href="reports/enrollment-watch-list.html">Enrollment watch list</a>, <a href="reports/enrollment-checker-insights.html">Adds &amp; Drops</a>, <a href="reports/recently-enrolled-never-logged-in.html">Recently enrolled, never logged in</a>, <a href="reports/new-student-audit.html">New Student Audit</a>, and <a href="reports/cxld-course-tool.html">Cancelled Courses</a> if a new file arrives.</li>
+                    <li><a href="reports/course-access-report.html"><strong>Course Access Report</strong></a> — students who have not entered their courses.</li>
+                    <li><a href="reports/no-instructor-activity.html"><strong>No Instructor Activity</strong></a> — courses whose instructors have not accessed the course or had no activity in the last 14 days.</li>
+                    <li><a href="reports/empty-course-audit.html"><strong>Empty Course Audit</strong></a> — second pass. Shells that were empty before the term and are still empty after classes start.</li>
+                    <li><a href="reports/course-merge-verifier.html"><strong>Course Merge Verifier</strong></a> — late merge requests that arrived after the pre-term pass. Update only after the verifier is clean.</li>
+                    <li><a href="faculty-orientation-not-enrolled.html"><strong>Faculty Not Yet in Orientation</strong></a> — instructors who are teaching and still not in the orientation course.</li>
+                    <li><a href="reports/broken-links.html"><strong>Broken / Missing Links</strong></a> — scan the semester (or a limited set) for broken external links and missing file attachments. Start with courses already flagged by faculty.</li>
+                    <li><a href="reports/dual-enrollment-last-access.html"><strong>Dual Enrollment Last Access</strong></a> — when a high-school partner asks who has entered 7xx/8xx sections. Upload Org Defined IDs, pick the semester, and skip <code>MERGED -</code> child offerings.</li>
+                    <li><a href="reports/enrollment-statistics.html"><strong>Enrollment Statistics</strong></a> — totals by role and division once the first-week roster has settled. Useful for a dean snapshot, not a daily file.</li>
+                </ul>
+            </section>
+
+            <section class="orient-section" id="mid" aria-labelledby="mid-heading">
+                <h2 id="mid-heading" class="orient-section-title">
+                    <i class="fa-solid fa-scale-balanced" aria-hidden="true"></i>
+                    Mid-semester
+                </h2>
+                <p class="orient-section-desc">Enrollment monitoring can drop from every morning to whenever a new Insights file or watch-list diff is worth reading — typically a few times a week. The midterm job is access, instructor presence, and open incompletes from the prior session.</p>
+                <ul class="orient-checklist">
+                    <li><a href="reports/no-instructor-activity.html"><strong>No Instructor Activity</strong></a> — instructors who have gone quiet for 14 days.</li>
+                    <li><a href="reports/course-access-report.html"><strong>Course Access Report</strong></a> — students who still have not entered the course.</li>
+                    <li><a href="reports/enrollment-watch-list.html"><strong>Enrollment watch list</strong></a> and <a href="reports/enrollment-checker-insights.html"><strong>Adds &amp; Drops</strong></a> — a few times a week, and any day a roster file arrives.</li>
+                    <li><a href="reports/incomplete-student-report.html"><strong>Incomplete Student Report</strong></a> — everyone still on the Incomplete role (role 107) in the semester. Long-running scan. Use it to see who never came back from last term’s incomplete, then change role from the report or from the <a href="reports/incomplete-students-mailto.html">Outlook tool</a> when you are ready to email.</li>
+                    <li><a href="reports/faculty-feedback-report.html"><strong>Faculty Feedback Timeliness</strong></a> <span class="guide-wip">In progress</span> — submissions on assignments, quizzes, and discussions with late or missing feedback.</li>
+                    <li><a href="reports/system-usage-report.html"><strong>System Usage Analytics</strong></a> <span class="guide-wip">In progress</span> — adoption and activity for the semester when leadership asks for a midpoint picture.</li>
+                    <li><a href="reports/enrollment-statistics.html"><strong>Enrollment Statistics</strong></a> — refreshed totals by role and division.</li>
+                    <li><a href="reports/dual-enrollment-last-access.html"><strong>Dual Enrollment Last Access</strong></a> — partner check-in for 7xx/8xx sections.</li>
+                    <li><a href="reports/broken-links.html"><strong>Broken / Missing Links</strong></a> — courses reported since week one, not a full rescan unless something widespread broke.</li>
+                </ul>
+            </section>
+
+            <section class="orient-section" id="end" aria-labelledby="end-heading">
+                <h2 id="end-heading" class="orient-section-title">
+                    <i class="fa-solid fa-flag-checkered" aria-hidden="true"></i>
+                    End of semester
+                </h2>
+                <p class="orient-section-desc">Run this when grades are due for the session — full term or 8-week. Grades, incompletes, and a clean snapshot of who finished are the work. Close the daily enrollment scans once rosters stop moving.</p>
+                <ul class="orient-checklist">
+                    <li><a href="reports/grade-submission.html"><strong>Grade Submission Report</strong></a> <span class="guide-wip">In progress</span> — upload the Course Log Deep Scan CSV and get grade-submission status per course. Then <a href="reports/grade-submission-assessment.html"><strong>Grade Submission Assessment</strong></a> turns that CSV into the Word assessment.</li>
+                    <li><a href="reports/incomplete-student-report.html"><strong>Incomplete Student Report</strong></a> — list role 107 for the semester. Follow with <a href="reports/incomplete-students-mailto.html"><strong>Incomplete Student Tool (Outlook)</strong></a> to change roles and open the student and instructor emails.</li>
+                    <li><a href="reports/completion-report.html"><strong>Completion Report</strong></a> <span class="guide-wip">In progress</span> — progress-to-completion from final grades, content progress, and optional awards.</li>
+                    <li><a href="reports/end-of-semester-report.html"><strong>End of Semester Course Report</strong></a> <span class="guide-wip">In progress</span> — one course at a time: grades, access, content, due dates, quizzes, discussions, and assignments, with next-term notes. No student names. Last-access is measured from the course end date.</li>
+                    <li><a href="reports/no-instructor-activity.html"><strong>No Instructor Activity</strong></a> — last pass before the grade deadline for instructors who have not been in the course.</li>
+                    <li><a href="reports/issued-awards-report.html"><strong>Issued Awards / Badges</strong></a> — for a course that issues awards, confirm which students received them and when (shown in Eastern time).</li>
+                    <li><a href="reports/course-module-completion-report.html"><strong>Course Module Completion</strong></a> — one offering, one learner or the whole classlist, when someone asks whether topics were completed.</li>
+                    <li><a href="reports/enrollment-statistics.html"><strong>Enrollment Statistics</strong></a> and <a href="reports/system-usage-report.html"><strong>System Usage Analytics</strong></a> <span class="guide-wip">In progress</span> — term snapshot for leadership.</li>
+                    <li><a href="reports/merged-course-classlist.html"><strong>MERGED Course Classlist</strong></a> — when Simple Syllabus needs the combined classlist from a merged offering.</li>
+                </ul>
+            </section>
+
+            <section class="orient-section" id="periodic" aria-labelledby="periodic-heading">
+                <h2 id="periodic-heading" class="orient-section-title">
+                    <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+                    Periodic and between terms
+                </h2>
+                <p class="orient-section-desc">These are not morning reports. Run them on a break between sessions, when a cleanup file arrives, or when a specific request comes in. Retirement is its own sequence — do it in this order.</p>
+                <h3 class="orient-section-title" style="font-size: 1rem; margin-top: 0.25rem;">Retirement sequence</h3>
+                <ol class="orient-steps">
+                    <li><a href="reports/retire-users.html"><strong>Retire accounts (bulk)</strong></a> — CSV of usernames or Org Defined IDs. Sets the account inactive and appends <code>.retired.</code> to the username.</li>
+                    <li><a href="reports/retirement-report.html"><strong>List retired usernames</strong></a> — export everyone whose username contains <code>.retired.</code> and keep that file. The reactivation tool compares against a snapshot.</li>
+                    <li><a href="reports/incorrectly-retired-report.html"><strong>Audit wrong retirement pattern</strong></a> — upload the semester enrollment CSV. Flags people on that list whose Brightspace username contains <code>.retired.</code> and should not.</li>
+                    <li><a href="reports/retired-return-reactivation.html"><strong>Reactivate returned retirees</strong></a> — someone who was retired and is back. Compare the retired snapshot to current data, then turn the selected accounts on.</li>
+                </ol>
+                <h3 class="orient-section-title" style="font-size: 1rem;">Account cleanup</h3>
+                <ul class="orient-checklist">
+                    <li><a href="reports/inactive-users.html"><strong>Dormant logins</strong></a> — students and instructors who are still active and have not logged in for the number of years you choose. Planning list. It does not turn accounts off.</li>
+                    <li><a href="reports/inactive-status-report.html"><strong>Turned-off accounts</strong></a> — <code>IsActive</code> is false. Optional filter hides <code>.retired.</code> usernames so you can see the other inactive accounts.</li>
+                    <li><a href="reports/inactive-student-reactivation.html"><strong>Reactivate students</strong></a> — students only. Use when a student cannot sign in because the account is switched off. Optional strip of a trailing <code>.retired.</code> segment.</li>
+                    <li><a href="reports/bulk-user-activation.html"><strong>Bulk activate from UserId CSV</strong></a> — headerless list of User IDs, any role, inactive to active.</li>
+                    <li><a href="reports/deleted-users-report.html"><strong>Deleted Users Report</strong></a> — usernames with a <code>DELETED-</code> prefix or the matching pattern, when you are cleaning leftover records.</li>
+                    <li><a href="reports/user-merge.html"><strong>Merge duplicate users</strong></a> — two Brightspace logins for one person. Preview enrollments, then merge awards and/or enrollments. Do this per case. It is not a semester batch, and it is not a course-section merge.</li>
+                    <li><a href="reports/never-logged-in.html"><strong>Never Logged In (Data Hub)</strong></a> — full-org extract where First Login Date is blank. Lifetime, not “enrolled this week.” Use the daily recently-enrolled report for the term. This one is for periodic cleanup.</li>
+                    <li><a href="reports/never-enrolled-1001.html"><strong>Never Enrolled (1001)</strong></a> — users with no enrollment in that org unit, when you are reviewing stray accounts.</li>
+                </ul>
+                <h3 class="orient-section-title" style="font-size: 1rem;">When someone asks</h3>
+                <ul class="orient-checklist">
+                    <li><a href="reports/watermark-adjunct-report.html"><strong>Watermark Adjunct Report</strong></a> — Org Defined ID CSV in, Username and adjunct status out, with the SEC division file.</li>
+                    <li><a href="reports/division-csv-splitter.html"><strong>Division CSV Splitter</strong></a> — any results file with a Division column, one workbook per division.</li>
+                    <li><a href="reports/semester-dates-to-csv.html"><strong>Semester Dates to CSV</strong></a> — date extract when another process needs semester start and end dates.</li>
+                    <li><a href="reports/debug-enrollments.html"><strong>Enrollments Debug Report</strong></a> — unusual roles in one course or across a semester.</li>
+                    <li><a href="reports/course-repair-workbench.html"><strong>Course Repair Workbench</strong></a> — one Org Unit ID, edit the API-backed fields in one place.</li>
+                    <li><a href="create-sandbox.html"><strong>Create a Sandbox</strong></a> and <a href="reports/sandbox-dummy-course-launcher.html"><strong>Sandbox Dummy Course Launcher</strong></a> — practice courses and the 7-week Michigan History demo. Not part of the live term rollout.</li>
+                </ul>
+            </section>
+
+            <section class="orient-section" id="lookups" aria-labelledby="lookups-heading">
+                <h2 id="lookups-heading" class="orient-section-title">
+                    <i class="fa-solid fa-headset" aria-hidden="true"></i>
+                    Ticket lookups (any day)
+                </h2>
+                <p class="orient-section-desc">These answer one person or one course. They are not morning scans.</p>
+                <ul class="orient-checklist">
+                    <li><a href="search-user.html"><strong>Search User</strong></a> — name, username, or Org Defined ID. Start here for most tickets.</li>
+                    <li><a href="search-course.html"><strong>Search Course</strong></a> — offering, sandbox, or org unit.</li>
+                    <li><a href="create-enrollment.html"><strong>Enroll User</strong></a> and <a href="manage-enrollment.html"><strong>Manage Enrollment</strong></a> — add or fix one enrollment. <a href="batch-enrollment.html">Bulk Enrollment</a> when the list is longer than a few people.</li>
+                    <li><a href="reports/learner-usage-report.html"><strong>Learner Usage (LDAA)</strong></a> — last date of academic activity for one student in one course. FERPA-aware PDF. Same lookup faculty use.</li>
+                    <li><a href="reports/student-activity-log.html"><strong>Student Activity Log</strong></a> — one student, one course: assignments, quizzes, discussions, content, logins, and enrollment records Brightspace will return.</li>
+                    <li><a href="reports/access-data-lookup.html"><strong>Access Data Lookup</strong></a> — one user’s system login history, or a course-access CSV.</li>
+                    <li><a href="reports/system-access-log.html"><strong>System Access Log</strong></a> — Data Hub session CSV filtered to one Org Defined ID.</li>
+                    <li><a href="reports/orgdefinedid-user-loader.html"><strong>OrgDefinedId User Loader</strong></a> — validate a list of IDs and create accounts that are missing, when the file is not the standard new-student CSV.</li>
+                    <li><a href="division-info.html"><strong>Division Info</strong></a> — dean or division contact for a follow-up email.</li>
+                </ul>
+            </section>
+
+            <section class="orient-section" id="names" aria-labelledby="names-heading">
+                <h2 id="names-heading" class="orient-section-title">
+                    <i class="fa-solid fa-signs-post" aria-hidden="true"></i>
+                    Names that are easy to mix up
+                </h2>
+                <ul class="orient-checklist">
+                    <li><strong>Recently enrolled, never logged in</strong> is the term check (enroll event in your window, no system login in 31 days). <strong>Never Logged In</strong> is the Data Hub lifetime extract where First Login Date is blank.</li>
+                    <li><strong>Course Merge Verifier / Updater</strong> combine course sections. <strong>Merge duplicate users</strong> combines two Brightspace logins. They are not interchangeable.</li>
+                    <li><strong>Turned-off accounts</strong> means <code>IsActive</code> is false. <strong>Dormant logins</strong> are still active and have not signed in for years. <strong>Retirement</strong> is inactive plus a <code>.retired.</code> username.</li>
+                    <li><strong>Enrollment watch list</strong> reads live enrollment logs and needs a prior snapshot in this browser. <strong>Adds &amp; Drops Audit</strong> compares an Insights CSV to Brightspace. Run both during roster-change weeks.</li>
+                    <li><strong>Incomplete Student Report</strong> lists role 107. <strong>Incomplete Student Tool (Outlook)</strong> changes the role and opens the emails.</li>
+                </ul>
+                <div class="orient-finish-actions">
+                    <a href="reports-tools.html" class="launch-tool-btn">
+                        <span>Open the full catalog</span>
+                        <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
+                    </a>
+                    <a href="index.html" class="launch-tool-btn launch-tool-btn-secondary">
+                        <span>Back to Home</span>
+                        <i class="fa-solid fa-house" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/sidebar.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

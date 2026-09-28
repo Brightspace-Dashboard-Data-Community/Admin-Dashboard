@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Profile Widget Audit by Semester - D2L Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            margin-left: 0;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            overflow: visible;
+        }
+
+        .back-link:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-2px);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .info-section {
+            background-color: var(--surface-color);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .info-section h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: var(--spacing-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .info-box {
+            background-color: var(--bg-color);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-sm);
+            margin: var(--spacing-md) 0;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .warning-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: var(--radius-sm);
+            padding: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+        }
+
+        .controls-row {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .field label {
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .field select {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-base);
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            width: 100%;
+            min-width: 220px;
+            box-sizing: border-box;
+        }
+
+        .field-hint {
+            font-size: 12px;
+            color: var(--text-secondary);
+            max-width: 340px;
+            line-height: 1.4;
+        }
+
+        /* Button Styles */
+        .btn-primary,
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: var(--bg-color);
+            border-color: var(--text-primary);
+        }
+
+        .btn-secondary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status-text {
+            margin-top: var(--spacing-md);
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .progress-text {
+            margin-top: var(--spacing-sm);
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+
+        .log-output {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            white-space: pre-wrap;
+            background: #0b1021;
+            color: #cde3ff;
+            border-radius: var(--radius-sm);
+            padding: var(--spacing-md);
+            max-height: 300px;
+            overflow: auto;
+            font-size: var(--font-size-sm);
+        }
+
+        table.display {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--surface-color);
+        }
+
+        table.display th,
+        table.display td {
+            border: 1px solid var(--border-color);
+            padding: var(--spacing-sm);
+            text-align: left;
+            font-size: var(--font-size-sm);
+        }
+
+        table.display th {
+            background: var(--bg-color);
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            font-weight: 600;
+        }
+
+        table.display tbody tr:hover {
+            background-color: var(--bg-color);
+        }
+
+        table.display tbody tr.error-row {
+            background-color: #ffeae8;
+        }
+
+        table.display tbody tr.error-row:hover {
+            background-color: #ffd6d3;
+        }
+
+        table.display tbody tr.warning-row {
+            background-color: #fff3cd;
+        }
+
+        table.display tbody tr.warning-row:hover {
+            background-color: #ffe69c;
+        }
+
+        .homepage-link {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .homepage-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .controls-row {
+                flex-direction: column;
+            }
+
+            .field {
+                width: 100%;
+            }
+        }
+
+        .card {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .card:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation (injected via js/sidebar.js) -->
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports & Tools
+                    </a>
+                    <h1 class="page-title">Faculty Profile Widget Audit by Semester</h1>
+                    <p class="page-subtitle">
+                        Checks whether the Single Profile Widget is present and whether instructor name, photo, and bio have been saved (vs. default placeholders).
+                    </p>
+                </div>
+            </header>
+
+            <!-- Documentation Section -->
+            <div class="info-section">
+                <h2><i class="fas fa-info-circle"></i> How to Use This Tool</h2>
+
+                <h3>Purpose</h3>
+                <p>This tool audits course offerings by semester to identify:</p>
+                <ul>
+                    <li>Whether the Single Profile Widget is on the course homepage (HTML markers, or assumed from the shared org homepage)</li>
+                    <li>Whether saved profile data exists via Brightspace Custom Widget Data (not Brightspace Data Sets)</li>
+                    <li>Whether a custom name, photo, and bio/contact info have been added (vs. default placeholders)</li>
+                </ul>
+
+                <h3>Steps</h3>
+                <ol>
+                    <li><strong>Select Semester:</strong> Choose the semester you want to audit from the dropdown</li>
+                    <li><strong>Optional section filter:</strong> Limit to 8xx (online) and/or 7xx sections. Leave as “All courses” to audit every offering</li>
+                    <li><strong>Click "Run Audit":</strong> The tool will check each matching course offering's homepage and widget data</li>
+                    <li><strong>Review Results:</strong> The results table shows detailed information for each course</li>
+                    <li><strong>Download CSV:</strong> Export the complete audit results as a CSV file</li>
+                </ol>
+
+                <div class="info-box">
+                    <p style="margin: 0 0 var(--spacing-xs) 0;"><strong>Section filter:</strong></p>
+                    <p style="margin: 0 0 var(--spacing-sm) 0;">
+                        Course codes look like <code>CST-133W-FA810-26/FA</code>. The section token is the
+                        two-letter term + three digits (<code>FA810</code>, <code>WI820</code>, <code>WN801</code>).
+                        <strong>8xx</strong> sections are primarily online. The filter is term-agnostic, so
+                        Fall <code>FA8*</code> and a future Winter <code>WI8*</code> / <code>WN8*</code> both match
+                        when you choose 8xx. Merged names such as <code>FA820/FA830/FA840</code> are included if any token matches.
+                    </p>
+                    <p style="margin: 0 0 var(--spacing-xs) 0;"><strong>Report Columns:</strong></p>
+                    <ul style="margin: 0;">
+                        <li><strong>OrgUnitId:</strong> The course offering's organization unit ID</li>
+                        <li><strong>Course Name:</strong> Full name of the course</li>
+                        <li><strong>Course Code:</strong> Course code/identifier</li>
+                        <li><strong>Has Profile Widget:</strong> Whether the Single Profile Widget is treated as present (Yes/No)</li>
+                        <li><strong>Has Name:</strong> Custom name saved (e.g. “Lauren Collison”) — not the default “Display Name”</li>
+                        <li><strong>Has Image:</strong> Uploaded photo/emoji under the widget — not the gray silhouette placeholder</li>
+                        <li><strong>Has Content:</strong> Custom bio/contact text (office hours, phone, email, etc.) — not “Please enter information about yourself…”</li>
+                        <li><strong>Display Name:</strong> The name currently stored on the widget (or the default placeholder)</li>
+                        <li><strong>Detection Method:</strong> How presence was determined (<code>html_*</code> or <code>assumed_shared</code>)</li>
+                        <li><strong>HomepageURL:</strong> Direct link to the course homepage</li>
+                    </ul>
+                </div>
+
+                <div class="warning-box">
+                    <p style="margin: 0 0 var(--spacing-xs) 0;"><strong>⚠️ Important Notes:</strong></p>
+                    <ul style="margin: 0;">
+                        <li>The audit may take several minutes for large semesters - watch the progress indicator</li>
+                        <li>Courses are checked sequentially to avoid rate limits</li>
+                        <li>If a course returns an access error, it will be marked as ERROR and the audit will continue</li>
+                        <li>You can stop the audit at any time using the Stop button</li>
+                        <li><strong>Empty widget:</strong> Shows “Heading”, “Display Name”, gray silhouette, “About Me”, and the default “Please enter information about yourself…” text. Leaving the Heading as “Heading” is still considered empty for name/content — filled widgets often keep “Heading” too</li>
+                        <li><strong>Filled widget:</strong> Real display name, uploaded image (photo or emoji), and custom bio/contact lines (office hours, cell phone, email icon, etc.)</li>
+                        <li><strong>Presence:</strong> Detected from homepage HTML markers, or assumed Yes on the shared org homepage (<code>assumed_shared</code>)</li>
+                        <li><strong>Content:</strong> Read from Custom Widget Data (<code>widgetdata</code>) and/or Manage Files <code>/custom_widgets/teacher_profile</code> (especially <code>img/</code> and <code>config.txt</code>). No saved data = empty defaults</li>
+                        <li>If the log says widgetId is missing, paste it into <code>PROFILE_WIDGET_ID</code> in <code>js/faculty-profile-audit.js</code> from DevTools (<code>&lt;d2l-single-profile context="..."&gt;</code>). The audit also caches the ID after the first course that exposes it</li>
+                        <li>Rows highlighted in yellow indicate courses with profile widgets that are not filled in</li>
+                        <li>After the audit completes, use the HomepageURL links to view and update profile widgets in Brightspace</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Tool Interface -->
+            <div class="card">
+                <h2 style="margin-top: 0; color: var(--primary-color);">Tool Interface</h2>
+                <div class="controls-row">
+                    <div class="field">
+                        <label for="semesterSelect">
+                            <i class="fas fa-calendar-alt"></i> Semester:
+                        </label>
+                        <select id="semesterSelect">
+                            <option value="">Loading semesters…</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="sectionFilter">
+                            <i class="fas fa-filter"></i> Section filter:
+                        </label>
+                        <select id="sectionFilter">
+                            <option value="all">All courses</option>
+                            <option value="8xx">8xx only (online) — FA8*, WI8*, WN8*</option>
+                            <option value="7xx">7xx only — FA7*, WI7*, WN7*</option>
+                            <option value="7xx8xx">7xx and 8xx</option>
+                        </select>
+                        <span class="field-hint">Optional. Matches the section in the course code or name (for example FA810 in CST-133W-FA810-26/FA).</span>
+                    </div>
+                    <div class="field" style="flex: 1 1 auto;">
+                        <label>&nbsp;</label>
+                        <div style="display: flex; gap: var(--spacing-sm);">
+                            <button id="runBtn" class="btn-primary">
+                                <i class="fas fa-play"></i> Run Audit
+                            </button>
+                            <button id="stopBtn" class="btn-secondary" disabled>
+                                <i class="fas fa-stop"></i> Stop
+                            </button>
+                            <button id="downloadBtn" class="btn-secondary" disabled>
+                                <i class="fas fa-download"></i> Download CSV
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div id="status" class="status-text">Status: Ready</div>
+                <div id="progress" class="progress-text"></div>
+            </div>
+
+            <div class="card" id="tableCard" style="display: none;">
+                <h3 style="margin-top: 0;">Results</h3>
+                <div style="overflow-x: auto;">
+                    <table id="resultTable" class="display">
+                        <thead>
+                            <tr>
+                                <th>OrgUnitId</th>
+                                <th>Course Name</th>
+                                <th>Course Code</th>
+                                <th>Has Profile Widget</th>
+                                <th>Has Name</th>
+                                <th>Has Image</th>
+                                <th>Has Content</th>
+                                <th>Display Name</th>
+                                <th>Detection Method</th>
+                                <th>HomepageURL</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <!-- D2L API - Must be loaded first -->
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/semester-config.js"></script>
+    <script src="../js/faculty-profile-audit.js?v=20260925"></script>
+</body>
+
+</html>

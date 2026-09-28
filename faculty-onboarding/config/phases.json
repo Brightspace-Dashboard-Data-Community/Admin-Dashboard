@@ -1,0 +1,92 @@
+{
+  "phases": [
+    {
+      "key": "phase1",
+      "title": "Phase 1 - Pre-Teaching Setup",
+      "items": [
+        { "label": "Welcome email", "type": "email", "template": "welcome", "facultyVisible": false },
+        { "label": "D2L account verification", "type": "auto", "check": "hasLoggedIn", "facultyVisible": true },
+        { "label": "MFA / login verification", "type": "manual", "facultyVisible": true },
+        { "label": "Verify instructor role permissions", "type": "manual", "facultyVisible": false },
+        { "label": "Verify profile setup", "type": "auto", "check": "profileComplete", "facultyVisible": true },
+        { "label": "Orientation course enrollment", "type": "auto", "check": "orientationEnrolled", "facultyVisible": true },
+        { "label": "Sandbox course creation", "type": "auto", "check": "sandboxExists", "facultyVisible": true },
+        { "label": "Faculty dashboard access", "type": "manual", "facultyVisible": true },
+        { "label": "Intro meeting with eLearning team", "type": "manual", "facultyVisible": true },
+        { "label": "Student experience walkthrough", "type": "manual", "facultyVisible": true }
+      ]
+    },
+    {
+      "key": "phase2",
+      "title": "Phase 2 - Course Development & Readiness",
+      "items": [
+        { "label": "Alignment check", "type": "manual", "facultyVisible": false },
+        { "label": "ADA/accessibility review", "type": "manual", "facultyVisible": true },
+        { "label": "Captioning review", "type": "manual", "facultyVisible": false },
+        { "label": "Consistent module structure review", "type": "manual", "facultyVisible": true },
+        { "label": "Pre-semester course review", "type": "manual", "facultyVisible": true },
+        { "label": "Broken links check", "type": "auto", "check": "coursesNotEmpty", "facultyVisible": false },
+        { "label": "Student view walkthrough", "type": "manual", "facultyVisible": true },
+        { "label": "Grade calculations test", "type": "manual", "facultyVisible": true },
+        { "label": "First Week checklist", "type": "manual", "facultyVisible": true },
+        { "label": "Practice grading workflow", "type": "manual", "facultyVisible": true }
+      ]
+    },
+    {
+      "key": "phase3",
+      "title": "Phase 3 - Semester Launch",
+      "items": [
+        { "label": "Day 1 check-in", "type": "email", "template": "week1_checkin", "facultyVisible": true },
+        { "label": "Week 1 automated nudges", "type": "manual", "facultyVisible": false },
+        { "label": "Enrollment/add-drop monitoring", "type": "manual", "facultyVisible": false },
+        { "label": "Early student engagement review", "type": "manual", "facultyVisible": false },
+        { "label": "Announcement best practices", "type": "manual", "facultyVisible": true },
+        { "label": "Feedback turnaround nudges", "type": "manual", "facultyVisible": true },
+        { "label": "Inactive course alerts", "type": "auto", "check": "recentActivity", "facultyVisible": false },
+        { "label": "Empty gradebook alerts", "type": "auto", "check": "coursesNotEmpty", "facultyVisible": false }
+      ]
+    },
+    {
+      "key": "phase4",
+      "title": "Phase 4 - Mid-Semester Success & Retention",
+      "items": [
+        { "label": "Attendance reminders", "type": "manual", "facultyVisible": true },
+        { "label": "Midterm grade reminders", "type": "email", "template": "midterm_grades", "facultyVisible": true },
+        { "label": "Intervention workflow guidance", "type": "manual", "facultyVisible": false },
+        { "label": "Mid-semester LMS tips", "type": "manual", "facultyVisible": true },
+        { "label": "Analytics review session", "type": "manual", "facultyVisible": false },
+        { "label": "Accessibility follow-up review", "type": "manual", "facultyVisible": false },
+        { "label": "Course activity analysis", "type": "auto", "check": "recentActivity", "facultyVisible": false },
+        { "label": "Late grading alerts", "type": "manual", "facultyVisible": false }
+      ]
+    },
+    {
+      "key": "phase5",
+      "title": "Phase 5 - End-of-Semester Wrap-Up",
+      "items": [
+        { "label": "Final grade reminders", "type": "email", "template": "final_grades", "facultyVisible": true },
+        { "label": "Final grade training", "type": "manual", "facultyVisible": true },
+        { "label": "Course export/archive guidance", "type": "manual", "facultyVisible": true },
+        { "label": "Gradebook finalization review", "type": "manual", "facultyVisible": false },
+        { "label": "Faculty reflection survey", "type": "manual", "facultyVisible": true },
+        { "label": "Semester debrief meeting", "type": "email", "template": "debrief_invite", "facultyVisible": true },
+        { "label": "Course improvement recommendations", "type": "manual", "facultyVisible": false },
+        { "label": "Copy-forward guidance", "type": "manual", "facultyVisible": true }
+      ]
+    },
+    {
+      "key": "phase6",
+      "title": "Phase 6 - Semester 2 Support",
+      "items": [
+        { "label": "Advanced gradebook training", "type": "manual", "facultyVisible": true },
+        { "label": "Advanced Intelligent Agents", "type": "manual", "facultyVisible": false },
+        { "label": "Analytics training", "type": "manual", "facultyVisible": true },
+        { "label": "AI workflow coaching", "type": "manual", "facultyVisible": true },
+        { "label": "Student engagement strategies", "type": "manual", "facultyVisible": true },
+        { "label": "Retention strategies", "type": "manual", "facultyVisible": false },
+        { "label": "Personalized workflow optimization", "type": "manual", "facultyVisible": false },
+        { "label": "Data-informed teaching support", "type": "email", "template": "semester2_training", "facultyVisible": true }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Students Not in Orientation - D2L Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/tables.css">
+    <style>
+        .sortable-th { cursor: pointer; user-select: none; white-space: nowrap; }
+        .sortable-th:hover { color: var(--primary-color); }
+        .sort-icon { margin-left: 4px; opacity: 0.7; }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="enrollment-management-stats.html" class="back-link"
+                        style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background-color: #f0f0f0; color: var(--text-primary); text-decoration: none; border-radius: 4px; font-size: 13px; font-weight: 500; margin-bottom: var(--spacing-sm);"><i
+                            class="fa-solid fa-arrow-left"></i> Back to Enrollment Overview</a>
+                    <h1 class="page-title">Students Not Yet in Orientation</h1>
+                    <p class="page-subtitle">Students (role 101) who have not self-registered in the Orientation course (org unit 2920769)</p>
+                </div>
+                <div class="header-actions">
+                    <button id="download-csv-btn" class="btn btn-outline" style="margin-right: 8px;">
+                        <i class="fa-solid fa-file-csv"></i> Download CSV
+                    </button>
+                    <button id="refresh-btn" class="btn btn-primary">
+                        <i class="fa-solid fa-arrows-rotate"></i> Refresh
+                    </button>
+                </div>
+            </header>
+
+            <div class="card" style="margin-top: var(--spacing-lg);">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fa-solid fa-user-graduate text-primary"></i> Student list</h3>
+                    <span id="count-badge" class="badge badge-primary">0</span>
+                </div>
+                <div class="card-body">
+                    <div id="loading-message" style="text-align: center; padding: 40px; color: #666;">
+                        <i class="fa-solid fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 12px;"></i>
+                        <p>Loading list... (run from Enrollment Dashboard first to populate data)</p>
+                    </div>
+                    <div id="empty-message" style="display: none; text-align: center; padding: 40px; color: #666;">
+                        <i class="fa-solid fa-check-circle" style="font-size: 24px; margin-bottom: 12px; color: #4caf50;"></i>
+                        <p>All students with role 101 are enrolled in Orientation.</p>
+                    </div>
+                    <div id="table-container" style="display: none;">
+                        <div class="table-container">
+                            <table class="data-table" id="students-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th class="sortable-th" data-sort="userId" scope="col">User ID <span class="sort-icon" aria-hidden="true"></span></th>
+                                        <th class="sortable-th" data-sort="orgDefinedId" scope="col">Org Defined ID <span class="sort-icon" aria-hidden="true"></span></th>
+                                        <th class="sortable-th" data-sort="firstName" scope="col">First Name <span class="sort-icon" aria-hidden="true"></span></th>
+                                        <th class="sortable-th" data-sort="lastName" scope="col">Last Name <span class="sort-icon" aria-hidden="true"></span></th>
+                                        <th class="sortable-th" data-sort="email" scope="col">Email <span class="sort-icon" aria-hidden="true"></span></th>
+                                        <th class="sortable-th" data-sort="dateCreated" scope="col">Date Created <span class="sort-icon" aria-hidden="true"></span></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody">
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="pagination-controls" style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px;">
+                            <div style="font-size: 12px; color: #666;">
+                                <span id="page-info">Page 1</span>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button id="prev-page-btn" class="btn btn-sm btn-outline" disabled>
+                                    <i class="fa-solid fa-chevron-left"></i> Prev
+                                </button>
+                                <button id="next-page-btn" class="btn btn-sm btn-outline">
+                                    Next <i class="fa-solid fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/d2l-api.js"></script>
+    <script src="js/enrollment-data-service.js"></script>
+    <script src="js/user-data-service.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/orientation-not-enrolled.js"></script>
+</body>
+
+</html>

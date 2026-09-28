@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recently enrolled, never logged in - D2L Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="../css/june-enrollment-reports.css">
+</head>
+
+<body class="june-logs-page">
+    <div class="app-container">
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html#june-enrollment-monitoring" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports &amp; Tools
+                    </a>
+                    <h1 class="page-title">Recently enrolled, never logged in</h1>
+                    <p class="page-subtitle">
+                        Incremental check: students with an <strong>Enroll</strong> event in the selected window
+                        and <strong>no Brightspace system login</strong> in the last 31 days
+                        (June 2026 enrollment-log + tracking-log APIs).
+                        This is not the Data Hub lifetime
+                        <a href="never-logged-in.html">Never Logged In</a> extract,
+                        not a course-section merge, and not Office Hours Chat.
+                    </p>
+                </div>
+            </header>
+
+            <div class="info-box">
+                Enrollment logs are per user (<code>/users/{id}/enrollmentlogs/</code>).
+                Tracking logs are system logins only, max 31 days
+                (<code>/users/{id}/usertrackinglogs/</code>).
+                Start with one course; a full semester scans every classlist then every student.
+            </div>
+
+            <div class="card">
+                <h2 class="card-title" style="margin-top: 0;">Scope</h2>
+                <div class="controls-row">
+                    <div class="field" style="min-width: 240px;">
+                        <label for="semesterSelect">Semester (to load courses)</label>
+                        <select id="semesterSelect"></select>
+                    </div>
+                    <div class="field" style="min-width: 180px;">
+                        <label for="orgUnitId">Or paste OrgUnit ID</label>
+                        <input id="orgUnitId" type="text" inputmode="numeric" placeholder="e.g. 3012345">
+                    </div>
+                    <button type="button" class="btn-secondary" id="loadCoursesBtn">
+                        <i class="fa-solid fa-list"></i> Load courses
+                    </button>
+                </div>
+                <label class="checkbox-option">
+                    <input type="checkbox" id="hideIgnored" checked>
+                    <span>Hide Sandbox / CXLD course names from the picker</span>
+                </label>
+                <div id="coursePickerWrap" class="hidden">
+                    <div class="controls-row" style="margin-top: var(--spacing-md);">
+                        <div class="field" style="flex: 2;">
+                            <label for="courseFilter">Filter loaded courses</label>
+                            <input id="courseFilter" type="text" placeholder="Code or name">
+                        </div>
+                        <button type="button" class="btn-secondary" id="selectVisibleBtn">Select visible</button>
+                        <button type="button" class="btn-secondary" id="clearSelectedBtn">Clear</button>
+                        <span class="selected-count" id="selectedCount">0 selected</span>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="picker-table">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>OrgUnitId</th>
+                                    <th>Code</th>
+                                    <th>Name</th>
+                                </tr>
+                            </thead>
+                            <tbody id="coursePickerBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title" style="margin-top: 0;">Enrollment window</h2>
+                <div class="controls-row">
+                    <div class="field" style="min-width: 220px;">
+                        <label for="enrollWindow">Enrolled within</label>
+                        <select id="enrollWindow">
+                            <option value="1">Last 24 hours</option>
+                            <option value="3">Last 3 days</option>
+                            <option value="7" selected>Last 7 days</option>
+                            <option value="14">Last 14 days</option>
+                            <option value="31">Last 31 days</option>
+                        </select>
+                    </div>
+                </div>
+                <p class="hint">
+                    Login check always uses the last 31 days (API maximum). A hit means:
+                    enrolled in this window, and no successful system login in those 31 days.
+                </p>
+                <div class="form-actions">
+                    <button type="button" class="btn-primary" id="runBtn">
+                        <i class="fa-solid fa-play"></i> Run report
+                    </button>
+                    <button type="button" class="btn-secondary hidden" id="csvBtn">
+                        <i class="fa-solid fa-download"></i> Download CSV
+                    </button>
+                </div>
+                <div id="statusLine" class="status-line">Choose a course (or load a semester and select offerings), then run.</div>
+            </div>
+
+            <div class="card hidden" id="resultsCard">
+                <div class="summary-pills" id="summaryPills"></div>
+                <table id="resultsTable" class="display" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>OrgDefinedId</th>
+                            <th>Name</th>
+                            <th>Username</th>
+                            <th>UserId</th>
+                            <th>Course code</th>
+                            <th>Course name</th>
+                            <th>Enrolled (Detroit)</th>
+                            <th>EnrolledBy</th>
+                            <th>Logins (31d)</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/semester-config.js"></script>
+    <script src="../js/loading-utils.js"></script>
+    <script src="../js/june-enrollment-logs-api.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <script src="../js/recently-enrolled-never-logged-in.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Division Info Viewer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 1000px;
+      margin: auto;
+    }
+    select, button {
+      padding: 6px 10px;
+      margin-bottom: 20px;
+    }
+    .section {
+      background: #f4f4f4;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    h1 {
+      color: #0077cc;
+    }
+  </style>
+</head>
+<body>
+  <h1>Select a Division</h1>
+  <select id="divisionSelect">
+    <option value="">-- Choose Division --</option>
+  </select>
+  <button id="downloadPDF">Download as PDF</button>
+
+  <div id="divisionContent"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script>
+    let divisions = [];
+
+    function renderDivision(data) {
+      const target = document.getElementById('divisionContent');
+      if (!data) return target.innerHTML = '';
+
+      const officePros = data['Office Professional'].split(';');
+      const opEmails = data['OP Email'].split(';');
+      const opOffices = data['OP Office'].split(';');
+      const opNumbers = data['OP Number'].split(';');
+
+      const coords = data['Coordinator Name(s)'].split(';').map((name, i) => {
+        const email = data['Coordinator Email(s)'].split(';')[i] || '';
+        return `<p>${name.trim()}<br/>✉️ ${email.trim()}</p>`;
+      }).join("");
+
+      target.innerHTML = `
+        <div id="pdfContent">
+          <div class="section">
+            <h2>${data['Division']}</h2>
+            <p><strong>Main Office:</strong> 📍 ${data['Main Office Location']}</p>
+            <p><strong>Phone:</strong> ☎️ ${data['Phone Number']}</p>
+            <p><strong>Email:</strong> ✉️ ${data['Email']}</p>
+          </div>
+
+          <div class="section">
+            <h3>Office Professionals</h3>
+            <p>${officePros[0].trim()}<br/>✉️ ${opEmails[0].trim()} • 📍 ${opOffices[0].trim()} • ☎️ ${opNumbers[0].trim()}</p>
+            ${officePros[1] ? `<p>${officePros[1].trim()}<br/>✉️ ${opEmails[1].trim()} • 📍 ${opOffices[1].trim()} • ☎️ ${opNumbers[1].trim()}</p>` : ''}
+          </div>
+
+          <div class="section">
+            <h3>Coordinators</h3>
+            ${coords}
+          </div>
+
+          <div class="section">
+            <h3>Associate Dean</h3>
+            <p><strong>${data['Associate Dean']}</strong><br/>
+            ✉️ ${data['AD Email']}<br/>
+            📍 ${data['AD Office']}<br/>
+            ☎️ ${data['AD Number']}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    document.getElementById('downloadPDF').addEventListener('click', () => {
+      const element = document.getElementById('pdfContent');
+      if (!element) return alert('Please select a division first.');
+      html2pdf().from(element).save('division-info.pdf');
+    });
+
+    Papa.parse("division_details.csv", {
+      download: true,
+      header: true,
+      complete: function(results) {
+        divisions = results.data;
+        const select = document.getElementById('divisionSelect');
+        divisions.forEach(d => {
+          if (d['Division']) {
+            const opt = document.createElement('option');
+            opt.value = d['Division'];
+            opt.textContent = d['Division'];
+            select.appendChild(opt);
+          }
+        });
+
+        select.addEventListener('change', () => {
+          const selected = divisions.find(d => d['Division'] === select.value);
+          renderDivision(selected);
+        });
+      }
+    });
+  </script>
+</body>
+</html>

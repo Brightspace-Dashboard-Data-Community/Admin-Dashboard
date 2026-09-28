@@ -1,0 +1,291 @@
+<!--
+  Brightspace Faculty Incomplete Students Widget
+  Paste into a D2L HTML widget on a faculty-only homepage.
+  Scans instructor courses for students enrolled with an Incomplete role.
+-->
+<div id="incomplete-widget" style="font-family: Arial, sans-serif; border: 1px solid #ccc; padding: 1em; border-radius: 8px; background-color: #f9f9f9;">
+<h2 style="font-size: 1.2em; color: #333; margin-top: 0;">Incomplete Students</h2>
+<p id="user-info" style="margin-bottom: 0.5em; color: #555; display: none;"></p>
+<p style="margin-bottom: 0.5em;"><strong><span id="incomplete-count">Loading...</span></strong> student(s) currently marked as Incomplete.</p>
+<button id="toggle-details" type="button" style="padding: 0.4em 0.8em; border: none; background-color: #005a9e; color: white; border-radius: 4px; cursor: pointer;">Show Details</button>
+<div id="incomplete-details" style="display: none; margin-top: 1em;"></div>
+</div>
+<p><script>
+// ====== Config ======
+var LP_VERSION = "1.51";
+var LE_VERSION = "1.78";
+
+var INCOMPLETE_ROLE_ID = 107;
+var INCOMPLETE_NAME_FRAGMENT = "incomplete";
+var ALT_STUDENT_ROLE_EQ = "student2";
+var INSTRUCTOR_ROLE_ID = 102;
+
+// ====== Fetch with CSRF ======
+async function BrightspaceFetch(path, options) {
+  options = options || {};
+  options.credentials = "include";
+  options.headers = options.headers || {};
+  var csrf = localStorage.getItem("XSRF.Token") || sessionStorage.getItem("XSRF.Token");
+  if (csrf) options.headers["X-Csrf-Token"] = csrf;
+
+  var res = await fetch(path, options);
+  var txt = await res.text();
+  var data = null;
+  try { data = txt ? JSON.parse(txt) : null; } catch (e) { /* keep text */ }
+  if (!res.ok) {
+    var err = new Error("Fetch failed " + res.status + " " + res.statusText + " @ " + path);
+    err.status = res.status;
+    err.body = txt;
+    throw err;
+  }
+  return data;
+}
+
+// ====== Paged myenrollments (instructor courses only) ======
+async function fetchMyEnrollmentsAll() {
+  var pageSize = 100;
+  var bookmark = null;
+  var all = [];
+  var guard = 0;
+
+  while (true) {
+    var url = "/d2l/api/lp/" + LP_VERSION + "/enrollments/myenrollments/?pageSize=" + pageSize;
+    if (bookmark) url += "&bookmark=" + encodeURIComponent(bookmark);
+
+    var page = await BrightspaceFetch(url);
+    var items = Array.isArray(page) ? page : (page.Items || []);
+    all = all.concat(items);
+
+    var pi = page.PagingInfo || {};
+    bookmark = pi.Bookmark || null;
+    var hasMore = (pi.HasMoreItems === true);
+
+    if (!hasMore || !bookmark) break;
+    guard++;
+    if (guard > 500) break;
+  }
+  return all;
+}
+
+async function getInstructorCourses() {
+  var items = await fetchMyEnrollmentsAll();
+  var out = [];
+
+  for (var i = 0; i < items.length; i++) {
+    var e = items[i];
+    var t = e && e.OrgUnit && e.OrgUnit.Type ? e.OrgUnit.Type : {};
+    if (!(t.Id === 3 || t.Code === "Course Offering")) continue;
+
+    var access = e.Access || {};
+    var roleName = (access.ClasslistRoleName || "").toLowerCase();
+    var isInstructorByName = roleName.indexOf("instructor") !== -1;
+    var isInstructorById = (typeof access.RoleId === "number" && access.RoleId === INSTRUCTOR_ROLE_ID);
+
+    if (isInstructorByName || isInstructorById) {
+      out.push({ orgUnitId: e.OrgUnit.Id, courseName: e.OrgUnit.Name });
+    }
+  }
+  return out;
+}
+
+// ====== Classlist (paged) ======
+async function fetchClasslistAll(orgUnitId) {
+  var pageSize = 100;
+  var bookmark = null;
+  var all = [];
+  var guard = 0;
+
+  while (true) {
+    var url = "/d2l/api/le/" + LE_VERSION + "/" + orgUnitId + "/classlist/paged/?pageSize=" + pageSize;
+    if (bookmark) url += "&bookmark=" + encodeURIComponent(bookmark);
+
+    var page;
+    try {
+      page = await BrightspaceFetch(url);
+    } catch (e) {
+      var fallback = await BrightspaceFetch("/d2l/api/le/" + LE_VERSION + "/" + orgUnitId + "/classlist/");
+      return Array.isArray(fallback) ? fallback : (fallback.Items || fallback.Objects || []);
+    }
+
+    var items = page && page.Items ? page.Items : [];
+    all = all.concat(items);
+
+    bookmark = page.PagingInfo && page.PagingInfo.Bookmark ? page.PagingInfo.Bookmark : null;
+    if (!bookmark) break;
+    guard++;
+    if (guard > 200) break;
+  }
+  return all;
+}
+
+// ====== LP enrollments (includes inactive) ======
+async function fetchEnrollmentsAll(orgUnitId) {
+  var pageSize = 100;
+  var bookmark = null;
+  var all = [];
+  var guard = 0;
+
+  while (true) {
+    var url = "/d2l/api/lp/" + LP_VERSION + "/enrollments/orgUnits/" + orgUnitId + "/users/?pageSize=" + pageSize;
+    if (bookmark) url += "&bookmark=" + encodeURIComponent(bookmark);
+
+    var page = await BrightspaceFetch(url);
+    var items = Array.isArray(page) ? page : (page.Items || []);
+    all = all.concat(items);
+
+    bookmark = page.PagingInfo && page.PagingInfo.Bookmark ? page.PagingInfo.Bookmark : null;
+    if (!bookmark) break;
+    guard++;
+    if (guard > 200) break;
+  }
+  return all;
+}
+
+// ====== Role matchers ======
+function roleMatchesIncompleteByName(name) {
+  if (!name) return false;
+  var n = String(name).toLowerCase().trim();
+  if (n.indexOf(INCOMPLETE_NAME_FRAGMENT) !== -1) return true;
+  if (n === ALT_STUDENT_ROLE_EQ) return true;
+  return false;
+}
+
+function roleMatchesIncompleteById(id) {
+  return Number(id) === INCOMPLETE_ROLE_ID;
+}
+
+function isIncompleteFromClasslistUser(u) {
+  var roles = u && u.Roles ? u.Roles : [];
+  for (var i = 0; i < roles.length; i++) {
+    var r = roles[i] || {};
+    if (roleMatchesIncompleteById(r.Id)) return true;
+    if (roleMatchesIncompleteByName(r.Name)) return true;
+  }
+  return false;
+}
+
+function isIncompleteFromLpEnrollment(enr) {
+  var r = (enr && enr.Role) ? enr.Role : {};
+  if (roleMatchesIncompleteById(r.Id)) return true;
+  if (roleMatchesIncompleteByName(r.Name)) return true;
+  if (roleMatchesIncompleteById(enr && enr.OrgRoleId)) return true;
+  return false;
+}
+
+function nameFromEnrollment(enr) {
+  var u = enr && enr.User ? enr.User : {};
+  if (u.FirstName || u.LastName) {
+    return { FirstName: u.FirstName || "", LastName: u.LastName || "" };
+  }
+  var dn = (u.DisplayName || "").trim();
+  if (dn) {
+    var parts = dn.split(" ");
+    return { FirstName: parts[0] || "", LastName: parts.slice(1).join(" ") || "" };
+  }
+  return { FirstName: "", LastName: "" };
+}
+
+// ====== Core scan ======
+async function findIncompleteStudents() {
+  var courses = await getInstructorCourses();
+  var results = [];
+  var seen = {};
+
+  for (var i = 0; i < courses.length; i++) {
+    var c = courses[i];
+
+    var classRows = [];
+    try { classRows = await fetchClasslistAll(c.orgUnitId); }
+    catch (e) { console.warn("Classlist error OU " + c.orgUnitId, e); }
+
+    for (var j = 0; j < classRows.length; j++) {
+      var st = classRows[j];
+      if (isIncompleteFromClasslistUser(st)) {
+        var key = c.orgUnitId + "::" + (st.FirstName || "") + "::" + (st.LastName || "");
+        if (!seen[key]) {
+          results.push({
+            FirstName: st.FirstName,
+            LastName: st.LastName,
+            CourseName: c.courseName,
+            OrgUnitId: c.orgUnitId
+          });
+          seen[key] = true;
+        }
+      }
+    }
+
+    var lpRows = [];
+    try { lpRows = await fetchEnrollmentsAll(c.orgUnitId); }
+    catch (e) { console.warn("LP enrollments error OU " + c.orgUnitId, e); }
+
+    for (var k = 0; k < lpRows.length; k++) {
+      var en = lpRows[k];
+      if (isIncompleteFromLpEnrollment(en)) {
+        var nm = nameFromEnrollment(en);
+        var key2 = c.orgUnitId + "::" + (nm.FirstName || "") + "::" + (nm.LastName || "");
+        if (!seen[key2]) {
+          results.push({
+            FirstName: nm.FirstName,
+            LastName: nm.LastName,
+            CourseName: c.courseName,
+            OrgUnitId: c.orgUnitId
+          });
+          seen[key2] = true;
+        }
+      }
+    }
+  }
+
+  return results;
+}
+
+// ====== Run ======
+async function populateWidget() {
+  try {
+    var students = await findIncompleteStudents();
+    document.getElementById("incomplete-count").innerText = String(students.length);
+
+    document.getElementById("toggle-details").addEventListener("click", function () {
+      var detailsDiv = document.getElementById("incomplete-details");
+      var btn = document.getElementById("toggle-details");
+      if (detailsDiv.style.display === "none") {
+        detailsDiv.style.display = "block";
+        btn.innerText = "Hide Details";
+        if (!detailsDiv.dataset.populated) {
+          var html = "";
+          for (var i = 0; i < students.length; i++) {
+            var s = students[i];
+            html += '<div class="incomplete-entry" ' +
+              'style="margin-bottom: 0.5em; padding: 0.5em; background-color: #fff; border: 1px solid #ddd; border-radius: 6px;">' +
+              '<span class="masked-name" style="filter: blur(6px); cursor: pointer; transition: filter 0.3s;">' +
+              (s.FirstName || "") + " " + (s.LastName || "") + '</span>' +
+              '<span style="color:#666;"> — ' +
+              '<a href="/d2l/home/' + s.OrgUnitId + '" target="_blank" rel="noopener" ' +
+              'style="color:#005a9e; text-decoration:none;">' + s.CourseName + '</a>' +
+              '</span>' +
+              '</div>';
+          }
+          detailsDiv.innerHTML = html;
+          detailsDiv.dataset.populated = "1";
+          var names = detailsDiv.querySelectorAll(".masked-name");
+          for (var j = 0; j < names.length; j++) {
+            names[j].addEventListener("click", function () { this.style.filter = "none"; });
+          }
+        }
+      } else {
+        detailsDiv.style.display = "none";
+        btn.innerText = "Show Details";
+      }
+    });
+  } catch (e) {
+    console.error("Widget error:", e);
+    document.getElementById("incomplete-count").innerText = "Error loading data";
+    var details = document.getElementById("incomplete-details");
+    details.style.display = "block";
+    details.innerHTML = "<pre style='white-space: pre-wrap; background: #fff; border: 1px dashed #ccc; padding: 6px;'>" +
+      (e.body || e.message || String(e)) + "</pre>";
+  }
+}
+
+document.addEventListener("DOMContentLoaded", populateWidget);
+</script></p>

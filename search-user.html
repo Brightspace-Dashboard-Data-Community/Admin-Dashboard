@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Users - D2L Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <style>
+        /* Specific styles for Search Page handled inline or small override */
+        .search-controls {
+            display: flex;
+            gap: 16px;
+            align-items: flex-end;
+        }
+
+        .search-input-group {
+            flex: 2;
+        }
+
+        .search-select-group {
+            flex: 1;
+        }
+
+        .help-list {
+            margin-top: 16px;
+            padding-left: 20px;
+            list-style-type: disc;
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .help-list li strong {
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation (injected via js/sidebar.js) -->
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <h1 class="page-title">Search Users</h1>
+                    <p class="page-subtitle">Enter a search term to find users.</p>
+                </div>
+            </header>
+
+            <div class="form-container">
+
+                <!-- Search Component -->
+                <div class="form-section">
+                    <div class="form-header">
+                        <h2 class="form-section-title">User Lookup</h2>
+                    </div>
+
+                    <form class="search-controls">
+                        <div class="form-group search-input-group">
+                            <label for="searchTerm" class="form-label">Search Term</label>
+                            <input type="text" id="searchTerm" class="form-control" placeholder="Enter ID or Username">
+                        </div>
+
+                        <div class="form-group search-select-group">
+                            <label for="searchType" class="form-label">Search By</label>
+                            <select id="searchType" class="form-control">
+                                <option value="OrgDefinedId">Org Defined ID</option>
+                                <option value="Username">Username</option>
+                                <option value="UserId">User ID (Numeric)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="submit" class="btn btn-primary" style="height: 42px;">
+                                <i class="fa-solid fa-magnifying-glass"></i> Search
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Help Documentation -->
+                <div class="form-section">
+                    <div class="form-header">
+                        <h2 class="form-section-title"><i class="fa-solid fa-circle-info text-success"></i> How to
+                            Search</h2>
+                    </div>
+
+                    <div class="help-content">
+                        <p class="text-secondary">Please ensure you are using the correct identifier type for your
+                            search:</p>
+                        <ul class="help-list">
+                            <li><strong>ID Number (OrgDefinedId)</strong>: This is the user's specific organization ID
+                                (e.g., "1535209").</li>
+                            <li><strong>Username</strong>: Requires an <u>exact match</u> string (e.g., "johnsmith"). 
+                                <em>If no exact match is found, the system will automatically search by name (First/Last name).</em></li>
+                            <li><strong>User ID</strong>: The internal numeric identifier for the system (e.g., "157").
+                            </li>
+                            <li><strong>Name Search</strong>: When searching by Username, if no exact match is found, 
+                                the system will automatically search by first or last name. For example, searching "Justin" 
+                                will find all users with "Justin" in their first or last name.</li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Search Results Container -->
+            <div id="search-results">
+                <!-- Results will be displayed here -->
+            </div>
+        </main>
+    </div>
+
+    <script src="js/sidebar.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/semester-config.js"></script>
+    <script src="js/search-user.js" type="module"></script>
+</body>
+
+</html>

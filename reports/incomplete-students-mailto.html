@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incomplete Student Tool (Open in Outlook) - D2L Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
+
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            margin-left: 0;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            overflow: visible;
+        }
+
+        .back-link:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-2px);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .tabs {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin: var(--spacing-md) 0 var(--spacing-lg);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .tab-button {
+            padding: 10px 20px;
+            background: var(--surface-color);
+            border: none;
+            border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+        }
+
+        .tab-button.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: max-content 1fr;
+            gap: var(--spacing-sm) var(--spacing-md);
+            align-items: center;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .form-grid label {
+            font-weight: 600;
+            min-width: 150px;
+        }
+
+        .form-grid input[type="text"],
+        .form-grid select {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-base);
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+        }
+
+        .selected-item-box {
+            background-color: #f2f8ff;
+            border: 1px solid var(--primary-color);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            border-radius: var(--radius-sm);
+        }
+
+        .email-section {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: var(--spacing-md);
+            margin-top: var(--spacing-md);
+        }
+
+        .email-section h4 {
+            margin-top: 0;
+            margin-bottom: var(--spacing-sm);
+            font-size: var(--font-size-base);
+            color: var(--text-primary);
+        }
+
+        .email-section textarea {
+            width: 100%;
+            padding: var(--spacing-sm);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            font-family: monospace;
+        }
+
+        .email-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+            margin-top: var(--spacing-xs);
+        }
+
+        .clipboard-button {
+            width: auto;
+            display: inline-block;
+            padding: 6px 12px;
+            font-size: var(--font-size-sm);
+        }
+
+        .mailto-button {
+            width: auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            font-size: var(--font-size-sm);
+            background-color: #0078d4;
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .mailto-button:hover {
+            background-color: #106ebe;
+        }
+
+        #confirmationBox {
+            display: none;
+            background-color: #e9f7ef;
+            border-left: 4px solid var(--success-color);
+            padding: var(--spacing-md);
+            margin-top: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+        }
+
+        .card {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .card:last-child {
+            margin-bottom: 0;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: var(--bg-color);
+            border-color: var(--text-primary);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-md);
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports & Tools
+                    </a>
+                    <h1 class="page-title">D2L Incomplete Student Role Change Tool</h1>
+                    <p class="page-subtitle">Change student roles and open emails in Outlook (or your default mail app) with one click.</p>
+                </div>
+            </header>
+
+            <div class="card">
+                <h2><i class="fas fa-info-circle"></i> How to Use This Tool</h2>
+                <p>Same as the standard tool: use Tab 1 to mark a student Incomplete, Tab 2 to convert back to Student. After generating emails, use <strong>Open in Outlook</strong> to open your default mail client with the message pre-filled (no copy/paste). You can still copy to clipboard if needed.</p>
+                <p class="mailto-note" style="margin-top: 0.5rem;"><a href="incomplete-students.html">Use the standard version</a> (copy to clipboard only).</p>
+            </div>
+
+            <div id="loadingContainer"></div>
+
+            <div class="tabs">
+                <button class="tab-button active" onclick="openTab('incomplete')">Mark as Incomplete</button>
+                <button class="tab-button" onclick="openTab('convert')">Convert Back to Student</button>
+            </div>
+
+            <div id="confirmationBox">
+                <strong>✅ Action Completed:</strong>
+                <span id="confirmationMessage"></span>
+            </div>
+
+            <!-- Incomplete Tab -->
+            <div id="incomplete" class="tab-content" style="display: block;">
+                <div class="card">
+                    <div class="form-grid">
+                        <label for="orgDefinedId_incomplete">Student OrgDefinedId:</label>
+                        <input type="text" id="orgDefinedId_incomplete" placeholder="Enter OrgDefinedId">
+
+                        <label for="term_incomplete">Semester:</label>
+                        <select id="term_incomplete"></select>
+
+                        <label for="courseSearch_incomplete">Course Search:</label>
+                        <input type="text" id="courseSearch_incomplete" placeholder="Search for course by name or code">
+
+                        <label></label>
+                        <button onclick="searchCourse('incomplete')" class="btn-primary">Search Course</button>
+                    </div>
+
+                    <div id="courseResults_incomplete"></div>
+                    <div id="selectedCourse_incomplete" class="selected-item-box" style="display: none;"></div>
+
+                    <div class="form-actions">
+                        <button class="btn-primary" onclick="changeRoleDeletePost('incomplete')">Change Role to Incomplete + Generate Emails</button>
+                    </div>
+
+                    <div class="email-section">
+                        <h4>📧 Email to Student:</h4>
+                        <div class="form-grid">
+                            <label>To:</label>
+                            <input type="text" id="studentEmailTo_incomplete" readonly />
+
+                            <label>Subject:</label>
+                            <input type="text" id="studentEmailSubject_incomplete" readonly />
+                        </div>
+                        <label>Message:</label>
+                        <textarea id="studentEmailTemplate_incomplete" readonly rows="10"></textarea>
+                        <div class="email-actions">
+                            <button class="mailto-button" onclick="openInOutlook('incomplete', 'student')">
+                                <i class="fa-solid fa-envelope"></i> Open in Outlook
+                            </button>
+                            <button class="clipboard-button btn-secondary" onclick="copyToClipboard('studentEmailTemplate_incomplete')">Copy to clipboard</button>
+                        </div>
+                    </div>
+
+                    <div class="email-section">
+                        <h4>📧 Email to Instructor:</h4>
+                        <div class="form-grid">
+                            <label>To:</label>
+                            <input type="text" id="instructorEmailTo_incomplete" readonly />
+
+                            <label>Subject:</label>
+                            <input type="text" id="instructorEmailSubject_incomplete" readonly />
+                        </div>
+                        <label>Message:</label>
+                        <textarea id="instructorEmailTemplate_incomplete" readonly rows="10"></textarea>
+                        <div class="email-actions">
+                            <button class="mailto-button" onclick="openInOutlook('incomplete', 'instructor')">
+                                <i class="fa-solid fa-envelope"></i> Open in Outlook
+                            </button>
+                            <button class="clipboard-button btn-secondary" onclick="copyToClipboard('instructorEmailTemplate_incomplete')">Copy to clipboard</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Convert Tab -->
+            <div id="convert" class="tab-content" style="display: none;">
+                <div class="card">
+                    <div class="form-grid">
+                        <label for="orgDefinedId_convert">Student OrgDefinedId:</label>
+                        <input type="text" id="orgDefinedId_convert" placeholder="Enter OrgDefinedId">
+
+                        <label for="term_convert">Semester:</label>
+                        <select id="term_convert"></select>
+
+                        <label for="courseSearch_convert">Course Search:</label>
+                        <input type="text" id="courseSearch_convert" placeholder="Search for course by name or code">
+
+                        <label></label>
+                        <button onclick="searchCourse('convert')" class="btn-primary">Search Course</button>
+                    </div>
+
+                    <div id="courseResults_convert"></div>
+                    <div id="selectedCourse_convert" class="selected-item-box" style="display: none;"></div>
+
+                    <div class="form-actions">
+                        <button class="btn-primary" onclick="changeRoleDeletePost('convert')">Change Role to Student + Generate Emails</button>
+                    </div>
+
+                    <div class="email-section">
+                        <h4>📧 Email to Student:</h4>
+                        <div class="form-grid">
+                            <label>To:</label>
+                            <input type="text" id="studentEmailTo_convert" readonly />
+
+                            <label>Subject:</label>
+                            <input type="text" id="studentEmailSubject_convert" readonly />
+                        </div>
+                        <label>Message:</label>
+                        <textarea id="studentEmailTemplate_convert" readonly rows="10"></textarea>
+                        <div class="email-actions">
+                            <button class="mailto-button" onclick="openInOutlook('convert', 'student')">
+                                <i class="fa-solid fa-envelope"></i> Open in Outlook
+                            </button>
+                            <button class="clipboard-button btn-secondary" onclick="copyToClipboard('studentEmailTemplate_convert')">Copy to clipboard</button>
+                        </div>
+                    </div>
+
+                    <div class="email-section">
+                        <h4>📧 Email to Instructor:</h4>
+                        <div class="form-grid">
+                            <label>To:</label>
+                            <input type="text" id="instructorEmailTo_convert" readonly />
+
+                            <label>Subject:</label>
+                            <input type="text" id="instructorEmailSubject_convert" readonly />
+                        </div>
+                        <label>Message:</label>
+                        <textarea id="instructorEmailTemplate_convert" readonly rows="10"></textarea>
+                        <div class="email-actions">
+                            <button class="mailto-button" onclick="openInOutlook('convert', 'instructor')">
+                                <i class="fa-solid fa-envelope"></i> Open in Outlook
+                            </button>
+                            <button class="clipboard-button btn-secondary" onclick="copyToClipboard('instructorEmailTemplate_convert')">Copy to clipboard</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/semester-config.js"></script>
+    <script src="../js/loading-utils.js"></script>
+    <script src="../js/incomplete-students.js"></script>
+    <script>
+        /**
+         * Open mailto in a new tab/window so the tool page stays open (e.g. Outlook on the web
+         * otherwise replaces this tab and admins lose the second email workflow).
+         * Returns true if a new window was opened; false if blocked (caller may alert).
+         */
+        function openMailtoInNewTab(mailtoUrl) {
+            var w = window.open(mailtoUrl, '_blank', 'noopener,noreferrer');
+            return !!(w && !w.closed);
+        }
+
+        /**
+         * Open the current email (To, Subject, Body) in the default mail client via mailto:.
+         * If the URL would exceed ~2000 chars (some clients truncate), open with To+Subject only and copy body to clipboard.
+         */
+        function openInOutlook(mode, recipientType) {
+            var prefix = recipientType === 'student' ? 'student' : 'instructor';
+            var toEl = document.getElementById(prefix + 'EmailTo_' + mode);
+            var subjEl = document.getElementById(prefix + 'EmailSubject_' + mode);
+            var bodyEl = document.getElementById(prefix + 'EmailTemplate_' + mode);
+
+            if (!toEl || !subjEl || !bodyEl) return;
+
+            var to = (toEl.value || '').trim();
+            var subj = (subjEl.value || '').trim();
+            var rawBody = (bodyEl.value || '').trim();
+
+            if (!to) {
+                alert('Generate the email first by clicking "Change Role to Incomplete + Generate Emails" or "Change Role to Student + Generate Emails".');
+                return;
+            }
+
+            // Remove "To: email" line from body if present (we put To in the mailto URL)
+            var body = rawBody.replace(/^To:\s*[^\n]+\n?/i, '').trim();
+
+            var encodedTo = encodeURIComponent(to);
+            var encodedSubj = encodeURIComponent(subj);
+            var encodedBody = encodeURIComponent(body);
+
+            var maxUrlLen = 2000;
+            var base = 'mailto:' + encodedTo + '?subject=' + encodedSubj + '&body=';
+            var url = base + encodedBody;
+
+            function openOrWarn(mailtoUrl) {
+                if (!openMailtoInNewTab(mailtoUrl)) {
+                    alert('Could not open mail in a new tab (your browser may have blocked the popup). Allow popups for this page, or use Copy to clipboard.');
+                }
+            }
+
+            if (url.length > maxUrlLen) {
+                // Open with To + Subject only; put full body on clipboard so user can paste
+                url = 'mailto:' + encodedTo + '?subject=' + encodedSubj;
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(body).then(function () {
+                        alert('Opened your mail app with To and Subject. The message body was copied to your clipboard—paste it into the email.');
+                        openOrWarn(url);
+                    }).catch(function () {
+                        openOrWarn(url);
+                        alert('Opened your mail app. The body was too long for the link; copy from the text area below.');
+                    });
+                } else {
+                    openOrWarn(url);
+                    alert('Opened your mail app. The body was too long for the link; copy from the text area below.');
+                }
+            } else {
+                openOrWarn(url);
+            }
+        }
+        window.openInOutlook = openInOutlook;
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automation Runner - D2L Admin</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/forms.css">
+    <link rel="stylesheet" href="css/fsp-common.css">
+</head>
+<body>
+    <div class="app-container">
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn" type="button" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="command-center.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Command Center</a>
+                    <h1 class="page-title">Automation Runner <span class="beta-badge">Beta</span></h1>
+                    <p class="page-subtitle">Batch-verify D2L state for in-progress faculty records and update lifecycle checklists.</p>
+                </div>
+                <div class="header-actions header-actions-row">
+                    <button id="runAllBtn" class="btn btn-primary" type="button">
+                        <i class="fa-solid fa-play"></i> Run All Auto-Checks
+                    </button>
+                </div>
+            </header>
+
+            <div id="status" class="status-message" role="status"></div>
+
+            <div class="fsp-card card-static" style="margin-bottom: var(--spacing-lg);">
+                <h2>Checks Performed</h2>
+                <ul class="fsp-checklist">
+                    <li>Has logged in to D2L</li>
+                    <li>Profile setup complete</li>
+                    <li>Enrolled in faculty orientation</li>
+                    <li>Orientation course completed</li>
+                    <li>Sandbox course exists</li>
+                    <li>Recent course activity (14 days)</li>
+                    <li>Teaching courses have content</li>
+                </ul>
+            </div>
+
+            <div class="fsp-card card-static" style="margin-bottom: var(--spacing-lg);">
+                <h2>Progress</h2>
+                <div id="loadingSlot"></div>
+                <div id="progressText" class="fsp-meta">Ready.</div>
+            </div>
+
+            <div class="fsp-card card-static">
+                <h2>Results</h2>
+                <div id="resultsLog" class="fsp-log">No results yet.</div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/loading-utils.js"></script>
+    <script src="js/faculty-record-service.js"></script>
+    <script src="js/automation-checks.js"></script>
+    <script>
+    function showStatus(msg, type) {
+      const el = document.getElementById('status');
+      el.className = `status-message show ${type}`;
+      el.innerHTML = msg;
+    }
+
+    function log(msg) {
+      const el = document.getElementById('resultsLog');
+      if (el.textContent === 'No results yet.') el.textContent = '';
+      el.textContent += msg + '\n';
+      el.scrollTop = el.scrollHeight;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const slot = document.getElementById('loadingSlot');
+      if (slot && typeof LoadingUtils !== 'undefined') {
+        slot.appendChild(LoadingUtils.createLoadingBar());
+      }
+    });
+
+    async function runAll() {
+      document.getElementById('resultsLog').textContent = '';
+      document.getElementById('runAllBtn').disabled = true;
+      try {
+        await FacultyRecordService.loadConfig();
+        const all = await FacultyRecordService.loadAllRecords();
+        const active = all.filter(r => r.folder === FacultyRecordService.FOLDER_IN_PROGRESS);
+        if (!active.length) {
+          showStatus('No in-progress records to check.', 'warning');
+          return;
+        }
+        showStatus(`Running checks on ${active.length} record(s)…`, 'info');
+        LoadingUtils.updateLoadingBar(2, `Starting ${active.length} record(s)…`);
+        const results = await FacultyAutomationChecks.runBatch(active, (cur, total, rec) => {
+          const pct = Math.round((cur / total) * 100);
+          LoadingUtils.updateLoadingBar(pct, `${cur} / ${total} — ${rec.data.firstName} ${rec.data.lastName}`);
+          document.getElementById('progressText').textContent = `${cur} / ${total} — ${rec.data.firstName} ${rec.data.lastName}`;
+        });
+        let ok = 0, fail = 0;
+        results.forEach(r => {
+          if (r.success) { ok++; log(`✓ ${r.fileName}`); }
+          else { fail++; log(`✗ ${r.fileName}: ${r.error}`); }
+        });
+        LoadingUtils.updateLoadingBar(100, 'Complete');
+        showStatus(`Complete: ${ok} succeeded, ${fail} failed.`, fail ? 'warning' : 'success');
+      } catch (err) {
+        showStatus(err.message, 'error');
+        LoadingUtils.hideLoadingBar();
+      } finally {
+        document.getElementById('runAllBtn').disabled = false;
+      }
+    }
+
+    document.getElementById('runAllBtn').addEventListener('click', runAll);
+    </script>
+</body>
+</html>

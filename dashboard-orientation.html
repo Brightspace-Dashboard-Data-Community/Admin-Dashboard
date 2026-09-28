@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Walk through every section of the Your College D2L Admin Dashboard">
+    <title>Admin Dashboard Orientation</title>
+
+    <link rel="icon" href="favicon.ico">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+
+<body class="orient-page">
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <div class="app-container">
+        <!-- Sidebar Navigation (injected via js/sidebar.js) -->
+
+        <main id="main-content" class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn" type="button" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="index.html" class="orient-back"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back to Home</a>
+                    <h1 class="page-title">Admin Dashboard orientation</h1>
+                    <p class="page-subtitle">A guided tour of every main area in the sidebar. About 10 minutes the first time — use the table of contents if you only need one section.</p>
+                </div>
+            </header>
+
+            <div class="orient-notice" role="status">
+                <div class="orient-notice-icon" aria-hidden="true">
+                    <i class="fa-solid fa-info-circle"></i>
+                </div>
+                <div>
+                    <p class="orient-notice-title">What this covers</p>
+                    <p class="orient-notice-text">
+                        How the Admin Dashboard fits next to Brightspace, what each sidebar area is for, and where to go for lookups, enrollments, faculty onboarding, and reports.
+                    </p>
+                </div>
+            </div>
+
+            <nav class="orient-toc" aria-label="Orientation sections">
+                <h2 class="orient-toc-title">In this walkthrough</h2>
+                <ol class="orient-toc-list">
+                    <li><a href="#part-start">How to use this dashboard</a></li>
+                    <li><a href="#part-home">Home</a></li>
+                    <li><a href="#part-users">User Management</a></li>
+                    <li><a href="#part-courses">Course Management</a></li>
+                    <li><a href="#part-enroll">Enrollment Management</a></li>
+                    <li><a href="#part-faculty">Faculty Success</a></li>
+                    <li><a href="#part-reports">Reports &amp; Tools</a></li>
+                    <li><a href="#part-division">Division Info</a></li>
+                    <li><a href="#part-tutorials">Tutorials</a></li>
+                    <li><a href="#part-next">Suggested next steps</a></li>
+                </ol>
+            </nav>
+
+            <section class="orient-section" aria-labelledby="part-start-heading" id="part-start">
+                <h2 id="part-start-heading" class="orient-section-title">
+                    <i class="fa-solid fa-compass" aria-hidden="true"></i>
+                    1. How to use this dashboard
+                </h2>
+                <p class="orient-section-desc">The Admin Dashboard is a Brightspace-connected hub for the eLearning team. It does not replace Brightspace Admin Tools — it sits beside them.</p>
+                <ul class="orient-checklist">
+                    <li>Use the <strong>left sidebar</strong> to move between sections. The hamburger icon collapses or expands the menu.</li>
+                    <li>Your name appears at the bottom of the sidebar when you are signed in through Brightspace.</li>
+                    <li>Many pages read live data from Brightspace using your session — stay signed in.</li>
+                    <li>Report pages that need Data Hub extracts only load that data when you open them, not from Home.</li>
+                    <li>On deeper pages, look for a <strong>Back to Dashboard</strong> link above the title to return.</li>
+                </ul>
+            </section>
+
+            <section class="orient-section" aria-labelledby="part-home-heading" id="part-home">
+                <h2 id="part-home-heading" class="orient-section-title">
+                    <i class="fa-solid fa-house" aria-hidden="true"></i>
+                    2. Home
+                </h2>
+                <p class="orient-section-desc">Orientation and shortcuts — not live instance charts.</p>
+                <ol class="orient-steps">
+                    <li>Open <a href="index.html">Home</a> to see frequently used tools and jump links into each major area.</li>
+                    <li>Use <strong>Search a user</strong> when you need a lookup first.</li>
+                    <li>Use <strong>Browse reports &amp; tools</strong> when you need audits, merges, or utilities.</li>
+                </ol>
+                <p class="orient-cta-row">
+                    <a href="index.html" class="launch-tool-btn launch-tool-btn-secondary">Open Home <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+                </p>
+            </section>
+
+            <section class="orient-section" aria-labelledby="part-users-heading" id="part-users">
+                <h2 id="part-users-heading" class="orient-section-title">
+                    <i class="fa-solid fa-users" aria-hidden="true"></i>
+                    3. User Management
+                </h2>
+                <p class="orient-section-desc">Find and maintain Brightspace user records. Expand <strong>User Mgt</strong> in the sidebar.</p>
+                <ul class="orient-checklist">
+                    <li><a href="user-management-stats.html"><strong>Overview</strong></a> — when to use which user tool, plus quick report access.</li>
+                    <li><a href="search-user.html"><strong>Search User</strong></a> — lookup by name, username, or Org Defined ID. Start here for most tickets.</li>
+                    <li><a href="create-user.html"><strong>Create User</strong></a> — add an account that is not coming from SIS.</li>
+                    <li><a href="user-list.html"><strong>User List</strong></a> — browse users when you do not have a specific search term.</li>
+                    <li><a href="reports/user-merge.html"><strong>Merge Users</strong></a> — combine duplicate Brightspace logins (not course sections).</li>
+                </ul>
+                <p class="orient-cta-row">
+                    <a href="user-management-stats.html" class="launch-tool-btn launch-tool-btn-secondary">Open User Overview <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+                </p>
+            </section>
+
+            <section class="orient-section" aria-labelledby="part-courses-heading" id="part-courses">
+                <h2 id="part-courses-heading" class="orient-section-title">
+                    <i class="fa-solid fa-chalkboard-user" aria-hidden="true"></i>
+                    4. Course Management
+                </h2>
+                <p class="orient-section-desc">Find offerings and create practice or empty shells. Expand <strong>Course Mgt</strong> in the sidebar.</p>
+                <ul class="orient-checklist">
+                    <li><a href="course-management-stats.html"><strong>Overview</strong></a> — when to use which course tool, plus quick report access.</li>
+                    <li><a href="search-course.html"><strong>Search for Courses</strong></a> — look up an offering, sandbox, or org unit.</li>
+                    <li><a href="create-sandbox.html"><strong>Create a Sandbox</strong></a> — provision a practice course for an instructor.</li>
+                    <li><a href="create-course.html"><strong>Create a Course Shell</strong></a> — make an empty offering when SIS has not created one.</li>
+                    <li><a href="course-list.html"><strong>View Course List</strong></a> — browse courses for a semester.</li>
+                </ul>
+                <p class="orient-cta-row">
+                    <a href="course-management-stats.html" class="launch-tool-btn launch-tool-btn-secondary">Open Course Overview <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+                </p>
+            </section>
+
+            <section class="orient-section" aria-labelledby="part-enroll-heading" id="part-enroll">
+                <h2 id="part-enroll-heading" class="orient-section-title">
+                    <i class="fa-solid fa-user-graduate" aria-hidden="true"></i>
+                    5. Enrollment Management
+                </h2>
+                <p class="orient-section-desc">Add or change course enrollments. Expand <strong>Enroll Mgt</strong> in the sidebar.</p>
+                <ul class="orient-checklist">
+                    <li><a href="enrollment-management-stats.html"><strong>Overview</strong></a> — when to use which enrollment tool, plus quick report access.</li>
+                    <li><a href="create-enrollment.html"><strong>Create Enrollment</strong></a> — add one person to one course with a role.</li>
+                    <li><a href="manage-enrollment.html"><strong>Manage Enrollment</strong></a> — review or change existing enrollments.</li>
+                    <li><a href="batch-enrollment.html"><strong>Bulk Enrollment</strong></a> — enroll many users at once from a list.</li>
+                </ul>
+                <p class="orient-cta-row">
+                    <a href="enrollment-management-stats.html" class="launch-tool-btn launch-tool-btn-secondary">Open Enrollment Overview <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+                </p>
+            </section>
+
+            <section class="orient-section" aria-labelledby="part-faculty-heading" id="part-faculty">
+                <h2 id="part-faculty-heading" class="orient-section-title">
+                    <i class="fa-solid fa-route" aria-hidden="true"></i>
+                    6. Faculty Success
+                </h2>
+                <p class="orient-section-desc">New instructor onboarding for the eLearning team. Expand <strong>Faculty Success</strong> in the sidebar.</p>
+                <ul class="orient-checklist">
+                    <li><a href="faculty-onboarding/command-center.html"><strong>Command Center</strong></a> — unified hub for records, meetings, and status.</li>
+                    <li><a href="faculty-onboarding/new-instructor-intake.html"><strong>New Instructor Intake</strong></a> — create onboarding files for newly created instructors.</li>
+                    <li><a href="faculty-onboarding/communication-hub.html"><strong>Communication Hub</strong></a> — Outlook email templates for outreach.</li>
+                    <li><a href="faculty-onboarding/automation-runner.html"><strong>Automation Runner</strong></a> — run onboarding automations in batches.</li>
+                    <li><a href="faculty-onboarding/leadership-report.html"><strong>Leadership Report</strong></a> — pipeline metrics and CSV exports.</li>
+                    <li><a href="faculty-orientation-not-enrolled.html"><strong>Faculty Not in Orientation</strong></a> — instructors missing the Faculty Orientation course.</li>
+                    <li><a href="onboarding-instructors.html"><strong>Action Queue</strong></a> — records that still need attention.</li>
+                </ul>
+                <p class="orient-cta-row">
+                    <a href="faculty-onboarding/command-center.html" class="launch-tool-btn launch-tool-btn-secondary">Open Command Center <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+                </p>
+            </section>
+
+            <section class="orient-section" aria-labelledby="part-reports-heading" id="part-reports">
+                <h2 id="part-reports-heading" class="orient-section-title">
+                    <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
+                    7. Reports &amp; Tools
+                </h2>
+                <p class="orient-section-desc">Operational audits and utilities. Open the full catalog from the sidebar, or start with the featured items on Home.</p>
+                <ul class="orient-checklist">
+                    <li><a href="reports-tools.html"><strong>Reports &amp; Tools catalog</strong></a> — every report and utility grouped by area.</li>
+                    <li><a href="reports/empty-course-audit.html"><strong>Empty Course Audit</strong></a> — shells with no content.</li>
+                    <li><a href="reports/enrollment-checker-insights.html"><strong>Adds &amp; Drops Audit</strong></a> — recent enrollment changes.</li>
+                    <li><a href="reports/course-merge-verifier.html"><strong>Course Merge Verifier</strong></a> and <a href="reports/course-merge-updater.html">Course Merge Updater</a> — section associations.</li>
+                    <li><a href="reports/cxld-course-tool.html"><strong>Cancelled Courses</strong></a> — CXLD offering cleanup.</li>
+                    <li>Retirement, inactive accounts, and user-merge workflows are listed further down the catalog page.</li>
+                </ul>
+                <p class="orient-cta-row">
+                    <a href="reports-tools.html" class="launch-tool-btn launch-tool-btn-secondary">Open Reports &amp; Tools <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+                </p>
+            </section>
+
+            <section class="orient-section" aria-labelledby="part-division-heading" id="part-division">
+                <h2 id="part-division-heading" class="orient-section-title">
+                    <i class="fa-solid fa-building" aria-hidden="true"></i>
+                    8. Division Info
+                </h2>
+                <p class="orient-section-desc">Reference data for academic divisions — not live course metrics.</p>
+                <ol class="orient-steps">
+                    <li>Open <a href="division-info.html">Division Info</a>.</li>
+                    <li>Use it when a ticket needs a dean, associate dean, or division grouping.</li>
+                </ol>
+                <p class="orient-cta-row">
+                    <a href="division-info.html" class="launch-tool-btn launch-tool-btn-secondary">Open Division Info <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+                </p>
+            </section>
+
+            <section class="orient-section" aria-labelledby="part-tutorials-heading" id="part-tutorials">
+                <h2 id="part-tutorials-heading" class="orient-section-title">
+                    <i class="fa-solid fa-book-open" aria-hidden="true"></i>
+                    9. Tutorials
+                </h2>
+                <p class="orient-section-desc">Staff-facing walkthroughs for common Brightspace and dashboard tasks.</p>
+                <ol class="orient-steps">
+                    <li>Open <a href="tutorials.html">Tutorials</a>.</li>
+                    <li>Use these when you are showing a process to a colleague or documenting a step.</li>
+                </ol>
+                <p class="orient-cta-row">
+                    <a href="tutorials.html" class="launch-tool-btn launch-tool-btn-secondary">Open Tutorials <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+                </p>
+            </section>
+
+            <section class="orient-section" aria-labelledby="part-next-heading" id="part-next">
+                <h2 id="part-next-heading" class="orient-section-title">
+                    <i class="fa-solid fa-flag-checkered" aria-hidden="true"></i>
+                    10. Suggested next steps
+                </h2>
+                <p class="orient-section-desc">A practical path for the first visit.</p>
+                <ol class="orient-steps">
+                    <li>Bookmark <a href="index.html">Home</a> — it is the map, not the analytics page.</li>
+                    <li>Try <a href="search-user.html">Search User</a> with a known Org Defined ID so you know the lookup works in your session.</li>
+                    <li>Open <a href="faculty-onboarding/command-center.html">Command Center</a> if you work new-instructor tickets.</li>
+                    <li>Skim the featured section on <a href="reports-tools.html">Reports &amp; Tools</a> for Empty Course Audit, Adds &amp; Drops, and Course Merge.</li>
+                    <li>Need help? Submit a ticket through the <a href="https://deltacollege.zohodesk.com/portal" target="_blank" rel="noopener noreferrer">Help Desk Ticketing System</a>.</li>
+                </ol>
+                <div class="orient-finish-actions">
+                    <a href="index.html" class="launch-tool-btn">
+                        <span>Return to Home</span>
+                        <i class="fa-solid fa-house" aria-hidden="true"></i>
+                    </a>
+                    <a href="search-user.html" class="launch-tool-btn launch-tool-btn-secondary">
+                        <span>Continue to Search User</span>
+                        <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/d2l-api.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

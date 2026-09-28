@@ -1,0 +1,112 @@
+Division,Subject/Discipline,Prefix
+Arts and Letters,Art,ART
+Arts and Letters,American Sign Language,ASL
+Arts and Letters,Electronic Media,EM
+Arts and Letters,Electronic Media Broadcasting,EMB
+Arts and Letters,English,ENG
+Arts and Letters,French,FR
+Arts and Letters,German,GE
+Arts and Letters,Journalism,JRN
+Arts and Letters,Library Skills,LIB
+Arts and Letters,Music,MUS
+Arts and Letters,Philosophy,PHL
+Arts and Letters,Reading,RDG
+Arts and Letters,Spanish,SPA
+Arts and Letters,Writing,WRT
+Business and Technology,Accounting,ACC
+Business and Technology,Academic Career Experience,ACE
+Business and Technology,Agriculture,AGR
+Business and Technology,Architectural Technology,ARC
+Business and Technology,Auto Service Education Program (ASEP),ASEP
+Business and Technology,Automotive Service,AUT
+Business and Technology,Automotive Service,AUTO
+Business and Technology,Computer Aided Design,CAD
+Business and Technology,Computer Numerical Control,CNC
+Business and Technology,Chemical Process Industries,CPI
+Business and Technology,Computer Science & Information Technology,CST
+Business and Technology,Drafting,DRF
+Business and Technology,Electronic Engineering Technology,EET
+Business and Technology,Engineering,EGR
+Business and Technology,Emergency Medical Service,EMS
+Business and Technology,Entrepreneurship,ENT
+Business and Technology,Electrical Technology,ET
+Business and Technology,Fire Science Technology,FST
+Business and Technology,Geographic Information Systems,GIS
+Business and Technology,Heavy Duty Diesel,HDD
+Business and Technology,"Heating, Ventilation & Air Conditioning",HVAC
+Business and Technology,Industrial Technology Education,ITE
+Business and Technology,Legal Support Professional,LSP
+Business and Technology,Management,MGT
+Business and Technology,Manufacturing & Industrial Technology,MIT
+Business and Technology,Machine Tool Operations,MS
+Business and Technology,Mechanical Technology,MT
+Business and Technology,Office Administration & Technology,OAT
+Business and Technology,Quality Assurance,QA
+Business and Technology,Residential Construction,RC
+Business and Technology,Skilled Trades,SKAG
+Business and Technology,Computer Aided Design,SKCA
+Business and Technology,Skilled Trades,SKCA
+Business and Technology,Skilled Trades,SKCN
+Business and Technology,Skilled Trades,SKCT
+Business and Technology,Skilled Trades,SKDR
+Business and Technology,Skilled Trades,SKEL
+Business and Technology,Skilled Trades,SKET
+Business and Technology,Skilled Trades,SKMA
+Business and Technology,Skilled Trades,SKMT
+Business and Technology,Skilled Trades,SKOT
+Business and Technology,Skilled Trades,SKPH
+Business and Technology,Skilled Trades,SKPT
+Business and Technology,Skilled Trades,SKTR
+Business and Technology,Machine Tool Operations,SKTR
+Business and Technology,Skilled Trades,SKWL
+Business and Technology,Technical Trades Interdisciplinary,TTI
+Business and Technology,Welding Engineering Technology,WELD
+Business and Technology,Wind Turbine Technology,WTT
+Health and Wellness,Clinical Medical Assistant,CMA
+Health and Wellness,Certified Nursing Assistant,CNA
+Health and Wellness,Dental Assisting,DA
+Health and Wellness,Dental Hygiene,DH
+Health and Wellness,Diagnostic Medical Sonography,DMS
+Health and Wellness,Health Science,HSC
+Health and Wellness,Lifelong Wellness,LW
+Health and Wellness,Lifelong Wellness Activity,LWA
+Health and Wellness,Lifelong Wellness Theory,LWT
+Health and Wellness,Nursing (RN) Part-time,NPT
+Health and Wellness,Nursing Transition (PN or Paramedic to RN),NT
+Health and Wellness,Nursing (RN) Full-time,NUR
+Health and Wellness,Phlebotomy,PHB
+Health and Wellness,Pharmacology,PHM
+Health and Wellness,Practical Nursing Education,PNE
+Health and Wellness,Physical Therapist Assistant,PTA
+Health and Wellness,Radiography,RAD
+Health and Wellness,Respiratory Care,RT
+Health and Wellness,Surgical First Assistant,SFA
+Health and Wellness,Surgical Technology,SPT
+Health and Wellness,Surgical Technology,ST
+Science and Mathematics,Astronomy,AST
+Science and Mathematics,Biology,BIO
+Science and Mathematics,Chemistry,CHM
+Science and Mathematics,Chemical Technology,CT
+Science and Mathematics,Environmental Science,ENV
+Science and Mathematics,Geology,GLG
+Science and Mathematics,Mathematics,MTH
+Science and Mathematics,Physics,PHY
+Science and Mathematics,Physical Science,PSC
+Science and Mathematics,Interdisciplinary Science,SCI
+Science and Mathematics,Water Environment Technology,WET
+Social Sciences,Applied Behavioral Studies,ABS
+Social Sciences,Child Development,CD
+Social Sciences,Civic Engagement,CEP
+Social Sciences,Criminal Justice,CJ
+Social Sciences,Communication,COM
+Social Sciences,Cyber Security Investigation,CSI
+Social Sciences,Economics,ECN
+Social Sciences,Education,ED
+Social Sciences,Education for Professional Development,EDU
+Social Sciences,Geography,GEO
+Social Sciences,History,HIS
+Social Sciences,Interdisciplinary Humanities,IHU
+Social Sciences,Political Science,POL
+Social Sciences,Psychology,PSY
+Social Sciences,Sociology,SOC
+Social Sciences,Social Science Interdisciplinary,SSI

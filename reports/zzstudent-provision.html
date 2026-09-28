@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Provision ZZStudents by Semester - D2L Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            margin-left: 0;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            overflow: visible;
+        }
+
+        .back-link:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-2px);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+            line-height: 1.5;
+        }
+
+        .info-box {
+            background-color: #f5f7fa;
+            border-left: 3px solid var(--primary-color);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+            border-radius: var(--radius-sm);
+        }
+
+        .info-box code {
+            background-color: rgba(0, 0, 0, 0.05);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: var(--font-family-mono, monospace);
+            font-size: 0.9em;
+        }
+
+        .input-row {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .input-group {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .input-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-base);
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+        }
+
+        .input-group .help-text {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-xs);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            flex-wrap: wrap;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: var(--bg-color);
+            border-color: var(--text-primary);
+        }
+
+        .btn-secondary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color, #f44336);
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background-color: #d32f2f;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-danger:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-danger:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status-message {
+            margin-top: var(--spacing-md);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-sm);
+            background-color: #f5f7fa;
+            font-size: var(--font-size-sm);
+        }
+
+        .status-message b {
+            color: var(--primary-color);
+        }
+
+        .logs-container {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+            flex-wrap: wrap;
+        }
+
+        .log-panel {
+            flex: 1;
+            min-width: 400px;
+        }
+
+        .log-panel label {
+            display: block;
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .log-panel pre {
+            height: 340px;
+            overflow: auto;
+            padding: var(--spacing-md);
+            font-size: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background-color: #fafafa;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--text-primary);
+        }
+
+        .log-panel pre#debug {
+            background-color: #ffffff;
+        }
+
+        .card {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .card:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation (injected via js/sidebar.js) -->
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports & Tools
+                    </a>
+                    <h1 class="page-title">Provision ZZStudents by Semester (Admin)</h1>
+                    <p class="page-subtitle">
+                        Select a semester, then create or delete unique per-course demo student accounts <b>without enrolling</b> them.
+                    </p>
+                </div>
+            </header>
+
+            <div class="card">
+                <div class="info-box">
+                    <div style="font-size: 13px; line-height: 1.5;">
+                        <strong>Account Format:</strong>
+                        <div style="margin-top: 6px;">
+                            Username: <code>ZZDemoStudent-&lt;CourseOrgUnitId&gt;</code> &nbsp;|&nbsp;
+                            Email: <code>zzdemostudent-&lt;CourseOrgUnitId&gt;@example.edu</code> &nbsp;|&nbsp;
+                            Demo RoleId: <code>112</code> &nbsp;|&nbsp;
+                            Course Offering OU Type: <code>3</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="semesterSelect"><b>Semester</b></label>
+                        <select id="semesterSelect">
+                            <option value="">Loading semesters...</option>
+                        </select>
+                        <div class="help-text">
+                            Tip: If the list is empty, confirm your role can read org structure endpoints.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button id="previewBtn" type="button" class="btn-secondary">
+                        <i class="fas fa-eye"></i> Preview Course Count
+                    </button>
+
+                    <button id="runBtn" type="button" class="btn-primary">
+                        <i class="fas fa-user-plus"></i> Create ZZStudents
+                    </button>
+
+                    <button id="deleteBtn" type="button" class="btn-danger">
+                        <i class="fas fa-trash"></i> Delete ZZStudents
+                    </button>
+
+                    <button id="downloadBtn" type="button" class="btn-secondary" disabled>
+                        <i class="fas fa-download"></i> Download Report CSV
+                    </button>
+                </div>
+
+                <div id="status" class="status-message" style="display: none;"></div>
+            </div>
+
+            <div class="logs-container">
+                <div class="log-panel">
+                    <label><b>Live Log</b></label>
+                    <pre id="log"></pre>
+                </div>
+
+                <div class="log-panel">
+                    <label><b>Last API Response</b></label>
+                    <pre id="debug"></pre>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/semester-config.js"></script>
+    <script src="../js/zzstudent-provision.js"></script>
+</body>
+
+</html>

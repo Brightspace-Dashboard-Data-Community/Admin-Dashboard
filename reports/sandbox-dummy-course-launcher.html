@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sandbox Dummy Course Launcher - D2L Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/forms.css">
+
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .back-link:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-2px);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+            line-height: 1.5;
+        }
+
+        .info-section {
+            background-color: var(--surface-color);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .info-section h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: var(--spacing-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .info-section h3 {
+            color: var(--primary-color);
+            margin-top: var(--spacing-lg);
+        }
+
+        .info-box {
+            background-color: var(--bg-color);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-sm);
+            margin: var(--spacing-md) 0;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .warning-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: var(--radius-sm);
+            padding: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 20px;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 10px 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .tab-button:hover { color: var(--primary-color); }
+        .tab-button.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .card { margin-bottom: var(--spacing-xl); }
+        .card:last-child { margin-bottom: 0; }
+
+        .controls-row {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 220px;
+            flex: 1;
+        }
+
+        .field label {
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .field input[type="text"],
+        .field input[type="number"],
+        .field textarea,
+        .field select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-base);
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .mode-row {
+            display: flex;
+            gap: var(--spacing-lg);
+            flex-wrap: wrap;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .mode-row label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .checklist {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: var(--spacing-sm);
+            margin: var(--spacing-md) 0 0;
+        }
+
+        .checklist li {
+            list-style: none;
+            font-size: 13px;
+            color: var(--text-secondary);
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+        }
+
+        .checklist i { color: var(--primary-color); margin-top: 2px; }
+
+        .progress-wrap { margin: var(--spacing-md) 0; }
+        .progress-bar {
+            height: 10px;
+            background: #e8ece8;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .progress-bar span {
+            display: block;
+            height: 100%;
+            width: 0%;
+            background: var(--primary-color);
+            transition: width 0.25s ease;
+        }
+        .progress-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+        }
+
+        .step-list {
+            display: grid;
+            gap: 6px;
+            margin: var(--spacing-md) 0;
+        }
+
+        .step-item {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            font-size: 13px;
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background: var(--bg-color);
+        }
+
+        .step-item .badge {
+            min-width: 72px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 999px;
+            background: #e0e0e0;
+            color: #555;
+        }
+
+        .step-item.ok .badge { background: #e8f5e9; color: #2e7d32; }
+        .step-item.fail .badge { background: #ffebee; color: #c62828; }
+        .step-item.run .badge { background: #fff8e1; color: #f57c00; }
+
+        .log-panel {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            max-height: 320px;
+            overflow: auto;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 12px;
+            line-height: 1.45;
+            white-space: pre-wrap;
+        }
+
+        .result-box {
+            display: none;
+            border: 1px solid #c8e6c9;
+            background: #e8f5e9;
+            border-radius: var(--radius-sm);
+            padding: var(--spacing-md);
+            margin-top: var(--spacing-md);
+        }
+
+        .result-box h3 { margin-top: 0; color: var(--primary-color); }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: var(--spacing-sm);
+        }
+
+        .result-grid div {
+            background: #fff;
+            border-radius: var(--radius-sm);
+            padding: 10px 12px;
+        }
+
+        .result-grid .label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .result-grid .value {
+            font-size: 14px;
+            font-weight: 600;
+            word-break: break-word;
+        }
+
+        .form-actions { display: flex; gap: var(--spacing-sm); flex-wrap: wrap; margin-top: var(--spacing-md); }
+
+        code {
+            background: rgba(0, 0, 0, 0.05);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-size: 0.92em;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports & Tools
+                    </a>
+                    <h1 class="page-title">Sandbox Dummy Course Launcher</h1>
+                    <p class="page-subtitle">
+                        Build a 7-week Michigan History sandbox with content, gradebook, discussions, dropboxes, quizzes, and three dummy students — then download a student-work package for anything the API cannot post as those students.
+                    </p>
+                </div>
+            </header>
+
+            <div class="info-section">
+                <h2><i class="fas fa-info-circle"></i> How this launcher works</h2>
+                <p>
+                    Tab 1 talks to Brightspace and creates a full dummy course. Tab 2 builds files you can upload while impersonating each dummy student, plus Brightspace CSV quiz questions (the API can create quizzes, but not questions).
+                </p>
+                <div class="info-box">
+                    <strong>Course theme:</strong> Michigan History, 7 weeks. Each week includes a webpage, PowerPoint, PDF, Word file, and a YouTube link.
+                    Gradebook uses a points system with 9 items. Discussions, dropboxes, and quizzes are capped at 3 each.
+                </div>
+                <div class="warning-box">
+                    <strong>Limits the API cannot cross:</strong> quiz questions cannot be created through Valence, and dropbox/discussion work cannot be submitted as another user.
+                    Tab 2 packages those materials so an admin can impersonate each dummy student and upload on their behalf, then import the CSV into Question Library and add questions to each quiz.
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="tabs">
+                    <button class="tab-button active" data-tab="build" type="button">
+                        1. Build Dummy Course
+                    </button>
+                    <button class="tab-button" data-tab="package" type="button">
+                        2. Student Work Package
+                    </button>
+                </div>
+
+                <div id="build-tab" class="tab-content active">
+                    <h2 style="margin-top:0; color: var(--primary-color);">Create a filled Michigan History sandbox</h2>
+                    <p class="help-text">Uses the same sandbox template and Sandbox semester as the faculty sandbox widget. You are enrolled as Instructor. Three ZZSandbox dummy students (role 112) are created and enrolled.</p>
+
+                    <div class="mode-row">
+                        <label>
+                            <input type="radio" name="build-mode" value="create" checked>
+                            Create a new sandbox course
+                        </label>
+                        <label>
+                            <input type="radio" name="build-mode" value="existing">
+                            Fill an existing course (OrgUnitId)
+                        </label>
+                    </div>
+
+                    <div class="controls-row">
+                        <div class="field">
+                            <label for="course-name">Course name</label>
+                            <input id="course-name" type="text" value="Michigan History Dummy Course">
+                        </div>
+                        <div class="field">
+                            <label for="course-code-suffix">Course code suffix</label>
+                            <input id="course-code-suffix" type="text" placeholder="auto from date/time">
+                            <span class="help-text">Stored as <code>Sandbox-MIHist-...</code></span>
+                        </div>
+                    </div>
+                    <div class="controls-row">
+                        <div class="field" id="existing-ou-field" style="display:none;">
+                            <label for="existing-ou">Existing OrgUnitId</label>
+                            <input id="existing-ou" type="text" placeholder="e.g. 3012345">
+                        </div>
+                        <div class="field">
+                            <label for="template-id">Course template ID</label>
+                            <input id="template-id" type="number" value="2966247">
+                            <span class="help-text">Faculty sandbox widget default. Falls back to 6607 if create fails.</span>
+                        </div>
+                        <div class="field">
+                            <label for="semester-id">Sandbox semester ID</label>
+                            <input id="semester-id" type="number" value="2993337">
+                        </div>
+                    </div>
+
+                    <ul class="checklist">
+                        <li><i class="fa-solid fa-check"></i> 7 weekly modules with HTML, PPTX, PDF, DOCX, and YouTube topics</li>
+                        <li><i class="fa-solid fa-check"></i> Welcome news item</li>
+                        <li><i class="fa-solid fa-check"></i> Points gradebook with 9 items</li>
+                        <li><i class="fa-solid fa-check"></i> 3 discussion topics, 3 dropboxes, 3 quizzes (no questions)</li>
+                        <li><i class="fa-solid fa-check"></i> 3 dummy students (Ada, Lansing, Marquette ZZSandbox)</li>
+                        <li><i class="fa-solid fa-check"></i> You enrolled as Instructor (role 102)</li>
+                    </ul>
+
+                    <div class="form-actions">
+                        <button id="build-btn" type="button" class="btn btn-primary">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Launch dummy course
+                        </button>
+                        <button id="open-course-btn" type="button" class="btn btn-outline" disabled>
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Open course
+                        </button>
+                    </div>
+
+                    <div class="progress-wrap">
+                        <div class="progress-bar"><span id="build-progress-bar"></span></div>
+                        <div class="progress-label" id="build-progress-label">Ready.</div>
+                    </div>
+                    <div class="step-list" id="build-steps"></div>
+                    <div class="log-panel" id="build-log">Waiting to launch…</div>
+
+                    <div class="result-box" id="build-result">
+                        <h3>Course ready</h3>
+                        <div class="result-grid" id="build-result-grid"></div>
+                        <p style="margin: 12px 0 0;">Switch to Tab 2 to download dropbox files, discussion posts, and quiz-question CSVs for these students.</p>
+                    </div>
+                </div>
+
+                <div id="package-tab" class="tab-content">
+                    <h2 style="margin-top:0; color: var(--primary-color);">Push the limits: student work + quiz questions</h2>
+                    <p class="help-text">
+                        Brightspace will not let the API submit dropbox files or discussion posts as another user, and it will not create quiz questions.
+                        This tab builds a zip you can use while impersonating each dummy student, plus CSV files for Question Library import (5 questions per quiz).
+                    </p>
+
+                    <div class="controls-row">
+                        <div class="field">
+                            <label for="package-ou">OrgUnitId</label>
+                            <input id="package-ou" type="text" placeholder="Filled after Tab 1, or enter a course ID">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button id="load-package-btn" type="button" class="btn btn-outline">
+                            <i class="fa-solid fa-download"></i> Load course tools &amp; students
+                        </button>
+                        <button id="download-zip-btn" type="button" class="btn btn-primary" disabled>
+                            <i class="fa-solid fa-file-zipper"></i> Download student work zip
+                        </button>
+                    </div>
+
+                    <div class="info-box" id="package-summary">
+                        Load a course to see dummy students, dropboxes, discussions, and quizzes. Tab 1 results are remembered in this browser.
+                    </div>
+
+                    <h3>How to use the zip</h3>
+                    <ol>
+                        <li>Open the course classlist and impersonate a dummy student (Ada, Lansing, or Marquette ZZSandbox).</li>
+                        <li>Upload that student’s <code>dropbox</code> Word files to the matching assignment folders.</li>
+                        <li>Copy each <code>discussions</code> text file into the matching discussion topic.</li>
+                        <li>Stop impersonating. In Question Library, import each quiz CSV (or <code>ALL-QUIZZES.csv</code>), then add those questions to the matching quiz.</li>
+                    </ol>
+
+                    <div class="log-panel" id="package-log">Waiting to load a course…</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/sandbox-dummy-course-launcher.js"></script>
+</body>
+
+</html>

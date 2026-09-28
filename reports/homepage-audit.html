@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homepage Audit by Semester - D2L Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            margin-left: 0;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            overflow: visible;
+        }
+
+        .back-link:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-2px);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .info-section {
+            background-color: var(--surface-color);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .info-section h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: var(--spacing-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .info-box {
+            background-color: var(--bg-color);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-sm);
+            margin: var(--spacing-md) 0;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .warning-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: var(--radius-sm);
+            padding: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+        }
+
+        .controls-row {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .field label {
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .field select {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-base);
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* Button Styles */
+        .btn-primary,
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: var(--bg-color);
+            border-color: var(--text-primary);
+        }
+
+        .btn-secondary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status-text {
+            margin-top: var(--spacing-md);
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .progress-text {
+            margin-top: var(--spacing-sm);
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+
+        .log-output {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            white-space: pre-wrap;
+            background: #0b1021;
+            color: #cde3ff;
+            border-radius: var(--radius-sm);
+            padding: var(--spacing-md);
+            max-height: 300px;
+            overflow: auto;
+            font-size: var(--font-size-sm);
+        }
+
+        table.display {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--surface-color);
+        }
+
+        table.display th,
+        table.display td {
+            border: 1px solid var(--border-color);
+            padding: var(--spacing-sm);
+            text-align: left;
+            font-size: var(--font-size-sm);
+        }
+
+        table.display th {
+            background: var(--bg-color);
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            font-weight: 600;
+        }
+
+        table.display tbody tr:hover {
+            background-color: var(--bg-color);
+        }
+
+        table.display tbody tr.error-row {
+            background-color: #ffeae8;
+        }
+
+        table.display tbody tr.error-row:hover {
+            background-color: #ffd6d3;
+        }
+
+        .homepage-link {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .homepage-link:hover {
+            text-decoration: underline;
+        }
+
+        .btn-switch {
+            padding: 4px 12px;
+            font-size: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-switch:hover:not(:disabled) {
+            background-color: var(--primary-light);
+            transform: translateY(-1px);
+        }
+
+        .btn-switch:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 768px) {
+            .controls-row {
+                flex-direction: column;
+            }
+
+            .field {
+                width: 100%;
+            }
+        }
+
+        .card {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .card:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation (injected via js/sidebar.js) -->
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports & Tools
+                    </a>
+                    <h1 class="page-title">Homepage Audit by Semester</h1>
+                    <p class="page-subtitle">
+                        Identifies course offerings that are NOT using the Default homepage and/or have an old homepage listed (My Course - Jon's Homepage).
+                    </p>
+                </div>
+            </header>
+
+            <!-- Documentation Section -->
+            <div class="info-section">
+                <h2><i class="fas fa-info-circle"></i> How to Use This Tool</h2>
+
+                <h3>Purpose</h3>
+                <p>This tool audits course offerings by semester to identify:</p>
+                <ul>
+                    <li>Courses NOT using the Default homepage</li>
+                    <li>Courses that have the old "My Course - Jon's Homepage" listed (even if not active)</li>
+                    <li>Courses actively using the old "My Course - Jon's Homepage"</li>
+                </ul>
+
+                <h3>Steps</h3>
+                <ol>
+                    <li><strong>Select Semester:</strong> Choose the semester you want to audit from the dropdown</li>
+                    <li><strong>Click "Run Audit":</strong> The tool will check each course offering's homepage settings</li>
+                    <li><strong>Review Results:</strong> The results table shows detailed information for each course</li>
+                    <li><strong>Download CSV:</strong> Export the complete audit results as a CSV file</li>
+                </ol>
+
+                <div class="info-box">
+                    <p style="margin: 0 0 var(--spacing-xs) 0;"><strong>Report Columns:</strong></p>
+                    <ul style="margin: 0;">
+                        <li><strong>OrgUnitId:</strong> The course offering's organization unit ID</li>
+                        <li><strong>Course Name:</strong> Full name of the course</li>
+                        <li><strong>Course Code:</strong> Course code/identifier</li>
+                        <li><strong>ActiveHomepageText:</strong> The currently selected homepage</li>
+                        <li><strong>IsDefaultHomepage:</strong> Whether the Default homepage is active (Yes/No)</li>
+                        <li><strong>HasJonsHomepageListed:</strong> Whether the old homepage appears anywhere on the page (Yes/No)</li>
+                        <li><strong>ActiveIsJonsHomepage:</strong> Whether the old homepage is currently active (Yes/No)</li>
+                        <li><strong>HomepageSettingsURL:</strong> Direct link to the course's homepage settings</li>
+                        <li><strong>HomepageSettingsURL:</strong> Direct link to manually switch the homepage in Brightspace</li>
+                    </ul>
+                </div>
+
+                <div class="warning-box">
+                    <p style="margin: 0 0 var(--spacing-xs) 0;"><strong>⚠️ Important Notes:</strong></p>
+                    <ul style="margin: 0;">
+                        <li>The audit may take several minutes for large semesters - watch the progress indicator</li>
+                        <li>Courses are checked sequentially to avoid rate limits</li>
+                        <li>If a course returns an access error, it will be marked as ERROR and the audit will continue</li>
+                        <li>You can stop the audit at any time using the Stop button</li>
+                        <li>After the audit completes, use the HomepageSettingsURL links to manually switch courses to the default homepage in Brightspace</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Tool Interface -->
+            <div class="card">
+                <h2 style="margin-top: 0; color: var(--primary-color);">Tool Interface</h2>
+                <div class="controls-row">
+                    <div class="field">
+                        <label for="semesterSelect">
+                            <i class="fas fa-calendar-alt"></i> Semester:
+                        </label>
+                        <select id="semesterSelect">
+                            <option value="">Loading semesters…</option>
+                        </select>
+                    </div>
+                    <div class="field" style="flex: 1 1 auto;">
+                        <label>&nbsp;</label>
+                        <div style="display: flex; gap: var(--spacing-sm);">
+                            <button id="runBtn" class="btn-primary">
+                                <i class="fas fa-play"></i> Run Audit
+                            </button>
+                            <button id="stopBtn" class="btn-secondary" disabled>
+                                <i class="fas fa-stop"></i> Stop
+                            </button>
+                            <button id="downloadBtn" class="btn-secondary" disabled>
+                                <i class="fas fa-download"></i> Download CSV
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div id="status" class="status-text">Status: Ready</div>
+                <div id="progress" class="progress-text"></div>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-top: 0;">Log Output</h3>
+                <div id="log" class="log-output" aria-label="Log output"></div>
+            </div>
+
+            <div class="card" id="tableCard" style="display: none;">
+                <h3 style="margin-top: 0;">Results</h3>
+                <div style="overflow-x: auto;">
+                    <table id="resultTable" class="display">
+                        <thead>
+                            <tr>
+                                <th>OrgUnitId</th>
+                                <th>Course Name</th>
+                                <th>Course Code</th>
+                                <th>ActiveHomepageText</th>
+                                <th>IsDefaultHomepage</th>
+                                <th>HasJonsHomepageListed</th>
+                                <th>ActiveIsJonsHomepage</th>
+                                <th>HomepageSettingsURL</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <!-- D2L API - Must be loaded first -->
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/semester-config.js"></script>
+    <script src="../js/homepage-audit.js"></script>
+</body>
+
+</html>

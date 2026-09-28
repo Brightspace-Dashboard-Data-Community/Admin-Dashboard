@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Section Profile Setup (Instructor Tool)</title>
+  <!--
+    Hidden instructor Content topic shell for the Section Profile Config Builder.
+
+    REQUIRED
+    1. Upload section-profile-builder.html to this course’s Manage Files root
+       (Course Admin → Manage Files → Upload).
+    2. Create/open this topic as an HTML topic (paste this file’s contents, or upload it).
+    3. Hide the module/topic from students.
+
+    WHY NOT a relative iframe?
+    Brightspace Content often serves topic HTML from a viewer URL, so
+    src="section-profile-builder.html" 404s. This page resolves the course OU
+    and loads /content/enforced/{OrgUnitId}/section-profile-builder.html instead.
+
+    SIMPLER ALTERNATIVE
+    Skip this shell: add section-profile-builder.html itself as the Content topic
+    (Create New → Upload File, or link the Manage Files item).
+  -->
+  <style>
+    html, body { margin: 0; height: 100%; background: #f4f6f8; font-family: Arial, Helvetica, sans-serif; }
+    .note {
+      margin: 0;
+      padding: 10px 14px;
+      font: 600 13px/1.4 Arial, Helvetica, sans-serif;
+      color: #00416b;
+      background: #eaf4fb;
+      border-bottom: 1px solid #b7d4ea;
+    }
+    .error {
+      margin: 16px;
+      padding: 14px 16px;
+      border: 1px solid #d8a000;
+      border-radius: 8px;
+      background: #fff9e6;
+      color: #594600;
+      line-height: 1.5;
+      max-width: 46rem;
+    }
+    .error code {
+      display: inline-block;
+      margin: 2px 0;
+      padding: 1px 6px;
+      background: rgba(0,0,0,0.06);
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .error ol { margin: 8px 0 0; padding-left: 1.25rem; }
+    iframe {
+      display: block;
+      width: 100%;
+      height: calc(100vh - 42px);
+      border: 0;
+      background: #fff;
+    }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <p class="note">Instructor tool — Section Profile Config Builder. Keep this topic hidden from students.</p>
+  <div id="errorBox" class="error hidden" role="alert"></div>
+  <iframe
+    id="builderFrame"
+    class="hidden"
+    title="Section Profile Config Builder"
+    allow="clipboard-write"
+  ></iframe>
+
+<script>
+(function () {
+  "use strict";
+
+  // File name (or relative path under Manage Files root), e.g. "tools/section-profile-builder.html"
+  var BUILDER_FILE = "section-profile-builder.html";
+
+  function detectOrgUnitId() {
+    var params = new URLSearchParams(window.location.search);
+    var q = String(params.get("courseId") || params.get("ou") || "").trim();
+    if (/^\d+$/.test(q)) return q;
+
+    var paths = [window.location.pathname];
+    try { paths.push(window.parent.location.pathname); } catch (e) {}
+    try { paths.push(window.top.location.pathname); } catch (e) {}
+
+    var patterns = [
+      /\/content\/enforced\/(\d+)\//i,
+      /\/d2l\/le\/content\/(\d+)\//i,
+      /\/d2l\/home\/(\d+)/i,
+      /\/d2l\/lp\/navbars\/(\d+)\//i
+    ];
+
+    for (var i = 0; i < paths.length; i++) {
+      for (var p = 0; p < patterns.length; p++) {
+        var match = String(paths[i] || "").match(patterns[p]);
+        if (match) return match[1];
+      }
+    }
+
+    // Custom Widget / some HTML contexts replace this token
+    var token = "{OrgUnitId}";
+    if (/^\d+$/.test(token)) return token;
+    return null;
+  }
+
+  function builderCandidates(orgUnitId) {
+    var file = String(BUILDER_FILE || "section-profile-builder.html").replace(/^\/+/, "");
+    return [
+      "/content/enforced/" + orgUnitId + "/" + file,
+      "./" + file,
+      file
+    ];
+  }
+
+  function showError(html) {
+    var box = document.getElementById("errorBox");
+    box.classList.remove("hidden");
+    box.innerHTML = html;
+  }
+
+  function showFrame(url) {
+    var frame = document.getElementById("builderFrame");
+    frame.classList.remove("hidden");
+    // Pass courseId so the builder always knows the offering even inside an iframe
+    var sep = url.indexOf("?") >= 0 ? "&" : "?";
+    frame.src = url + sep + "courseId=" + encodeURIComponent(ou);
+  }
+
+  function probe(url) {
+    return fetch(url, { method: "GET", credentials: "include", cache: "no-store" })
+      .then(function (res) {
+        if (!res.ok) throw new Error(String(res.status));
+        return url;
+      });
+  }
+
+  function tryUrls(urls, index) {
+    if (index >= urls.length) {
+      return Promise.reject(new Error("not-found"));
+    }
+    return probe(urls[index]).catch(function () {
+      return tryUrls(urls, index + 1);
+    });
+  }
+
+  var ou = detectOrgUnitId();
+  if (!ou) {
+    showError(
+      "<strong>Could not detect this course’s Org Unit ID.</strong>" +
+      "<ol>" +
+      "<li>Upload <code>section-profile-builder.html</code> to <strong>Manage Files</strong> (course root).</li>" +
+      "<li>Prefer adding that file itself as the Content topic (skip this shell), or open Content from inside the course.</li>" +
+      "<li>Or open with <code>?courseId=YOUR_OU_ID</code> on this page’s URL.</li>" +
+      "</ol>"
+    );
+    return;
+  }
+
+  var urls = builderCandidates(ou);
+  tryUrls(urls, 0).then(function (url) {
+    showFrame(url);
+  }).catch(function () {
+    showError(
+      "<strong>Page Not Found — builder file is missing from Manage Files.</strong>" +
+      "<p>This shell loaded, but Brightspace could not find the builder at:</p>" +
+      "<p><code>" + urls[0] + "</code></p>" +
+      "<ol>" +
+      "<li>Go to <strong>Course Admin → Manage Files</strong>.</li>" +
+      "<li>Upload <code>section-profile-builder.html</code> to the <strong>root</strong> of this course (same level as the content folders), not only as a Content topic paste.</li>" +
+      "<li>Refresh this topic.</li>" +
+      "</ol>" +
+      "<p><strong>Easier option:</strong> delete this topic and create a new Content topic from the uploaded <code>section-profile-builder.html</code> file directly (Create New → Upload / Add from Manage Files). Hide that topic from students.</p>"
+    );
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!--
+  Brightspace Student Incomplete Courses Widget
+  Paste into a D2L HTML widget on a student-facing homepage.
+  Lists courses where the student is enrolled with an Incomplete role.
+-->
+<div id="student-incomplete-courses-widget">
+  <p style="font-family: Arial, sans-serif; color: #555;">Loading courses...</p>
+</div>
+<p><script>
+(function () {
+  var LP_VERSION = "1.51";
+  var LE_VERSION = "1.78";
+  var INCOMPLETE_ROLE_NAMES = ["student2", "incomplete student", "incomplete"];
+  var INCOMPLETE_ROLE_IDS = [107];
+
+  function isIncompleteEnrollment(enrollment) {
+    var access = enrollment && enrollment.Access ? enrollment.Access : {};
+    var roleName = String(access.ClasslistRoleName || "").toLowerCase().trim();
+    var roleId = access.RoleId;
+
+    if (typeof roleId === "number" && INCOMPLETE_ROLE_IDS.indexOf(roleId) !== -1) return true;
+    for (var i = 0; i < INCOMPLETE_ROLE_NAMES.length; i++) {
+      if (roleName === INCOMPLETE_ROLE_NAMES[i]) return true;
+      if (roleName.indexOf("incomplete") !== -1) return true;
+    }
+    return false;
+  }
+
+  async function fetchJson(url) {
+    var token = localStorage.getItem("XSRF.Token") || sessionStorage.getItem("XSRF.Token");
+    var headers = {};
+    if (token) headers["X-Csrf-Token"] = token;
+
+    var res = await fetch(url, { credentials: "include", headers: headers });
+    if (!res.ok) throw new Error("HTTP " + res.status + " @ " + url);
+    return res.json();
+  }
+
+  async function fetchMyEnrollmentsAll() {
+    var all = [];
+    var bookmark = null;
+    var guard = 0;
+
+    while (true) {
+      var url = "/d2l/api/lp/" + LP_VERSION + "/enrollments/myenrollments/?pageSize=100";
+      if (bookmark) url += "&bookmark=" + encodeURIComponent(bookmark);
+
+      var page = await fetchJson(url);
+      var items = page.Items || [];
+      all = all.concat(items);
+
+      var hasMore = page.PagingInfo && page.PagingInfo.HasMoreItems;
+      bookmark = page.PagingInfo && page.PagingInfo.Bookmark;
+      if (!hasMore || !bookmark) break;
+
+      guard++;
+      if (guard > 500) break;
+    }
+    return all;
+  }
+
+  async function fetchInstructorNames(orgUnitId) {
+    try {
+      var classlist = await fetchJson("/d2l/api/le/" + LE_VERSION + "/" + orgUnitId + "/classlist/paged/?pageSize=100");
+      var members = classlist.Items || classlist.Objects || classlist || [];
+      if (!Array.isArray(members)) members = [];
+
+      var instructors = members.filter(function (member) {
+        var role = String(member.ClasslistRoleDisplayName || member.Role || "").toLowerCase();
+        return role.indexOf("instructor") !== -1;
+      });
+
+      if (!instructors.length) return "Unavailable";
+      return instructors.map(function (i) {
+        return ((i.FirstName || "") + " " + (i.LastName || "")).trim();
+      }).filter(Boolean).join(", ");
+    } catch (err) {
+      console.warn("Could not fetch classlist for OU " + orgUnitId, err);
+      return "Unavailable";
+    }
+  }
+
+  function courseHomeUrl(course) {
+    if (course.OrgUnit && course.OrgUnit.HomeUrl) return course.OrgUnit.HomeUrl;
+    if (course.OrgUnit && course.OrgUnit.Id) return "/d2l/home/" + course.OrgUnit.Id;
+    return "#";
+  }
+
+  function renderEmpty(container) {
+    container.innerHTML =
+      '<div style="font-family: Arial, sans-serif; background-color: #fff3cd; border: 1px solid #ffeeba; padding: 15px; border-radius: 6px; color: #856404;">' +
+      "<strong>You do not have any incomplete courses at this time.</strong>" +
+      "</div>";
+  }
+
+  function renderCourseCard(course, instructorNames) {
+    var org = course.OrgUnit || {};
+    var homeUrl = courseHomeUrl(course);
+    return (
+      '<div style="background-color: #ffffff; border: 1px solid #ddd; border-left: 5px solid #0077cc; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-family: Arial, sans-serif;">' +
+      '<h3 style="margin: 0 0 5px 0; font-size: 18px; color: #0077cc;">' + (org.Name || "Course") + "</h3>" +
+      '<p style="font-size: 14px; color: #555; margin: 0.35em 0;"><strong>Course Code:</strong> ' + (org.Code || "N/A") + "</p>" +
+      '<p style="font-size: 14px; color: #555; margin: 0.35em 0;"><strong>Instructor:</strong> ' + instructorNames + "</p>" +
+      '<a href="' + homeUrl + '" target="_blank" rel="noopener" style="display: inline-block; margin-top: 10px; font-size: 14px; color: #ffffff; background-color: #0077cc; padding: 6px 10px; border-radius: 4px; text-decoration: none;">Go to Course</a>' +
+      "</div>"
+    );
+  }
+
+  async function getIncompleteCourses() {
+    var container = document.getElementById("student-incomplete-courses-widget");
+    if (!container) return;
+    container.innerHTML = '<p style="font-family: Arial, sans-serif; color: #555;">Loading courses...</p>';
+
+    try {
+      var enrollments = await fetchMyEnrollmentsAll();
+      var filteredCourses = enrollments.filter(function (course) {
+        var type = course.OrgUnit && course.OrgUnit.Type ? course.OrgUnit.Type : {};
+        return (
+          isIncompleteEnrollment(course) &&
+          course.Access &&
+          course.Access.CanAccess === true &&
+          (type.Code === "Course Offering" || type.Id === 3)
+        );
+      });
+
+      if (!filteredCourses.length) {
+        renderEmpty(container);
+        return;
+      }
+
+      container.innerHTML = "";
+      for (var i = 0; i < filteredCourses.length; i++) {
+        var course = filteredCourses[i];
+        var instructorNames = await fetchInstructorNames(course.OrgUnit.Id);
+        var wrapper = document.createElement("div");
+        wrapper.innerHTML = renderCourseCard(course, instructorNames);
+        container.appendChild(wrapper);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      container.innerHTML = '<p style="font-family: Arial, sans-serif; color: red;">Error loading courses. Please try again later.</p>';
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", getIncompleteCourses);
+  } else {
+    getIncompleteCourses();
+  }
+})();
+</script></p>

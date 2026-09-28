@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Repair Workbench - D2L Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <style>
+        .back-link { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background-color: #f0f0f0; color: var(--text-primary); text-decoration: none; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; margin-bottom: var(--spacing-md); }
+        .workbench-grid { display: grid; grid-template-columns: 1fr; gap: var(--spacing-lg); }
+        .verify-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--spacing-md); margin-top: var(--spacing-md); }
+        .verify-item { background: var(--bg-color); border-radius: var(--radius-sm); padding: var(--spacing-sm) var(--spacing-md); }
+        .verify-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+        .verify-value { font-size: 14px; font-weight: 600; color: var(--text-primary); word-break: break-word; }
+        .input-row { display: flex; flex-wrap: wrap; gap: var(--spacing-md); align-items: end; }
+        .input-row input { width: 260px; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: var(--font-size-base); }
+        .tabs { display: flex; flex-wrap: wrap; gap: var(--spacing-sm); border-bottom: 1px solid var(--border-color); padding-bottom: var(--spacing-sm); }
+        .tab-btn { border: 1px solid var(--border-color); background: var(--surface-color); border-radius: var(--radius-sm); padding: 8px 12px; cursor: pointer; font-size: 13px; }
+        .tab-btn.active { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
+        .items-panel { display: grid; grid-template-columns: minmax(280px, 1fr) 2fr; gap: var(--spacing-md); }
+        .items-list { border: 1px solid var(--border-color); border-radius: var(--radius-sm); max-height: 460px; overflow: auto; }
+        .item-row { width: 100%; text-align: left; border: 0; border-bottom: 1px solid var(--border-color); background: var(--surface-color); padding: 10px 12px; cursor: pointer; }
+        .item-row:hover { background: var(--bg-color); }
+        .item-row.active { background: rgba(26, 93, 26, 0.1); }
+        .item-row .title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+        .item-row .meta { font-size: 11px; color: var(--text-secondary); margin-top: 3px; }
+        .editor-panel textarea { width: 100%; min-height: 400px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+        .editor-actions { margin-top: var(--spacing-sm); display: flex; gap: var(--spacing-sm); flex-wrap: wrap; }
+        .status { margin-top: var(--spacing-sm); font-size: 13px; }
+        .editor-mode { display: flex; gap: var(--spacing-xs); margin-bottom: var(--spacing-sm); }
+        .mode-btn { border: 1px solid var(--border-color); background: var(--surface-color); border-radius: var(--radius-sm); padding: 6px 10px; cursor: pointer; font-size: 12px; }
+        .mode-btn.active { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
+        .item-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--spacing-sm); }
+        .item-form .full-row { grid-column: 1 / -1; }
+        .item-form label { display: block; font-size: 12px; margin-bottom: 4px; color: var(--text-secondary); }
+        .item-form input[type="text"], .item-form input[type="number"], .item-form input[type="datetime-local"], .item-form select, .item-form textarea { width: 100%; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px 10px; }
+        .item-form .check-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 13px; }
+        .inline-help { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+        .help-list { margin: 0; padding-left: 16px; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle"><button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button></div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Reports & Tools</a>
+                    <h1 class="page-title">Course Repair Workbench</h1>
+                    <p class="page-subtitle">Load one course by OrgUnitId and edit API-backed data in one place.</p>
+                </div>
+            </header>
+
+            <div class="workbench-grid">
+                <div class="card">
+                    <h2 style="margin-top:0;">Load Course</h2>
+                    <div class="input-row">
+                        <div>
+                            <label for="orgunit-id-input">OrgUnitId</label>
+                            <input id="orgunit-id-input" type="text" placeholder="e.g. 123456">
+                        </div>
+                        <button id="load-course-btn" class="btn btn-primary"><i class="fa-solid fa-download"></i> Load Course</button>
+                    </div>
+                    <div class="verify-grid">
+                        <div class="verify-item"><div class="verify-label">Course Name</div><div id="course-name" class="verify-value">-</div></div>
+                        <div class="verify-item"><div class="verify-label">Course Code</div><div id="course-code" class="verify-value">-</div></div>
+                        <div class="verify-item"><div class="verify-label">Instructors</div><div id="course-instructors" class="verify-value">-</div></div>
+                    </div>
+                    <div id="load-status" class="status"></div>
+                </div>
+
+                <div class="card">
+                    <div class="tabs" id="tab-buttons"></div>
+                    <div style="margin: var(--spacing-sm) 0;">
+                        <button id="refresh-tab-btn" class="btn btn-outline btn-sm"><i class="fa-solid fa-rotate"></i> Refresh Current Tab</button>
+                    </div>
+                    <div class="items-panel">
+                        <div id="items-list" class="items-list"></div>
+                        <div class="editor-panel">
+                            <div style="margin-bottom:6px; font-weight:600;" id="editor-title">Select an item</div>
+                            <div id="editor-mode-wrap" class="editor-mode">
+                                <button id="mode-form-btn" class="mode-btn active">Form</button>
+                                <button id="mode-json-btn" class="mode-btn">JSON</button>
+                            </div>
+                            <div id="grade-form-editor" class="item-form" style="display:none;">
+                                <div class="full-row">
+                                    <label for="grade-form-name">Grade Item Name</label>
+                                    <input id="grade-form-name" type="text">
+                                    <div class="inline-help">Required. Max 128 chars. Invalid characters: / " * &lt; &gt; + = | , %</div>
+                                </div>
+                                <div>
+                                    <label for="grade-form-type">Grade Type</label>
+                                    <select id="grade-form-type">
+                                        <option value="Numeric">Numeric</option>
+                                        <option value="PassFail">PassFail</option>
+                                        <option value="SelectBox">SelectBox</option>
+                                        <option value="Text">Text</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="grade-form-category-id">Category Id</label>
+                                    <select id="grade-form-category-id"></select>
+                                    <div class="inline-help">Use 0 for no category.</div>
+                                </div>
+                                <div>
+                                    <label for="grade-form-short-name">Short Name</label>
+                                    <input id="grade-form-short-name" type="text">
+                                    <div class="inline-help">Optional. Max 128 chars.</div>
+                                </div>
+                                <div>
+                                    <label for="grade-form-max-points">Max Points</label>
+                                    <input id="grade-form-max-points" type="number" step="0.01">
+                                    <div class="inline-help">For Numeric/PassFail/SelectBox: 0.01 to 9,999,999,999</div>
+                                </div>
+                                <div>
+                                    <label for="grade-form-weight">Weight</label>
+                                    <input id="grade-form-weight" type="number" step="0.01" min="0">
+                                    <div class="inline-help">Used when allowed by grade setup/category weighting rules.</div>
+                                </div>
+                                <div class="full-row">
+                                    <label for="grade-form-description">Description (HTML)</label>
+                                    <textarea id="grade-form-description" style="width:100%; min-height:120px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding:8px 10px;"></textarea>
+                                </div>
+                                <div class="full-row">
+                                    <div class="check-row"><input id="grade-form-hidden" type="checkbox"><label for="grade-form-hidden" style="margin:0;">Hidden from users</label></div>
+                                    <div class="check-row"><input id="grade-form-can-exceed" type="checkbox"><label for="grade-form-can-exceed" style="margin:0;">Can exceed max points</label></div>
+                                    <div class="check-row"><input id="grade-form-associated" type="checkbox"><label for="grade-form-associated" style="margin:0;">Keep association</label></div>
+                                    <div class="check-row"><input id="grade-form-is-bonus" type="checkbox"><label for="grade-form-is-bonus" style="margin:0;">Bonus item</label></div>
+                                    <div class="check-row"><input id="grade-form-exclude-final" type="checkbox"><label for="grade-form-exclude-final" style="margin:0;">Exclude from final grade</label></div>
+                                </div>
+                                <div>
+                                    <label for="grade-form-scheme-id">Grade Scheme Id</label>
+                                    <select id="grade-form-scheme-id"></select>
+                                    <div class="inline-help">Shows scheme name + id. Select None for null.</div>
+                                </div>
+                                <div class="full-row">
+                                    <label for="grade-form-associated-tool-id">Associated Tool</label>
+                                    <input id="grade-form-associated-tool-id" type="number" step="1" min="0" placeholder="e.g. 2000">
+                                </div>
+                                <div class="full-row">
+                                    <label for="grade-form-associated-id">Associated Tool Item Id</label>
+                                    <input id="grade-form-associated-id" type="number" step="1" min="0" placeholder="Blank means no association">
+                                </div>
+                                <div class="full-row inline-help">
+                                    <ul class="help-list">
+                                        <li>If category handles weighting, Weight should not be sent.</li>
+                                        <li>Name must be unique in course gradebook.</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div id="quiz-form-editor" class="item-form" style="display:none;">
+                                <div class="full-row"><label for="quiz-form-name">Quiz Name</label><input id="quiz-form-name" type="text"></div>
+                                <div>
+                                    <label for="quiz-form-category-id">Quiz Category</label>
+                                    <select id="quiz-form-category-id"></select>
+                                    <div class="inline-help">Uses valid quiz category IDs from this course.</div>
+                                </div>
+                                <div><label for="quiz-form-attempts">Attempts Allowed</label><input id="quiz-form-attempts" type="number" step="1" min="0"></div>
+                                <div><label for="quiz-form-start">Start Date</label><input id="quiz-form-start" type="datetime-local"></div>
+                                <div><label for="quiz-form-end">End Date</label><input id="quiz-form-end" type="datetime-local"></div>
+                                <div><label for="quiz-form-due">Due Date</label><input id="quiz-form-due" type="datetime-local"></div>
+                                <div class="full-row check-row"><input id="quiz-form-hidden" type="checkbox"><label for="quiz-form-hidden" style="margin:0;">Hidden</label></div>
+                            </div>
+
+                            <div id="assignment-form-editor" class="item-form" style="display:none;">
+                                <div class="full-row"><label for="assignment-form-name">Assignment Name</label><input id="assignment-form-name" type="text"></div>
+                                <div><label for="assignment-form-category">Category</label><input id="assignment-form-category" type="text"></div>
+                                <div><label for="assignment-form-grade-item-id">Grade Item Id</label><input id="assignment-form-grade-item-id" type="number" step="1" min="0" placeholder="Blank means no grade association"></div>
+                                <div><label for="assignment-form-group-type-id">Group Category Id</label><input id="assignment-form-group-type-id" type="number" step="1" min="0" placeholder="Blank = individual submissions"></div>
+                                <div><label for="assignment-form-points">Out Of (Points)</label><input id="assignment-form-points" type="number" step="0.01" min="0"></div>
+                                <div><label for="assignment-form-start">Start Date</label><input id="assignment-form-start" type="datetime-local"></div>
+                                <div><label for="assignment-form-end">End Date</label><input id="assignment-form-end" type="datetime-local"></div>
+                                <div><label for="assignment-form-due">Due Date</label><input id="assignment-form-due" type="datetime-local"></div>
+                                <div>
+                                    <label for="assignment-form-submission-type">Submission Type</label>
+                                    <select id="assignment-form-submission-type">
+                                        <option value="">No change</option>
+                                        <option value="File">File</option>
+                                        <option value="Text">Text</option>
+                                        <option value="Both">File and Text</option>
+                                        <option value="OnPaper">On Paper</option>
+                                        <option value="ObservedInPerson">Observed In Person</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="assignment-form-completion-type">Completion Type</label>
+                                    <select id="assignment-form-completion-type">
+                                        <option value="">No change</option>
+                                        <option value="OnSubmission">On Submission</option>
+                                        <option value="DueDate">Due Date</option>
+                                        <option value="Manual">Manual</option>
+                                        <option value="OnEvaluation">On Evaluation</option>
+                                    </select>
+                                </div>
+                                <div><label for="assignment-form-notification-email">Notification Email</label><input id="assignment-form-notification-email" type="text" placeholder="optional@example.edu"></div>
+                                <div class="full-row"><label for="assignment-form-instructions">Instructions (HTML)</label><textarea id="assignment-form-instructions" style="min-height:120px;"></textarea></div>
+                                <div class="full-row check-row"><input id="assignment-form-display-in-calendar" type="checkbox"><label for="assignment-form-display-in-calendar" style="margin:0;">Display in calendar</label></div>
+                                <div class="full-row check-row"><input id="assignment-form-anonymous" type="checkbox"><label for="assignment-form-anonymous" style="margin:0;">Anonymous marking</label></div>
+                                <div class="full-row check-row"><input id="assignment-form-special-access" type="checkbox"><label for="assignment-form-special-access" style="margin:0;">Only users with special access</label></div>
+                                <div class="full-row check-row"><input id="assignment-form-remove-grade-association" type="checkbox"><label for="assignment-form-remove-grade-association" style="margin:0;">Remove grade association on save</label></div>
+                                <div class="full-row check-row"><input id="assignment-form-hidden" type="checkbox"><label for="assignment-form-hidden" style="margin:0;">Hidden</label></div>
+                                <div class="full-row inline-help">Keep "No change" for Submission/Completion type when a folder already has submissions to avoid update rejections. Release conditions are not part of Dropbox folder update payload and need a separate API flow.</div>
+                            </div>
+
+                            <div id="discussion-form-editor" class="item-form" style="display:none;">
+                                <div class="full-row"><label for="discussion-form-name">Discussion Name</label><input id="discussion-form-name" type="text"></div>
+                                <div><label for="discussion-form-desc">Description (HTML)</label><textarea id="discussion-form-desc" style="min-height:120px;"></textarea></div>
+                                <div class="full-row check-row"><input id="discussion-form-hidden" type="checkbox"><label for="discussion-form-hidden" style="margin:0;">Hidden (if supported)</label></div>
+                            </div>
+
+                            <div id="content-form-editor" class="item-form" style="display:none;">
+                                <div class="full-row"><label for="content-form-title">Content Title</label><input id="content-form-title" type="text"></div>
+                                <div><label for="content-form-short-title">Short Title</label><input id="content-form-short-title" type="text"></div>
+                                <div><label for="content-form-start">Start Date</label><input id="content-form-start" type="datetime-local"></div>
+                                <div><label for="content-form-end">End Date</label><input id="content-form-end" type="datetime-local"></div>
+                                <div><label for="content-form-due">Due Date</label><input id="content-form-due" type="datetime-local"></div>
+                                <div class="full-row"><label for="content-form-desc">Description (HTML)</label><textarea id="content-form-desc" style="min-height:120px;"></textarea></div>
+                                <div class="full-row check-row"><input id="content-form-hidden" type="checkbox"><label for="content-form-hidden" style="margin:0;">Hidden</label></div>
+                            </div>
+                            <textarea id="item-json-editor" placeholder="Selected item JSON appears here"></textarea>
+                            <div class="editor-actions">
+                                <button id="save-item-btn" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
+                                <button id="delete-item-btn" class="btn btn-outline"><i class="fa-solid fa-trash"></i> Delete Item</button>
+                            </div>
+                            <div id="item-status" class="status"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/course-repair-workbench.js"></script>
+</body>
+</html>

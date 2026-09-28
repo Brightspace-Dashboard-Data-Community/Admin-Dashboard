@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Access Log - D2L Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
+
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            white-space: nowrap;
+        }
+
+        .back-link:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-2px);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+            line-height: 1.5;
+        }
+
+        .card {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .card:hover {
+            transform: none;
+        }
+
+        .ferpa-note {
+            background: #f8fafc;
+            border-left: 4px solid var(--primary-color);
+            padding: 12px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .input-label {
+            display: block;
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .input-row {
+            display: flex;
+            gap: var(--spacing-md);
+            flex-wrap: wrap;
+            margin-bottom: var(--spacing-md);
+            align-items: flex-end;
+        }
+
+        .input-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .input-group select,
+        .input-group input[type="text"],
+        .input-group input[type="file"],
+        .input-group input[type="date"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            background: var(--surface-color);
+            color: var(--text-primary);
+        }
+
+        .form-hint {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+
+        .file-status-ready {
+            color: #1e7e34;
+            font-weight: 500;
+        }
+
+        .file-status-loading {
+            color: #0366d6;
+            font-weight: 500;
+        }
+
+        .file-status-error {
+            color: #d73a49;
+            font-weight: 500;
+        }
+
+        .actions {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+            margin-top: var(--spacing-md);
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-light);
+        }
+
+        .btn-secondary {
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: var(--bg-color);
+        }
+
+        .btn-primary:disabled,
+        .btn-secondary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status-box {
+            margin-top: var(--spacing-md);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            display: none;
+        }
+
+        .status-info {
+            background: #e8f4fd;
+            border: 1px solid #c5e0fa;
+            color: #0366d6;
+        }
+
+        .status-success {
+            background: #e6f4ea;
+            border: 1px solid #b7dfc3;
+            color: #1e7e34;
+        }
+
+        .status-warning {
+            background: #fff8e6;
+            border: 1px solid #ffe8a0;
+            color: #a67c00;
+        }
+
+        .status-error {
+            background: #ffdce0;
+            border: 1px solid #ffabb7;
+            color: #d73a49;
+        }
+
+        .resolved-user {
+            margin-top: var(--spacing-sm);
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+
+        .resolved-user strong {
+            color: var(--text-primary);
+        }
+
+        .summary-row {
+            display: flex;
+            gap: var(--spacing-xl);
+            flex-wrap: wrap;
+            margin-bottom: var(--spacing-md);
+            padding: var(--spacing-md);
+            background: var(--bg-color);
+            border-radius: var(--radius-sm);
+        }
+
+        .summary-item {
+            display: flex;
+            flex-direction: column;
+            min-width: 140px;
+        }
+
+        .summary-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .summary-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .file-list {
+            list-style: none;
+            margin: 10px 0 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .file-list li {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 8px 10px;
+            background: var(--bg-color);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            color: var(--text-primary);
+        }
+
+        .file-list .file-size {
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        #systemAccessTable {
+            width: 100% !important;
+        }
+
+        #systemAccessTable th,
+        #systemAccessTable td {
+            padding: 10px 12px;
+            text-align: left;
+            vertical-align: top;
+            white-space: nowrap;
+        }
+
+        #systemAccessTable thead th {
+            background: var(--bg-color);
+            font-weight: 600;
+        }
+
+        .dataTables_wrapper {
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports &amp; Tools
+                    </a>
+                    <h1 class="page-title">System Access Log</h1>
+                    <p class="page-subtitle">
+                        Upload the Sunday <strong>full</strong> System Access Log plus any <strong>differential</strong>
+                        CSVs from Data Hub, then enter an OrgDefinedId. The report looks the user up in Brightspace
+                        and writes OrgDefinedId on the download.
+                    </p>
+                </div>
+            </header>
+
+            <div class="card">
+                <div class="ferpa-note" role="note">
+                    <strong>FERPA:</strong> Session history is an education record. Use only for legitimate educational
+                    purposes at Your College.
+                </div>
+
+                <div class="input-group">
+                    <label for="salCsvUpload" class="input-label">System Access Log CSVs</label>
+                    <input id="salCsvUpload" type="file" accept=".csv,text/csv" multiple>
+                    <div id="salFileStatus" class="form-hint">Add the Sunday full extract and any daily differential CSVs, then enter an OrgDefinedId and click Search.</div>
+                    <ul id="salFileList" class="file-list" hidden></ul>
+                    <div class="actions" style="margin-top: 8px;">
+                        <button id="salClearFilesBtn" type="button" class="btn-secondary" disabled>
+                            <i class="fa-solid fa-xmark"></i> Clear files
+                        </button>
+                    </div>
+                </div>
+                <div class="form-hint">
+                    Expected columns:
+                    <code>SessionId</code>, <code>UserId</code>, <code>Timestamp</code>, <code>State</code>,
+                    <code>Source</code>, <code>AppVersion</code>, <code>Device</code>,
+                    <code>IsOfflineMode</code>, <code>IPAddress</code>.
+                    You can select several files at once, or add more after the full dump. Duplicate rows that appear
+                    in both the full extract and a differential are kept once.
+                    <code>Device</code>, <code>AppVersion</code>, and <code>IsOfflineMode</code> are filled on
+                    <strong>Pulse</strong> (mobile) rows. Brightspace web rows leave those blank.
+                </div>
+
+                <div class="input-row" style="margin-top: var(--spacing-md);">
+                    <div class="input-group" style="max-width: 220px;">
+                        <label for="salIdType" class="input-label">Identifier Type</label>
+                        <select id="salIdType">
+                            <option value="orgDefinedId" selected>OrgDefinedId</option>
+                            <option value="userId">UserId</option>
+                            <option value="userName">Username</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="salUserInput" class="input-label">User Identifier</label>
+                        <input id="salUserInput" type="text" placeholder="e.g. student ID / OrgDefinedId">
+                    </div>
+                </div>
+
+                <div class="input-row">
+                    <div class="input-group" style="max-width: 220px;">
+                        <label for="salStartDate" class="input-label">Start Date (optional)</label>
+                        <input id="salStartDate" type="date">
+                    </div>
+                    <div class="input-group" style="max-width: 220px;">
+                        <label for="salEndDate" class="input-label">End Date (optional)</label>
+                        <input id="salEndDate" type="date">
+                    </div>
+                    <div class="input-group" style="max-width: 220px;">
+                        <label for="salSource" class="input-label">Source (optional)</label>
+                        <select id="salSource">
+                            <option value="">All sources</option>
+                            <option value="Brightspace">Brightspace</option>
+                            <option value="Pulse">Pulse</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-hint">
+                    Dates use Detroit local time. Leave them blank to keep every matching session. Source is typically
+                    <code>Brightspace</code> (web) or <code>Pulse</code> (mobile). Pulse rows include app version and
+                    device; Brightspace web rows leave those blank.
+                </div>
+
+                <div class="actions">
+                    <button id="salSearchBtn" type="button" class="btn-primary" disabled>
+                        <i class="fa-solid fa-magnifying-glass"></i> Search Records
+                    </button>
+                    <button id="salDownloadBtn" type="button" class="btn-secondary" disabled>
+                        <i class="fa-solid fa-download"></i> Download Report
+                    </button>
+                </div>
+
+                <div id="salStatus" class="status-box"></div>
+                <div id="salResolved" class="resolved-user"></div>
+            </div>
+
+            <div class="card" id="salResultsCard" style="display: none;">
+                <div class="summary-row">
+                    <div class="summary-item">
+                        <span class="summary-label">Files Scanned</span>
+                        <span id="salFileCount" class="summary-value">0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Rows Scanned</span>
+                        <span id="salTotalRows" class="summary-value">0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Matching Rows</span>
+                        <span id="salMatchRows" class="summary-value">0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Unique Sessions</span>
+                        <span id="salSessionCount" class="summary-value">0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Brightspace</span>
+                        <span id="salBrightspaceRows" class="summary-value">0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Pulse (has Device)</span>
+                        <span id="salPulseRows" class="summary-value">0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">OrgDefinedId</span>
+                        <span id="salResolvedOrgId" class="summary-value">—</span>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="systemAccessTable" class="display" style="width:100%">
+                        <thead></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/d2l-api.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="../js/system-access-log.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,196 @@
+/* Forms & Inputs */
+
+.form-container {
+    max-width: 100%;
+}
+
+.form-section {
+    background-color: var(--surface-color);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: var(--spacing-lg);
+    border: 1px solid transparent;
+}
+
+.form-header {
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.form-section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-lg);
+}
+
+.form-grid-full {
+    grid-column: 1 / -1;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: var(--spacing-sm);
+}
+
+/* Enrollment search result tables inside forms - spacing only; table theme from tables.css */
+.form-section .table-container {
+    margin-top: var(--spacing-md);
+}
+
+/* Tighter, cleaner layout for enrollment result tables */
+.enrollment-results-table {
+    table-layout: fixed;
+}
+
+.enrollment-results-table th:first-child,
+.enrollment-results-table td:first-child {
+    width: 40px;
+    text-align: center;
+}
+
+.enrollment-results-table th:nth-child(2),
+.enrollment-results-table td:nth-child(2) {
+    width: 30%;
+}
+
+.enrollment-results-table th:nth-child(3),
+.enrollment-results-table td:nth-child(3),
+.enrollment-results-table th:nth-child(4),
+.enrollment-results-table td:nth-child(4) {
+    width: 25%;
+}
+
+.enrollment-results-table th:nth-child(5),
+.enrollment-results-table td:nth-child(5) {
+    width: 12%;
+}
+
+.enrollment-results-table td {
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.enroll-user-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.enroll-user-meta {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.enrollment-select-cell input[type="radio"] {
+    accent-color: var(--primary-color);
+}
+
+.form-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.form-control {
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    color: var(--text-primary);
+    background-color: #fff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+}
+
+.form-control.report-select {
+    /* Allows these dropdowns to stay "control-sized" inside flex rows */
+    width: auto;
+}
+
+.form-control[type="text"].report-select {
+    width: 100%;
+}
+
+/* Custom dropdown arrow + better long-text readability */
+select.form-control {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image:
+        linear-gradient(45deg, transparent 50%, var(--text-secondary) 50%),
+        linear-gradient(135deg, var(--text-secondary) 50%, transparent 50%);
+    background-position:
+        calc(100% - 18px) calc(1em + 2px),
+        calc(100% - 13px) calc(1em + 2px);
+    background-size:
+        5px 5px,
+        5px 5px;
+    background-repeat: no-repeat;
+    padding-right: 36px;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(26, 93, 26, 0.1);
+}
+
+.form-control::placeholder {
+    color: #999;
+}
+
+.form-control:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+}
+
+/* Checkbox specific styles */
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.form-check-input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--primary-color);
+    cursor: pointer;
+}
+
+.form-check-label {
+    font-size: 14px;
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+}
+
+/* Helper text */
+.form-text {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}

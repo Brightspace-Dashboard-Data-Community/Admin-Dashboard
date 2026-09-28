@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access Data Lookup - D2L Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
+
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            transition: all 0.2s ease;
+        }
+
+        .back-link:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-2px);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+            line-height: 1.5;
+        }
+
+        .tabs {
+            display: flex;
+            gap: var(--spacing-sm);
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 10px 0;
+            margin-right: var(--spacing-md);
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .tab-btn.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .input-label {
+            display: block;
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .input-row {
+            display: flex;
+            gap: var(--spacing-md);
+            flex-wrap: wrap;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .input-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .input-group select,
+        .input-group input[type="text"],
+        .input-group input[type="file"],
+        .input-group input[type="date"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            background: var(--surface-color);
+            color: var(--text-primary);
+        }
+
+        .source-toggle {
+            display: inline-flex;
+            gap: 0;
+            margin-bottom: var(--spacing-md);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+
+        .source-toggle-btn {
+            border: none;
+            background: var(--surface-color);
+            color: var(--text-secondary);
+            padding: 8px 14px;
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .source-toggle-btn + .source-toggle-btn {
+            border-left: 1px solid var(--border-color);
+        }
+
+        .source-toggle-btn.active {
+            background: var(--primary-color);
+            color: #fff;
+        }
+
+        .source-panel {
+            display: none;
+        }
+
+        .source-panel.active {
+            display: block;
+        }
+
+        .form-hint {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+
+        .file-status-ready {
+            color: #1e7e34;
+            font-weight: 500;
+        }
+
+        .file-status-loading {
+            color: #0366d6;
+            font-weight: 500;
+        }
+
+        .file-status-error {
+            color: #d73a49;
+            font-weight: 500;
+        }
+
+        .actions {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+            margin-top: var(--spacing-md);
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-light);
+        }
+
+        .btn-secondary {
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: var(--bg-color);
+        }
+
+        .btn-primary:disabled,
+        .btn-secondary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status-box {
+            margin-top: var(--spacing-md);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            display: none;
+        }
+
+        .status-info {
+            background: #e8f4fd;
+            border: 1px solid #c5e0fa;
+            color: #0366d6;
+        }
+
+        .status-success {
+            background: #e6f4ea;
+            border: 1px solid #b7dfc3;
+            color: #1e7e34;
+        }
+
+        .status-warning {
+            background: #fff8e6;
+            border: 1px solid #ffe8a0;
+            color: #a67c00;
+        }
+
+        .status-error {
+            background: #ffdce0;
+            border: 1px solid #ffabb7;
+            color: #d73a49;
+        }
+
+        .summary-row {
+            display: flex;
+            gap: var(--spacing-xl);
+            flex-wrap: wrap;
+            margin-bottom: var(--spacing-md);
+            padding: var(--spacing-md);
+            background: var(--bg-color);
+            border-radius: var(--radius-sm);
+        }
+
+        .summary-item {
+            display: flex;
+            flex-direction: column;
+            min-width: 140px;
+        }
+
+        .summary-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .summary-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .card {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .resolved-user {
+            margin-top: var(--spacing-sm);
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+
+        .resolved-user strong {
+            color: var(--text-primary);
+        }
+
+        #systemLoginTable,
+        #courseAccessTable {
+            width: 100% !important;
+            table-layout: fixed;
+        }
+
+        #systemLoginTable th,
+        #systemLoginTable td,
+        #courseAccessTable th,
+        #courseAccessTable td {
+            padding: 10px 12px;
+            text-align: left;
+            vertical-align: top;
+            word-break: break-word;
+        }
+
+        #systemLoginTable thead th,
+        #courseAccessTable thead th {
+            background: var(--bg-color);
+            font-weight: 600;
+        }
+
+        .dataTables_wrapper {
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports & Tools
+                    </a>
+                    <h1 class="page-title">Access Data Lookup</h1>
+                    <p class="page-subtitle">
+                        Look up System Login/Access via the live D2L API (date range) or by uploading a User Logins CSV.
+                        Course Access still uses the Course Access CSV export. Enter a UserId directly, or use Username
+                        or OrgDefinedId to resolve the user automatically.
+                    </p>
+                </div>
+            </header>
+
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="system-login">System Login / Access</button>
+                <button class="tab-btn" data-tab="course-access">Course Access</button>
+            </div>
+
+            <!-- System Login Tab -->
+            <section id="tab-system-login" class="tab-content active">
+                <div class="card">
+                    <div class="input-label">Data Source</div>
+                    <div class="source-toggle" role="group" aria-label="System login data source">
+                        <button type="button" class="source-toggle-btn active" data-source="api" id="systemLoginSourceApi">
+                            Live API
+                        </button>
+                        <button type="button" class="source-toggle-btn" data-source="csv" id="systemLoginSourceCsv">
+                            CSV Upload
+                        </button>
+                    </div>
+
+                    <div id="systemLoginApiPanel" class="source-panel active">
+                        <div class="form-hint" style="margin-bottom: var(--spacing-md);">
+                            Calls <code>/d2l/api/lp/1.61/users/{userId}/usertrackinglogs/</code> for successful logins.
+                            Each selected day uses 12:00:00.000 AM through 11:59:59.999 PM (UTC). The API allows a maximum of 31 days.
+                        </div>
+                        <div class="input-row">
+                            <div class="input-group" style="max-width: 220px;">
+                                <label for="systemLoginStartDate" class="input-label">Start Date</label>
+                                <input id="systemLoginStartDate" type="date">
+                            </div>
+                            <div class="input-group" style="max-width: 220px;">
+                                <label for="systemLoginEndDate" class="input-label">End Date</label>
+                                <input id="systemLoginEndDate" type="date">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="systemLoginCsvPanel" class="source-panel">
+                        <div class="input-group">
+                            <label for="systemLoginCsvUpload" class="input-label">User Logins CSV</label>
+                            <input id="systemLoginCsvUpload" type="file" accept=".csv,text/csv">
+                            <div id="systemLoginFileStatus" class="form-hint">Upload a User Logins CSV export, then enter a user identifier and click Search.</div>
+                        </div>
+                        <div class="form-hint">
+                            Large files are streamed without loading all rows into memory.
+                        </div>
+                    </div>
+
+                    <div class="form-hint" style="margin-top: var(--spacing-md);">
+                        Results show Student ID (OrgDefinedId), Username, IP, and Attempt Date in Detroit time.
+                    </div>
+
+                    <div class="input-row" style="margin-top: var(--spacing-md);">
+                        <div class="input-group" style="max-width: 220px;">
+                            <label for="systemLoginIdType" class="input-label">Identifier Type</label>
+                            <select id="systemLoginIdType">
+                                <option value="userId">UserId</option>
+                                <option value="userName">Username</option>
+                                <option value="orgDefinedId">OrgDefinedId</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="systemLoginUserInput" class="input-label">User Identifier</label>
+                            <input id="systemLoginUserInput" type="text" placeholder="e.g. 181851, justinbamberg, or student ID">
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <button id="systemLoginSearchBtn" type="button" class="btn-primary">
+                            <i class="fa-solid fa-magnifying-glass"></i> Search Records
+                        </button>
+                        <button id="systemLoginDownloadBtn" class="btn-secondary" disabled>
+                            <i class="fa-solid fa-download"></i> Download Matches
+                        </button>
+                    </div>
+
+                    <div id="systemLoginStatus" class="status-box"></div>
+                    <div id="systemLoginResolved" class="resolved-user"></div>
+                </div>
+
+                <div class="card" id="systemLoginResultsCard" style="display: none;">
+                    <div class="summary-row">
+                        <div class="summary-item">
+                            <span class="summary-label" id="systemLoginTotalLabel">Rows Returned</span>
+                            <span id="systemLoginTotalRows" class="summary-value">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Matching Rows</span>
+                            <span id="systemLoginMatchRows" class="summary-value">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Resolved UserId</span>
+                            <span id="systemLoginResolvedId" class="summary-value">—</span>
+                        </div>
+                    </div>
+                    <table id="systemLoginTable" class="display" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>Username</th>
+                                <th>IP</th>
+                                <th>Attempt Date (Detroit)</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Course Access Tab -->
+            <section id="tab-course-access" class="tab-content">
+                <div class="card">
+                    <div class="form-hint" style="margin-bottom: var(--spacing-md);">
+                        Course Access is day-level course visit data from the Brightspace Data Set export.
+                        The <code>usertrackinglogs</code> API returns system login events only and cannot replace this CSV.
+                    </div>
+                    <div class="input-group">
+                        <label for="courseAccessCsvUpload" class="input-label">Course Access CSV</label>
+                        <input id="courseAccessCsvUpload" type="file" accept=".csv,text/csv">
+                        <div id="courseAccessFileStatus" class="form-hint">Upload a Course Access CSV export, then enter a user identifier and click Search.</div>
+                    </div>
+                    <div class="form-hint">
+                        Results show OrgDefinedId, Username, and Detroit-local access times sorted newest first. Optional OrgUnitId narrows matches to one course.
+                    </div>
+
+                    <div class="input-row" style="margin-top: var(--spacing-md);">
+                        <div class="input-group" style="max-width: 220px;">
+                            <label for="courseAccessIdType" class="input-label">Identifier Type</label>
+                            <select id="courseAccessIdType">
+                                <option value="userId">UserId</option>
+                                <option value="userName">Username</option>
+                                <option value="orgDefinedId">OrgDefinedId</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="courseAccessUserInput" class="input-label">User Identifier</label>
+                            <input id="courseAccessUserInput" type="text" placeholder="e.g. 181851, justinbamberg, or student ID">
+                        </div>
+                        <div class="input-group" style="max-width: 220px;">
+                            <label for="courseAccessOrgUnitInput" class="input-label">OrgUnitId (optional)</label>
+                            <input id="courseAccessOrgUnitInput" type="text" placeholder="e.g. 2949300">
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <button id="courseAccessSearchBtn" type="button" class="btn-primary">
+                            <i class="fa-solid fa-magnifying-glass"></i> Search Records
+                        </button>
+                        <button id="courseAccessDownloadBtn" class="btn-secondary" disabled>
+                            <i class="fa-solid fa-download"></i> Download Matches
+                        </button>
+                    </div>
+
+                    <div id="courseAccessStatus" class="status-box"></div>
+                    <div id="courseAccessResolved" class="resolved-user"></div>
+                </div>
+
+                <div class="card" id="courseAccessResultsCard" style="display: none;">
+                    <div class="summary-row">
+                        <div class="summary-item">
+                            <span class="summary-label">Rows Scanned</span>
+                            <span id="courseAccessTotalRows" class="summary-value">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Matching Rows</span>
+                            <span id="courseAccessMatchRows" class="summary-value">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Resolved UserId</span>
+                            <span id="courseAccessResolvedId" class="summary-value">—</span>
+                        </div>
+                    </div>
+                    <table id="courseAccessTable" class="display" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>OrgUnitId</th>
+                                <th>OrgDefinedId</th>
+                                <th>Username</th>
+                                <th>DayAccessed (Detroit)</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/d2l-api.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="../js/access-data-lookup.js"></script>
+</body>
+
+</html>

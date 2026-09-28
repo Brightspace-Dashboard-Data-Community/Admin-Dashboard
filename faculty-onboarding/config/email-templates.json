@@ -1,0 +1,49 @@
+{
+  "templates": {
+    "welcome": {
+      "label": "Welcome Email",
+      "subject": "Welcome to Your College D2L — Your Onboarding Starts Here",
+      "body": "Dear {{firstName}},\n\nWelcome to Your College! The eLearning Office is here to support you as you prepare for your first semester teaching with Brightspace (D2L).\n\nYour next steps:\n1. Log in to D2L: {{loginUrl}}\n2. Complete your profile\n3. Enroll in the Faculty Orientation course\n4. Create your sandbox course for practice\n\nYour assigned eLearning specialist is {{assignedSpecialist}}. We will schedule an introductory meeting soon.\n\nIf you have questions, reply to this email or contact us at {{elearningEmail}}.\n\nBest regards,\nYour College eLearning Office"
+    },
+    "login_nudge": {
+      "label": "Login Nudge",
+      "subject": "Reminder: Please Log In to Your College D2L",
+      "body": "Dear {{firstName}},\n\nWe noticed you have not yet logged in to Brightspace (D2L). Getting started early helps ensure your courses are ready before the semester begins.\n\nLog in here: {{loginUrl}}\n\nIf you need help with your username or password, contact the IT Help Desk.\n\nYour eLearning specialist ({{assignedSpecialist}}) is available to walk you through setup.\n\nBest regards,\nYour College eLearning Office"
+    },
+    "meeting_invite": {
+      "label": "Meeting Invite",
+      "subject": "eLearning Onboarding Meeting — {{firstName}} {{lastName}}",
+      "body": "Dear {{firstName}},\n\nIt is time to schedule your onboarding meeting with the eLearning Office. During this session we will:\n\n• Verify your D2L account and profile\n• Walk through the Faculty Orientation course\n• Set up your sandbox course\n• Discuss your first-semester course development timeline\n\nPlease use our booking link or reply with your availability.\n\nBest regards,\n{{assignedSpecialist}}\nYour College eLearning Office"
+    },
+    "course_review_ready": {
+      "label": "Course Review Ready",
+      "subject": "Your Course Is Ready for Pre-Semester Review",
+      "body": "Dear {{firstName}},\n\nGreat progress on your course development! Your eLearning specialist would like to schedule a pre-semester course review.\n\nBefore our meeting, please verify:\n• Module structure is consistent\n• All links work\n• Gradebook calculations are correct\n• Accessibility items are addressed\n\nReply to schedule your review session.\n\nBest regards,\n{{assignedSpecialist}}\nYour College eLearning Office"
+    },
+    "week1_checkin": {
+      "label": "Week 1 Check-in",
+      "subject": "Week 1 Check-in — How Is Your First Week Going?",
+      "body": "Dear {{firstName}},\n\nCongratulations on launching your first week of classes in D2L!\n\nA few quick reminders:\n• Post a welcome announcement if you have not already\n• Monitor early student engagement in the Class Progress tool\n• Respond to student questions within 24–48 hours\n\nIf anything feels overwhelming, your eLearning team is here to help. Reply anytime.\n\nBest regards,\n{{assignedSpecialist}}\nYour College eLearning Office"
+    },
+    "midterm_grades": {
+      "label": "Midterm Grade Reminder",
+      "subject": "Reminder: Midterm Grade Deadline Approaching",
+      "body": "Dear {{firstName}},\n\nThis is a friendly reminder that midterm grades are due soon for {{firstTeachingSemester}}.\n\nPlease ensure your gradebook is up to date and grades are submitted on time. If you need help with grade calculations or the submission process, contact the eLearning Office.\n\nBest regards,\n{{assignedSpecialist}}\nYour College eLearning Office"
+    },
+    "final_grades": {
+      "label": "Final Grade Reminder",
+      "subject": "Reminder: Final Grade Deadline — {{firstTeachingSemester}}",
+      "body": "Dear {{firstName}},\n\nFinal grades for {{firstTeachingSemester}} are due soon. Please finalize your gradebook and submit grades before the deadline.\n\nIf you have incomplete students, contact the Registrar before submitting final grades.\n\nNeed a refresher? The eLearning Office offers final grade training sessions.\n\nBest regards,\n{{assignedSpecialist}}\nYour College eLearning Office"
+    },
+    "debrief_invite": {
+      "label": "Debrief Invite",
+      "subject": "Semester Debrief Meeting — {{firstName}} {{lastName}}",
+      "body": "Dear {{firstName}},\n\nCongratulations on completing your first semester at Your College!\n\nWe would like to schedule a debrief meeting to:\n• Review what went well and areas for improvement\n• Discuss course copy-forward plans\n• Plan advanced training for your second semester\n\nPlease reply with your availability or use our booking link.\n\nBest regards,\n{{assignedSpecialist}}\nYour College eLearning Office"
+    },
+    "semester2_training": {
+      "label": "Semester 2 Advanced Training",
+      "subject": "Advanced D2L Training Options for Your Second Semester",
+      "body": "Dear {{firstName}},\n\nAs you prepare for your second semester, the eLearning Office offers advanced training in:\n\n• Advanced gradebook features\n• Analytics and Class Progress\n• Intelligent Agents\n• AI-assisted course design workflows\n\nReply to schedule a personalized session with {{assignedSpecialist}}.\n\nBest regards,\nYour College eLearning Office"
+    }
+  }
+}

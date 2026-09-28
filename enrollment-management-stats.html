@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Enrollment Management Overview — create, manage, bulk enroll, and enrollment reports">
+    <title>Enrollment Overview - D2L Admin</title>
+
+    <link rel="icon" href="favicon.ico">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+
+    <link rel="prefetch" href="create-enrollment.html">
+    <link rel="prefetch" href="reports-tools.html">
+</head>
+
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <div class="app-container">
+        <!-- Sidebar Navigation (injected via js/sidebar.js) -->
+
+        <main id="main-content" class="main-content">
+            <header class="top-bar home-top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn" type="button" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+                </div>
+            </header>
+
+            <section class="home-hero" aria-labelledby="overview-hero-title">
+                <div class="home-hero-copy">
+                    <p class="home-hero-eyebrow">Enroll Mgt</p>
+                    <h1 id="overview-hero-title" class="page-title">Enrollment Overview</h1>
+                    <p class="home-hero-lead">
+                        Add, change, or bulk-enroll people in courses. Use the reports below for adds and drops, empty classlists, and students who enrolled but never logged in.
+                    </p>
+                    <div class="home-hero-actions">
+                        <a href="create-enrollment.html" class="launch-tool-btn">
+                            <span>Create an enrollment</span>
+                            <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                        </a>
+                        <a href="reports-tools.html" class="launch-tool-btn launch-tool-btn-secondary">
+                            <span>All enrollment reports</span>
+                            <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </div>
+                <aside class="home-hero-aside">
+                    <span class="home-semester-label" id="home-semester-label">Current term</span>
+                    <p class="home-hero-aside-text">
+                        This page is a map of enrollment tools — not live totals.
+                        SIS overnight adds and drops are easiest to review from the watch list or Insights audit.
+                    </p>
+                </aside>
+            </section>
+
+            <section class="home-section" aria-labelledby="enroll-frequent-title">
+                <div class="home-section-header">
+                    <h2 id="enroll-frequent-title" class="home-section-title">Start here</h2>
+                    <span class="home-section-kicker">Daily work</span>
+                </div>
+                <div class="home-section-separator"></div>
+                <p class="home-section-intro">One person, an existing enrollment, or a list — pick the matching process.</p>
+
+                <div class="home-frequent-grid">
+                    <a href="create-enrollment.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-user-plus"></i></div>
+                        <h3 class="home-tool-card-title">Create Enrollment</h3>
+                        <p class="home-tool-card-text">Add one person to one course with the right role.</p>
+                    </a>
+                    <a href="manage-enrollment.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-pen-to-square"></i></div>
+                        <h3 class="home-tool-card-title">Manage Enrollment</h3>
+                        <p class="home-tool-card-text">Review, change, or remove existing enrollments.</p>
+                    </a>
+                    <a href="batch-enrollment.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-users"></i></div>
+                        <h3 class="home-tool-card-title">Bulk Enrollment</h3>
+                        <p class="home-tool-card-text">Enroll many users at once from a list or CSV.</p>
+                    </a>
+                    <a href="reports/enrollment-checker-insights.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-user-check"></i></div>
+                        <h3 class="home-tool-card-title">Adds &amp; Drops Audit</h3>
+                        <p class="home-tool-card-text">Review recent enrollment changes from Insights data.</p>
+                    </a>
+                </div>
+            </section>
+
+            <section class="home-section" aria-labelledby="enroll-guide-title">
+                <div class="home-section-header">
+                    <h2 id="enroll-guide-title" class="home-section-title">When to use which</h2>
+                    <span class="home-section-kicker">Choose a path</span>
+                </div>
+                <div class="home-section-separator"></div>
+                <p class="home-section-intro">Match the request to the tool. Each row opens the right page.</p>
+
+                <div class="overview-guide">
+                    <a href="create-enrollment.html" class="overview-guide-item">
+                        <p class="overview-guide-if">Add one person to one course (student, instructor, or other role)</p>
+                        <span class="overview-guide-then">Create Enrollment <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+                    </a>
+                    <a href="manage-enrollment.html" class="overview-guide-item">
+                        <p class="overview-guide-if">Someone is in the wrong course or needs to be unenrolled</p>
+                        <span class="overview-guide-then">Manage Enrollment <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+                    </a>
+                    <a href="batch-enrollment.html" class="overview-guide-item">
+                        <p class="overview-guide-if">A list of people to enroll in the same course or set of courses</p>
+                        <span class="overview-guide-then">Bulk Enrollment <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+                    </a>
+                    <a href="reports/enrollment-watch-list.html" class="overview-guide-item">
+                        <p class="overview-guide-if">What SIS/ILP added or dropped overnight in a classlist</p>
+                        <span class="overview-guide-then">Enrollment watch list <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+                    </a>
+                    <a href="reports/recently-enrolled-never-logged-in.html" class="overview-guide-item">
+                        <p class="overview-guide-if">Newly enrolled students who have not logged in yet</p>
+                        <span class="overview-guide-then">Never logged in <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+                    </a>
+                    <a href="orientation-not-enrolled.html" class="overview-guide-item">
+                        <p class="overview-guide-if">Students who still need the Orientation course</p>
+                        <span class="overview-guide-then">Not in Orientation <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+                    </a>
+                </div>
+            </section>
+
+            <section class="home-section" aria-labelledby="enroll-reports-title">
+                <div class="home-section-header">
+                    <h2 id="enroll-reports-title" class="home-section-title">Quick reports</h2>
+                    <span class="home-section-kicker">Run when needed</span>
+                </div>
+                <div class="home-section-separator"></div>
+                <p class="home-section-intro">Open a report to load its data. Totals and lists live on the report page, not here.</p>
+
+                <div class="home-frequent-grid">
+                    <a href="reports/enrollment-checker-insights.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-user-check"></i></div>
+                        <h3 class="home-tool-card-title">Adds &amp; Drops Audit</h3>
+                        <p class="home-tool-card-text">Insights-based review of recent enrollment changes.</p>
+                    </a>
+                    <a href="reports/enrollment-watch-list.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-binoculars"></i></div>
+                        <h3 class="home-tool-card-title">Enrollment watch list</h3>
+                        <p class="home-tool-card-text">Classlist plus enrollment logs since the last run.</p>
+                    </a>
+                    <a href="reports/recently-enrolled-never-logged-in.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-user-slash"></i></div>
+                        <h3 class="home-tool-card-title">Enrolled, never logged in</h3>
+                        <p class="home-tool-card-text">Enroll event in the last N days with no system login.</p>
+                    </a>
+                    <a href="reports/enrollment-statistics.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-users-viewfinder"></i></div>
+                        <h3 class="home-tool-card-title">Enrollment Statistics</h3>
+                        <p class="home-tool-card-text">Run the enrollment totals report when you need the numbers.</p>
+                    </a>
+                    <a href="courses-zero-enrollments.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-book-open"></i></div>
+                        <h3 class="home-tool-card-title">Courses with 0 students</h3>
+                        <p class="home-tool-card-text">Offerings in the current term with an empty student classlist.</p>
+                    </a>
+                    <a href="orientation-not-enrolled.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-compass"></i></div>
+                        <h3 class="home-tool-card-title">Not in Orientation</h3>
+                        <p class="home-tool-card-text">Students (role 101) not yet in the Orientation course.</p>
+                    </a>
+                    <a href="reports/debug-enrollments.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-bug"></i></div>
+                        <h3 class="home-tool-card-title">Enrollments Debug</h3>
+                        <p class="home-tool-card-text">Inspect enrollment records when something looks off.</p>
+                    </a>
+                    <a href="reports/never-enrolled-1001.html" class="home-tool-card">
+                        <div class="home-tool-icon" aria-hidden="true"><i class="fa-solid fa-user-minus"></i></div>
+                        <h3 class="home-tool-card-title">Never Enrolled</h3>
+                        <p class="home-tool-card-text">Users who have never been enrolled in the selected offering.</p>
+                    </a>
+                </div>
+            </section>
+
+            <section class="home-section" aria-labelledby="enroll-more-title">
+                <div class="home-orient-card">
+                    <div class="home-orient-icon" aria-hidden="true">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <div class="home-orient-copy">
+                        <h2 id="enroll-more-title" class="home-orient-title">Need a different enrollment report?</h2>
+                        <p class="home-orient-text">
+                            Access lookup, never-logged-in extracts, and the rest of the June monitoring set live in Reports &amp; Tools.
+                        </p>
+                    </div>
+                    <a href="reports-tools.html" class="launch-tool-btn">
+                        <span>Browse all reports</span>
+                        <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/d2l-api.js"></script>
+    <script src="js/semester-config.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/section-overview.js"></script>
+</body>
+
+</html>

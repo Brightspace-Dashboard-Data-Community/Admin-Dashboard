@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Activity Log - D2L Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/forms.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
+
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            white-space: nowrap;
+        }
+
+        .back-link:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-2px);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+            line-height: 1.5;
+        }
+
+        .card {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .card:hover {
+            transform: none;
+        }
+
+        .card:last-child {
+            margin-bottom: 0;
+        }
+
+        .ferpa-note,
+        .limit-note {
+            padding: 12px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .ferpa-note {
+            background: #f8fafc;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .limit-note {
+            background: #fffbeb;
+            border-left: 4px solid #d97706;
+        }
+
+        .input-row {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .input-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .input-group.action {
+            flex: 0 0 auto;
+            min-width: 0;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .input-group input[type="text"],
+        .input-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-base);
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+        }
+
+        .course-meta,
+        .tool-meta {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin: 0 0 var(--spacing-md);
+            min-height: 1.2em;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-light);
+        }
+
+        .btn-primary:disabled,
+        .btn-secondary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: var(--bg-color);
+            border-color: var(--text-primary);
+        }
+
+        .sal-banner {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 14px;
+            align-items: center;
+            padding: 12px 16px;
+            background: #e8f5e9;
+            border-left: 4px solid var(--primary-color);
+            border-radius: 8px;
+            margin-bottom: 14px;
+        }
+
+        .sal-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin: 0 0 14px;
+        }
+
+        .sal-kpi {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .sal-kpi-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .sal-kpi-value {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-top: 4px;
+        }
+
+        .type-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .type-chip {
+            border: 1px solid var(--border-color);
+            background: #fff;
+            color: var(--text-secondary);
+            border-radius: 999px;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .type-chip.active {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: #fff;
+        }
+
+        .type-badge {
+            display: inline-block;
+            border-radius: 999px;
+            padding: 3px 8px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+        }
+
+        .type-assignment { background: #dcfce7; color: #166534; }
+        .type-quiz { background: #dbeafe; color: #1e40af; }
+        .type-discussion { background: #ede9fe; color: #5b21b6; }
+        .type-content { background: #ccfbf1; color: #0f766e; }
+        .type-login { background: #e2e8f0; color: #334155; }
+        .type-course-access { background: #ffedd5; color: #9a3412; }
+        .type-enrollment { background: #f1f5f9; color: #475569; }
+        .type-grade { background: #fef3c7; color: #92400e; }
+        .type-award { background: #fef9c3; color: #854d0e; }
+
+        .warnings-box {
+            background: #fff7ed;
+            border: 1px solid #fdba74;
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 14px;
+            font-size: 13px;
+            color: #9a3412;
+        }
+
+        .warnings-box ul {
+            margin: 6px 0 0;
+            padding-left: 18px;
+        }
+
+        #activityTable {
+            width: 100% !important;
+        }
+
+        #activityTable th,
+        #activityTable td {
+            padding: 10px 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .when-cell {
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .item-cell {
+            font-weight: 600;
+        }
+
+        .detail-cell {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports &amp; Tools
+                    </a>
+                    <h1 class="page-title">Student Activity Log</h1>
+                    <p class="page-subtitle">
+                        One student in one course: every timestamped record Brightspace will return
+                        (submissions, quiz attempts, discussion posts, content last-visited/completion,
+                        logins, enrollments). This is not the LDAA last-date summary.
+                    </p>
+                </div>
+            </header>
+
+            <div class="card">
+                <h2><i class="fas fa-list-ul"></i> Look up a student in a course</h2>
+                <div class="ferpa-note" role="note">
+                    <strong>FERPA:</strong> This tool displays education records. Use only for legitimate educational purposes at Your College.
+                </div>
+                <div class="limit-note" role="note">
+                    Brightspace does <strong>not</strong> store a timestamp for every content open or download.
+                    Upload <strong>User Logins</strong>, <strong>Course Access</strong>, and <strong>Content User Progress</strong>
+                    from Data Hub to add login history, each course-access day, and last-visited/total-time per topic.
+                </div>
+
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="salCourseOu">OrgUnit ID</label>
+                        <input type="text" id="salCourseOu" inputmode="numeric" autocomplete="off" placeholder="Enter course OrgUnit ID">
+                    </div>
+                    <div class="input-group action">
+                        <label>&nbsp;</label>
+                        <button type="button" class="btn-secondary" id="salLoadCourseBtn">
+                            <i class="fas fa-book"></i> Load course
+                        </button>
+                    </div>
+                    <div class="input-group">
+                        <label for="salStudent">Student</label>
+                        <select id="salStudent" disabled>
+                            <option value="">Load a course first…</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="salOrgDefinedId">Or OrgDefinedId</label>
+                        <input type="text" id="salOrgDefinedId" autocomplete="off" placeholder="Optional lookup">
+                    </div>
+                    <div class="input-group action">
+                        <label>&nbsp;</label>
+                        <button type="button" class="btn-secondary" id="salFindBtn">
+                            <i class="fas fa-search"></i> Find
+                        </button>
+                    </div>
+                    <div class="input-group action">
+                        <label>&nbsp;</label>
+                        <button type="button" class="btn-primary" id="salRunBtn" disabled>
+                            <i class="fas fa-timeline"></i> Collect activity log
+                        </button>
+                    </div>
+                </div>
+
+                <p class="course-meta" id="salCourseMeta"></p>
+
+                <h3 style="margin: 18px 0 8px; font-size: 15px;">Data Hub CSVs (optional)</h3>
+                <p class="tool-meta" style="margin-bottom: 12px;">
+                    Live APIs cannot return content last-visited or a course-access history.
+                    Upload the Brightspace Data Hub extracts to fill those gaps for this student and course.
+                    Large files are filtered as they stream; you do not need to pre-filter the CSV.
+                </p>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="salCsvLogins">User Logins</label>
+                        <input type="file" id="salCsvLogins" accept=".csv,text/csv">
+                    </div>
+                    <div class="input-group">
+                        <label for="salCsvCourseAccess">Course Access</label>
+                        <input type="file" id="salCsvCourseAccess" accept=".csv,text/csv">
+                    </div>
+                    <div class="input-group">
+                        <label for="salCsvContent">Content User Progress</label>
+                        <input type="file" id="salCsvContent" accept=".csv,text/csv">
+                    </div>
+                </div>
+
+                <p class="tool-meta" id="salStatus" aria-live="polite"></p>
+            </div>
+
+            <div class="card" id="salResults" hidden>
+                <h2><i class="fas fa-clock-rotate-left"></i> Chronological activity</h2>
+                <div id="salBanner"></div>
+                <div class="sal-kpi-grid" id="salKpis"></div>
+                <div id="salWarnings"></div>
+                <div id="salScan"></div>
+                <div class="type-chips" id="salChips" role="tablist" aria-label="Filter event types"></div>
+                <div class="input-row" style="justify-content:flex-end;margin-bottom:12px;">
+                    <div class="input-group action">
+                        <button type="button" class="btn-secondary" id="salCsvBtn" disabled>
+                            <i class="fas fa-file-csv"></i> Download CSV
+                        </button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="activityTable" class="display">
+                        <thead>
+                            <tr>
+                                <th>When (Detroit)</th>
+                                <th>Type</th>
+                                <th>Item</th>
+                                <th>Detail</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/loading-utils.js"></script>
+    <script src="../js/ldaa-brightspace-api.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="../js/student-activity-log.js"></script>
+</body>
+
+</html>

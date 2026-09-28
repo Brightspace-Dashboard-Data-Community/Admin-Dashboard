@@ -1,0 +1,189 @@
+<!--
+  Brightspace ZZStudent Demo Widget
+  Paste into a D2L HTML widget on a course homepage (faculty).
+  Creates/enrolls or unenrolls a demo student (ZZStudent) for the current course.
+-->
+<div style="max-width: 400px; margin: 0; margin-top: 20px;">
+  <h3>Manage ZZStudent</h3>
+  <p>
+    This widget allows an Instructor to create a Demo Student (ZZStudent) and enroll or unenroll them
+    into/from the current course, so you can impersonate and view the course as a full student.
+  </p>
+  <form id="manageForm" style="display: flex; gap: 5px;">
+    <button
+      type="button"
+      id="enrollButton"
+      style="display: inline-block; font-weight: 400; color: #ffffff; text-align: center; vertical-align: middle; user-select: none; background-color: #28a745; border: 1px solid transparent; padding: 0.2rem 0.4rem; font-size: 0.75rem; line-height: 1.2; border-radius: 0.2rem; cursor: pointer;"
+      onmousedown="this.style.backgroundColor='#1e7e34'"
+      onmouseout="this.style.backgroundColor='#28a745'"
+      onmouseup="this.style.backgroundColor='#218838'"
+      onmouseover="this.style.backgroundColor='#218838'"
+    >Enroll ZZStudent</button>
+    <button
+      type="button"
+      id="unenrollButton"
+      style="display: inline-block; font-weight: 400; color: #ffffff; text-align: center; vertical-align: middle; user-select: none; background-color: #dc3545; border: 1px solid transparent; padding: 0.2rem 0.4rem; font-size: 0.75rem; line-height: 1.2; border-radius: 0.2rem; cursor: pointer;"
+      onmousedown="this.style.backgroundColor='#bd2130'"
+      onmouseout="this.style.backgroundColor='#dc3545'"
+      onmouseup="this.style.backgroundColor='#c82333'"
+      onmouseover="this.style.backgroundColor='#c82333'"
+    >Unenroll ZZStudent</button>
+  </form>
+  <div id="successMessage" style="margin-top: 1rem;"></div>
+</div>
+<p><script>
+(function () {
+  var LP_VERSION = "1.45";
+  var STUDENT_ROLE_ID = 112;
+  var EMAIL_DOMAIN = "yourcollege.edu";
+
+  document.getElementById("enrollButton").addEventListener("click", function () {
+    manageZZStudent("enroll");
+  });
+  document.getElementById("unenrollButton").addEventListener("click", function () {
+    manageZZStudent("unenroll");
+  });
+
+  function setMessage(text) {
+    document.getElementById("successMessage").innerHTML = text;
+  }
+
+  async function BrightspaceFetch(fetchMethod, fetchUrl, fetchData) {
+    var headers = {
+      "Content-Type": "application/json",
+      "X-Csrf-Token": localStorage["XSRF.Token"] || sessionStorage["XSRF.Token"] || ""
+    };
+    var options = { method: fetchMethod, headers: headers, credentials: "include" };
+    if (fetchData !== null) options.body = JSON.stringify(fetchData);
+
+    try {
+      var res = await fetch(fetchUrl, options);
+      var result = { status: res.status, data: {} };
+      if (res.status === 200) {
+        result.data = await res.json();
+      }
+      return result;
+    } catch (error) {
+      return { status: 500, data: {}, error: String(error) };
+    }
+  }
+
+  function getCurrentCourseId() {
+    try {
+      var parentUrl = parent.window.location.pathname;
+      var pathParts = parentUrl.split("/");
+      var homeIndex = pathParts.indexOf("home");
+      if (homeIndex !== -1 && pathParts.length > homeIndex + 1) {
+        return pathParts[homeIndex + 1];
+      }
+      console.error("Failed to extract course ID from parent URL:", parentUrl);
+      return null;
+    } catch (error) {
+      console.error("Error accessing parent URL:", error);
+      return null;
+    }
+  }
+
+  function demoUserName(courseId) {
+    return "ZZDemoStudent-" + courseId;
+  }
+
+  function apiBase() {
+    return "https://" + window.location.hostname + "/d2l/api/lp/" + LP_VERSION;
+  }
+
+  async function manageZZStudent(action) {
+    var currentCourseId = getCurrentCourseId();
+    if (!currentCourseId) {
+      setMessage("Failed to extract course ID. Place this widget on a course homepage.");
+      return;
+    }
+
+    if (action === "enroll") {
+      await enrollDemoStudent(currentCourseId);
+    } else if (action === "unenroll") {
+      await unenrollDemoStudent(currentCourseId);
+    }
+  }
+
+  async function enrollDemoStudent(courseId) {
+    var demoStudentUserName = demoUserName(courseId);
+    var demoStudentEmail = demoStudentUserName.toLowerCase() + "@" + EMAIL_DOMAIN;
+    var base = apiBase();
+
+    var checkUserResponse = await BrightspaceFetch(
+      "GET",
+      base + "/users/?userName=" + encodeURIComponent(demoStudentUserName),
+      null
+    );
+
+    var userId;
+    if (checkUserResponse.status === 200 && checkUserResponse.data && checkUserResponse.data.UserId) {
+      userId = checkUserResponse.data.UserId;
+    } else {
+      var createUserResult = await BrightspaceFetch("POST", base + "/users/", {
+        OrgDefinedId: "",
+        FirstName: "ZZDemo",
+        MiddleName: "",
+        LastName: "ZZStudent",
+        ExternalEmail: demoStudentEmail,
+        UserName: demoStudentUserName,
+        RoleId: STUDENT_ROLE_ID,
+        IsActive: true,
+        SendCreationEmail: false,
+        Pronouns: ""
+      });
+
+      if (createUserResult.status === 200 && createUserResult.data && createUserResult.data.UserId) {
+        userId = createUserResult.data.UserId;
+      } else {
+        console.error("Failed to create demo student:", createUserResult);
+        setMessage("Failed to create demo student.");
+        return;
+      }
+    }
+
+    var enrollStudentResult = await BrightspaceFetch("POST", base + "/enrollments/", {
+      OrgUnitId: courseId,
+      UserId: userId,
+      RoleId: STUDENT_ROLE_ID,
+      IsCascading: false
+    });
+
+    if (enrollStudentResult.status === 200) {
+      setMessage("Demo student enrolled successfully!");
+    } else {
+      console.error("Failed to enroll demo student:", enrollStudentResult);
+      setMessage("Failed to enroll demo student.");
+    }
+  }
+
+  async function unenrollDemoStudent(courseId) {
+    var demoStudentUserName = demoUserName(courseId);
+    var base = apiBase();
+    var userResponse = await BrightspaceFetch(
+      "GET",
+      base + "/users/?userName=" + encodeURIComponent(demoStudentUserName),
+      null
+    );
+
+    if (userResponse.status === 200 && userResponse.data && userResponse.data.UserId) {
+      var unenrollResponse = await BrightspaceFetch(
+        "DELETE",
+        base + "/enrollments/orgUnits/" + courseId + "/users/" + userResponse.data.UserId,
+        null
+      );
+
+      if (unenrollResponse.status === 200) {
+        setMessage("Demo student unenrolled successfully!");
+      } else {
+        console.error("Failed to unenroll demo student:", unenrollResponse);
+        setMessage("Failed to unenroll demo student.");
+      }
+    } else {
+      console.error("Failed to find demo student:", userResponse);
+      setMessage("Failed to find demo student.");
+    }
+  }
+})();
+</script></p>

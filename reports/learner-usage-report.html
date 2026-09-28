@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learner Usage Report - D2L Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/forms.css">
+
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            white-space: nowrap;
+        }
+
+        .back-link:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-2px);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+            line-height: 1.5;
+        }
+
+        .tabs {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin: 0 0 var(--spacing-lg);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: -2px;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary-color);
+        }
+
+        .tab-btn.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .card:hover {
+            transform: none;
+        }
+
+        .card:last-child {
+            margin-bottom: 0;
+        }
+
+        .ferpa-note {
+            background: #f8fafc;
+            border-left: 4px solid var(--primary-color);
+            padding: 12px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .input-row {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .input-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .input-group.action {
+            flex: 0 0 auto;
+            min-width: 0;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .input-group input[type="text"],
+        .input-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-base);
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+        }
+
+        .course-meta {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin: 0 0 var(--spacing-md);
+            min-height: 1.2em;
+        }
+
+        .tool-meta {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-light);
+        }
+
+        .btn-primary:disabled,
+        .btn-secondary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: var(--bg-color);
+            border-color: var(--text-primary);
+        }
+
+        .selected-user {
+            margin-top: 4px;
+            margin-bottom: var(--spacing-md);
+            padding: 12px;
+            background: #e8f5e9;
+            border: 1px solid var(--primary-color);
+            border-radius: 8px;
+            display: none;
+        }
+
+        .selected-user.show {
+            display: block;
+        }
+
+        .selected-user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .selected-user-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .selected-user-meta {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .remove-user-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px 8px;
+        }
+
+        .ldaa-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin: 1rem 0;
+        }
+
+        .ldaa-kpi {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .ldaa-kpi-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .ldaa-kpi-value {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-top: 4px;
+        }
+
+        .ldaa-overall {
+            background: #fef2f2;
+            border: 2px solid #dc2626;
+            border-left: 8px solid #dc2626;
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin: 1rem 0;
+        }
+
+        .ldaa-overall-label {
+            font-weight: 700;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #991b1b;
+        }
+
+        .ldaa-overall-date {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #991b1b;
+            margin-top: 6px;
+        }
+
+        .ldaa-detail-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .ldaa-detail-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+
+        .ldaa-detail-table td:first-child {
+            width: 55%;
+            color: var(--text-primary);
+        }
+
+        .ldaa-student-banner {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 14px;
+            align-items: center;
+            padding: 12px 16px;
+            background: #e8f5e9;
+            border-left: 4px solid var(--primary-color);
+            border-radius: 8px;
+            margin-bottom: 14px;
+        }
+
+        .tool-loading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-secondary);
+        }
+
+        .ldaa-lock {
+            position: fixed;
+            inset: 0;
+            z-index: 20000;
+            background: rgba(15, 23, 42, 0.62);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .ldaa-lock[hidden] {
+            display: none !important;
+        }
+
+        .ldaa-lock-card {
+            background: #fff;
+            max-width: 520px;
+            width: 100%;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+        }
+
+        .ldaa-lock-card h3 {
+            margin: 0 0 8px;
+            color: #991b1b;
+            font-size: 1.15rem;
+        }
+
+        .ldaa-lock-card p {
+            margin: 0 0 16px;
+            color: #334155;
+            line-height: 1.5;
+        }
+
+        .ldaa-lock-status {
+            margin: 12px 0 0;
+            font-size: 0.9rem;
+            color: #334155;
+        }
+
+        .ldaa-lock-status.is-error {
+            color: #b91c1c;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports &amp; Tools
+                    </a>
+                    <h1 class="page-title">Learner Usage Report</h1>
+                    <p class="page-subtitle">Look up a student's Last Date of Academic Activity by OrgUnit ID and generate a FERPA-aware PDF. Same report as Faculty Dashboard Student LDAA Lookup.</p>
+                </div>
+            </header>
+
+            <div class="tabs" role="tablist" aria-label="LDAA lookup mode">
+                <button type="button" class="tab-btn active" role="tab" id="ldaaTabEnrolled" aria-selected="true" aria-controls="ldaaPanelEnrolled">
+                    Currently enrolled
+                </button>
+                <button type="button" class="tab-btn" role="tab" id="ldaaTabRemoved" aria-selected="false" aria-controls="ldaaPanelRemoved">
+                    Previously removed
+                </button>
+            </div>
+
+            <div id="ldaaPanelEnrolled" class="tab-content active" role="tabpanel" aria-labelledby="ldaaTabEnrolled">
+                <div class="card">
+                    <h2><i class="fas fa-user-check"></i> Find an enrolled student</h2>
+                    <div class="ferpa-note" role="note">
+                        <strong>FERPA:</strong> This tool displays education records. Use only for legitimate educational purposes at Your College. Course login alone does not count toward LDA — only academic events (discussions, assignments, quizzes, and integrated tool gradebook activity when available).
+                    </div>
+
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="ldaaCourseOu">OrgUnit ID</label>
+                            <input type="text" id="ldaaCourseOu" inputmode="numeric" autocomplete="off" placeholder="Enter course OrgUnit ID">
+                        </div>
+                        <div class="input-group action">
+                            <label>&nbsp;</label>
+                            <button type="button" class="btn-secondary" id="ldaaLoadCourseBtn">
+                                <i class="fas fa-book"></i> Load course
+                            </button>
+                        </div>
+                        <div class="input-group">
+                            <label for="ldaaStudent">Student</label>
+                            <select id="ldaaStudent" disabled>
+                                <option value="">Load a course first…</option>
+                            </select>
+                        </div>
+                        <div class="input-group action">
+                            <label>&nbsp;</label>
+                            <button type="button" class="btn-primary" id="ldaaViewBtn" disabled>
+                                <i class="fas fa-search"></i> View activity
+                            </button>
+                        </div>
+                    </div>
+
+                    <p class="course-meta" id="ldaaCourseMeta"></p>
+                    <p class="tool-meta" id="ldaaHeaderMeta"></p>
+                    <p class="tool-meta" id="ldaaStatus" aria-live="polite"></p>
+                </div>
+
+                <div class="card" id="ldaaDetailPanel" hidden>
+                    <h2><i class="fas fa-calendar-check"></i> Last Date of Academic Activity</h2>
+                    <div id="ldaaDetailContent"></div>
+                </div>
+            </div>
+
+            <div id="ldaaPanelRemoved" class="tab-content" role="tabpanel" aria-labelledby="ldaaTabRemoved">
+                <div class="card">
+                    <h2><i class="fas fa-user-minus"></i> Removed student lookup</h2>
+                    <div class="ferpa-note" role="note">
+                        <strong>FERPA:</strong> Use this only when a student has already been removed from the course and an LDAA report is still required. The tool temporarily enrolls them with <strong>Student - LDAA Report (role 172)</strong>, downloads the PDF, then you must unenroll them before leaving this page.
+                    </div>
+
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="ldaaRemovedCourseOu">OrgUnit ID</label>
+                            <input type="text" id="ldaaRemovedCourseOu" inputmode="numeric" autocomplete="off" placeholder="Enter course OrgUnit ID">
+                        </div>
+                        <div class="input-group action">
+                            <label>&nbsp;</label>
+                            <button type="button" class="btn-secondary" id="ldaaRemovedLoadCourseBtn">
+                                <i class="fas fa-book"></i> Load course
+                            </button>
+                        </div>
+                        <div class="input-group">
+                            <label for="ldaaOrgDefinedId">OrgDefinedId</label>
+                            <input type="text" id="ldaaOrgDefinedId" autocomplete="off" placeholder="Enter OrgDefinedId">
+                        </div>
+                        <div class="input-group action">
+                            <label>&nbsp;</label>
+                            <button type="button" class="btn-secondary" id="ldaaSearchBtn">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                        </div>
+                    </div>
+
+                    <p class="course-meta" id="ldaaRemovedCourseMeta"></p>
+
+                    <div id="ldaaRemovedSelected" class="selected-user">
+                        <div class="selected-user-info">
+                            <div>
+                                <div class="selected-user-name" id="ldaaRemovedSelectedName"></div>
+                                <div class="selected-user-meta" id="ldaaRemovedSelectedMeta"></div>
+                            </div>
+                            <button type="button" class="remove-user-btn" id="ldaaRemovedClearBtn" aria-label="Clear selected user">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-primary" id="ldaaProcessBtn" disabled>
+                        <i class="fas fa-file-arrow-down"></i> Process LDAA report
+                    </button>
+                    <p class="tool-meta" id="ldaaRemovedStatus" aria-live="polite" style="margin-top:12px;"></p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="ldaaLockOverlay" class="ldaa-lock" hidden>
+        <div class="ldaa-lock-card" role="dialog" aria-modal="true" aria-labelledby="ldaaLockTitle">
+            <h3 id="ldaaLockTitle">Unenroll required</h3>
+            <p id="ldaaLockBody">The LDAA report downloaded. This user is temporarily enrolled with Student - LDAA Report (role 172). Unenroll them before leaving this page.</p>
+            <button type="button" class="btn-primary" id="ldaaLockUnenrollBtn">
+                <i class="fas fa-user-minus"></i> Unenroll user
+            </button>
+            <p class="ldaa-lock-status" id="ldaaLockStatus" aria-live="assertive"></p>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/ldaa-brightspace-api.js"></script>
+    <script src="../js/pdf-brand.js"></script>
+    <script src="../js/ldaa-report.js"></script>
+    <script src="../js/learner-usage-report.js"></script>
+</body>
+
+</html>

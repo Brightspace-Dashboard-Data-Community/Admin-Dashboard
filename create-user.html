@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create User - D2L Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <link rel="stylesheet" href="css/tables.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation (injected via js/sidebar.js) -->
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <h1 class="page-title">Create a User</h1>
+                    <p class="page-subtitle">Add a new user to the system with the required details.</p>
+                </div>
+            </header>
+
+            <div class="form-container">
+                <div class="tabs">
+                    <button type="button" class="tab-btn active" data-tab="create">Create User</button>
+                    <button type="button" class="tab-btn" data-tab="force-password">Force Password Reset</button>
+                    <button type="button" class="tab-btn" data-tab="bulk">Bulk Create</button>
+                </div>
+
+                <!-- Tab: Create User -->
+                <div id="tab-create" class="tab-content active">
+            <form class="form-container-inner" id="create-user-form">
+
+                <!-- Section 1: User Information -->
+                <div class="form-section">
+                    <div class="form-header">
+                        <h2 class="form-section-title">User Information</h2>
+                    </div>
+
+                    <div class="form-grid">
+                        <!-- First Name -->
+                        <div class="form-group">
+                            <label for="firstName" class="form-label">First Name</label>
+                            <input type="text" id="firstName" class="form-control" placeholder="">
+                        </div>
+
+                        <!-- Last Name -->
+                        <div class="form-group">
+                            <label for="lastName" class="form-label">Last Name</label>
+                            <input type="text" id="lastName" class="form-control" placeholder="">
+                        </div>
+
+                        <!-- Email -->
+                        <div class="form-group">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" id="email" class="form-control" placeholder="">
+                        </div>
+
+                        <!-- Username -->
+                        <div class="form-group">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" id="username" class="form-control" placeholder="">
+                        </div>
+
+                        <!-- User Number -->
+                        <div class="form-group form-grid-full">
+                            <label for="userNumber" class="form-label">User Number</label>
+                            <input type="text" id="userNumber" class="form-control" placeholder="Optional">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Account Settings -->
+                <div class="form-section">
+                    <div class="form-header">
+                        <h2 class="form-section-title">Account Settings</h2>
+                    </div>
+
+                    <div class="form-grid">
+                        <!-- Role -->
+                        <div class="form-group">
+                            <label for="role" class="form-label">User Role</label>
+                            <select id="role" class="form-control">
+                                <option value="" disabled selected>Select a role</option>
+                                <option value="student">Student</option>
+                                <option value="instructor">Instructor</option>
+                                <option value="admin">Administrator</option>
+                            </select>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="form-group">
+                            <label for="status" class="form-label">Status</label>
+                            <select id="status" class="form-control">
+                                <option value="active" selected>Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+
+                        <!-- Email Checkbox -->
+                        <div class="form-group form-grid-full">
+                            <div class="form-check">
+                                <input type="checkbox" id="sendEmail" class="form-check-input">
+                                <label for="sendEmail" class="form-check-label">Send welcome email with login
+                                    instructions</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa-solid fa-user-plus"></i> Create User
+                    </button>
+                    <button type="button" class="btn btn-outline" onclick="window.history.back()">
+                        <i class="fa-solid fa-xmark"></i> Cancel
+                    </button>
+                </div>
+
+                <!-- After-create: Results & Enrollment -->
+                <div id="create-result-section" class="form-section" style="display: none; margin-top: var(--spacing-xl);">
+                    <div class="form-header">
+                        <h2 class="form-section-title">User created – next steps</h2>
+                    </div>
+                    <div class="form-grid form-grid-1">
+                        <div class="form-group form-grid-full">
+                            <div id="create-user-result" class="form-output"></div>
+                        </div>
+                    </div>
+                    <div class="form-actions" style="margin-top: var(--spacing-md); gap: var(--spacing-sm); flex-wrap: wrap;">
+                        <a id="d2l-edit-user-link" href="#" target="_blank" class="btn btn-outline" style="display: none;">
+                            <i class="fa-solid fa-pen-to-square"></i> Edit user in D2L
+                        </a>
+                    </div>
+
+                    <div class="form-section" style="margin-top: var(--spacing-lg);">
+                        <div class="form-header">
+                            <h3 class="form-section-title">Enroll this user in a course</h3>
+                        </div>
+                        <p class="form-text muted" style="margin-bottom: var(--spacing-md);">
+                            Search for a course to grab its OrgUnitId, then enroll the new user directly from here.
+                        </p>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="enroll-course-id" class="form-label">Course OrgUnitId</label>
+                                <input type="text" id="enroll-course-id" class="form-control" placeholder="e.g., 2901369">
+                            </div>
+                            <div class="form-group">
+                                <label for="enroll-role-id" class="form-label">Enroll as RoleId</label>
+                                <input type="text" id="enroll-role-id" class="form-control" value="101" placeholder="101 Student / 102 Instructor">
+                            </div>
+                        </div>
+                        <div class="form-actions" style="margin-top: var(--spacing-md); gap: var(--spacing-sm); flex-wrap: wrap;">
+                            <button type="button" class="btn btn-primary" id="enroll-course-btn">
+                                <i class="fa-solid fa-user-graduate"></i> Enroll in course
+                            </button>
+                            <a href="search-course.html" target="_blank" class="btn btn-outline">
+                                <i class="fa-solid fa-magnifying-glass"></i> Open course search tool
+                            </a>
+                        </div>
+                        <div id="enroll-course-result" class="form-output" style="display: none;"></div>
+                    </div>
+                </div>
+
+            </form>
+                </div>
+
+                <!-- Tab: Force Password Reset -->
+                <div id="tab-force-password" class="tab-content">
+                    <p class="form-text page-desc">Creates a Brightspace user, sets a temporary password via <code>PUT /users/{{id}}/password</code> with <span class="pill">ForcePasswordReset = true</span>, then preps a welcome email. Use the backdoor link <code>/d2l/login?noredirect=1</code> in an <strong>Incognito/Private</strong> window so the first-login password change prompt appears (SSO can skip it otherwise).</p>
+                    <div class="info-banner info-banner-warning" style="margin-bottom: var(--spacing-lg);">
+                        <strong>Force password reset requires Role 178 (Student-NonAcademic). The "change password on first login" prompt only appears when the user is created with this role. Use the backdoor link in Incognito to test.</strong>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-header">
+                            <h2 class="form-section-title">New User Details</h2>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="fp-orgDefinedId" class="form-label">OrgDefinedId</label>
+                                <input type="text" id="fp-orgDefinedId" class="form-control" placeholder="e.g., EXT1001">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Role</label>
+                                <div class="form-row-wrap">
+                                    <select id="fp-roleIdSelect" class="form-control" style="max-width: 280px;"></select>
+                                    <input type="text" id="fp-roleId" class="form-control" value="" placeholder="e.g. 178" style="max-width: 140px;">
+                                    <button type="button" class="btn btn-outline" id="fp-btnRefreshRoles">Refresh Roles</button>
+                                </div>
+                                <span class="form-text muted">Dropdown is live from API (Identifier / DisplayName). You can also type an ID. <strong>For force password reset on first login, use Role 178 (Student-NonAcademic).</strong></span>
+                            </div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="fp-firstName" class="form-label">First Name</label>
+                                <input type="text" id="fp-firstName" class="form-control" placeholder="First">
+                            </div>
+                            <div class="form-group">
+                                <label for="fp-lastName" class="form-label">Last Name</label>
+                                <input type="text" id="fp-lastName" class="form-control" placeholder="Last">
+                            </div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="fp-userName" class="form-label">Username</label>
+                                <input type="text" id="fp-userName" class="form-control" placeholder="guser.unique">
+                            </div>
+                            <div class="form-group">
+                                <label for="fp-externalEmail" class="form-label">External Email</label>
+                                <input type="text" id="fp-externalEmail" class="form-control" placeholder="guest@example.com">
+                            </div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="fp-tempPassword" class="form-label">Temporary Password</label>
+                                <div class="form-row-wrap">
+                                    <input type="text" id="fp-tempPassword" class="form-control" placeholder="Auto-generate or type your own">
+                                    <button type="button" class="btn btn-outline" id="fp-btnGenPass">Generate</button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="fp-sendCreationEmail" class="form-label">SendCreationEmail (D2L built-in)</label>
+                                <select id="fp-sendCreationEmail" class="form-control">
+                                    <option value="false" selected>No (we'll send our own)</option>
+                                    <option value="true">Yes (D2L default template)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-primary" id="fp-btnCreate"><i class="fa-solid fa-user-plus"></i> Create User + Set Temp Password</button>
+                            <button type="button" class="btn btn-outline" id="fp-btnPreflight">Run Preflight Checks</button>
+                        </div>
+                        <div id="fp-createResult" class="form-output" style="display: none;"></div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-header">
+                            <h2 class="form-section-title">(Optional) Enroll User to a Course</h2>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="fp-enrollOrgUnitId" class="form-label">OrgUnitId (CourseOfferingId)</label>
+                                <input type="text" id="fp-enrollOrgUnitId" class="form-control" placeholder="e.g., 2901369">
+                            </div>
+                            <div class="form-group">
+                                <label for="fp-enrollRoleId" class="form-label">Enroll As RoleId</label>
+                                <input type="text" id="fp-enrollRoleId" class="form-control" value="101" placeholder="101 Student / 102 Instructor">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-primary" id="fp-btnEnroll">Enroll Newly Created User</button>
+                            <span class="form-text muted">Uses the UserId from the user just created.</span>
+                        </div>
+                        <div id="fp-enrollResult" class="form-output" style="display: none;"></div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-header">
+                            <h2 class="form-section-title">Welcome Email Helper</h2>
+                        </div>
+                        <div class="form-grid form-grid-1">
+                            <div class="form-group form-grid-full">
+                                <label for="fp-emailTo" class="form-label">Email To (comma/semicolon separated)</label>
+                                <input type="text" id="fp-emailTo" class="form-control" placeholder="guest@example.com">
+                            </div>
+                            <div class="form-group form-grid-full">
+                                <label for="fp-emailSub" class="form-label">Subject</label>
+                                <input type="text" id="fp-emailSub" class="form-control" value="Your D2L Brightspace Login Information">
+                            </div>
+                            <div class="form-group form-grid-full">
+                                <label for="fp-emailBody" class="form-label">Email Body (we'll prefill below)</label>
+                                <textarea id="fp-emailBody" class="form-control" rows="6" placeholder="Body will appear here after creation…"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-primary" id="fp-btnMailto"><i class="fa-solid fa-envelope"></i> Open in Email Client</button>
+                            <button type="button" class="btn btn-outline" id="fp-btnCopy">Copy Body</button>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-header">
+                            <h2 class="form-section-title">Console</h2>
+                        </div>
+                        <div id="fp-console" class="form-output form-output-console"></div>
+                    </div>
+                </div>
+
+                <!-- Tab: Bulk Create -->
+                <div id="tab-bulk" class="tab-content">
+                    <p class="form-text page-desc">Upload a CSV with <strong>first name</strong>, <strong>last name</strong>, and <strong>email</strong>. Users are created with username <code>guser.firstnamelastname</code>, a temporary password, and force-reset on first login. Use <code>/d2l/login?noredirect=1</code> in <strong>Incognito</strong> so the password-change prompt appears.</p>
+
+                    <div class="form-section">
+                        <div class="form-header">
+                            <h2 class="form-section-title">CSV and settings</h2>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group form-grid-full">
+                                <label for="bulk-csv" class="form-label">CSV file (columns: first_name, last_name, email)</label>
+                                <input type="file" id="bulk-csv" class="form-control" accept=".csv,text/csv">
+                                <span class="form-text muted">Header row with first_name, last_name, email (underscores). Commas between values. Names and emails trimmed.</span>
+                            </div>
+                            <div class="form-group">
+                                <label for="bulk-roleId" class="form-label">Role</label>
+                                <div class="form-row-wrap">
+                                    <select id="bulk-roleIdSelect" class="form-control" style="max-width: 280px;"></select>
+                                    <input type="text" id="bulk-roleId" class="form-control" placeholder="e.g. 178" style="max-width: 140px;">
+                                </div>
+                                <span class="form-text muted">For force password reset on first login, use <strong>Role 178 (Student-NonAcademic)</strong>.</span>
+                            </div>
+                            <div class="form-group">
+                                <span class="form-label">Temporary passwords</span>
+                                <p class="form-text muted" style="margin: 4px 0 0;">A unique temporary password is auto-generated for each user. Passwords appear in the results table and in the email template.</p>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-primary" id="bulk-btnCreate"><i class="fa-solid fa-users"></i> Create users from CSV</button>
+                        </div>
+                        <div id="bulk-createResult" class="form-output" style="display: none;"></div>
+                    </div>
+
+                    <div class="form-section" id="bulk-after-section" style="display: none;">
+                        <div class="form-header">
+                            <h2 class="form-section-title">New users created</h2>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table" id="bulk-users-table">
+                                <thead>
+                                    <tr>
+                                        <th>First</th>
+                                        <th>Last</th>
+                                        <th>Email</th>
+                                        <th>Username</th>
+                                        <th>Password</th>
+                                        <th>UserId</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bulk-users-tbody"></tbody>
+                            </table>
+                        </div>
+                        <div class="form-actions" style="margin-top: 1rem;">
+                            <button type="button" class="btn btn-primary" id="bulk-btnEnrollAll"><i class="fa-solid fa-user-graduate"></i> Enroll all in course</button>
+                            <button type="button" class="btn btn-primary" id="bulk-btnDownloadCsv"><i class="fa-solid fa-file-csv"></i> Download CSV</button>
+                        </div>
+                        <div class="form-grid" style="margin-top: 1rem;">
+                            <div class="form-group form-grid-full">
+                                <label for="bulk-emailSub" class="form-label">Email subject (for template)</label>
+                                <input type="text" id="bulk-emailSub" class="form-control" value="Your D2L Brightspace Login Information">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-header">
+                            <h2 class="form-section-title">Enroll all in course</h2>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="bulk-enrollOrgUnitId" class="form-label">OrgUnitId (Course Offering ID)</label>
+                                <input type="text" id="bulk-enrollOrgUnitId" class="form-control" placeholder="e.g., 2901369">
+                            </div>
+                            <div class="form-group">
+                                <label for="bulk-enrollRoleId" class="form-label">Enroll as RoleId</label>
+                                <input type="text" id="bulk-enrollRoleId" class="form-control" value="101" placeholder="101 Student / 102 Instructor">
+                            </div>
+                        </div>
+                        <div id="bulk-enrollResult" class="form-output" style="display: none;"></div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-header">
+                            <h2 class="form-section-title">Bulk console</h2>
+                        </div>
+                        <div id="bulk-console" class="form-output form-output-console"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        .tabs { display: flex; gap: 20px; border-bottom: 2px solid var(--border-color); margin-bottom: var(--spacing-lg); }
+        .tab-btn { background: none; border: none; padding: 10px 0; font-size: 14px; font-weight: 600; color: var(--text-secondary); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: color 0.2s; }
+        .tab-btn:hover { color: var(--primary-color); }
+        .tab-btn.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .form-container-inner { max-width: 100%; }
+        .form-row-wrap { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-sm); }
+        .form-output { margin-top: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-color); border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 13px; font-family: monospace; white-space: pre-wrap; word-break: break-word; }
+        .form-output-console { max-height: 200px; overflow-y: auto; }
+        .form-text.muted { color: var(--text-secondary); font-size: 12px; }
+        .form-text.page-desc { margin-bottom: var(--spacing-lg); color: var(--text-secondary); }
+        .pill { display: inline-block; padding: 2px 8px; background: var(--primary-color); color: #fff; border-radius: 999px; font-size: 12px; }
+        .form-grid-1 { grid-template-columns: 1fr; }
+        code { background: var(--bg-color); padding: 2px 6px; border-radius: var(--radius-sm); font-size: 13px; }
+        .info-banner { padding: var(--spacing-md); border-radius: var(--radius-sm); font-size: 13px; line-height: 1.5; }
+        .info-banner-warning { background: #fff8e6; border: 1px solid var(--warning-color); color: var(--text-primary); }
+    </style>
+    <script>
+        document.querySelectorAll('.tab-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var tab = this.getAttribute('data-tab');
+                document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active'); });
+                document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+                var panel = document.getElementById('tab-' + tab);
+                if (panel) panel.classList.add('active');
+                this.classList.add('active');
+            });
+        });
+    </script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/create-user.js" type="module"></script>
+    <script src="js/create-user-force-password.js" type="module"></script>
+</body>
+
+</html>

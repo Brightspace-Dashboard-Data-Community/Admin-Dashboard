@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MERGED Course Classlist → Simple Syllabus Use</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            margin-left: 0;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            overflow: visible;
+        }
+
+        .back-link:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-2px);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .input-row {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .input-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .input-group select,
+        .input-group input[type="number"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-base);
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+        }
+
+        .input-group input[type="number"] {
+            width: 80px;
+        }
+
+        .input-group input[type="checkbox"] {
+            margin-right: 6px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0;
+            cursor: pointer;
+        }
+
+        .status-message {
+            margin-top: var(--spacing-md);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-md);
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        details {
+            margin-top: var(--spacing-md);
+            padding: var(--spacing-md);
+            background-color: var(--surface-color);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        details summary {
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        details summary:hover {
+            color: var(--primary-color);
+        }
+
+        .advanced-options {
+            display: flex;
+            gap: var(--spacing-lg);
+            flex-wrap: wrap;
+            margin-top: var(--spacing-sm);
+        }
+
+        .log-container {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: var(--spacing-md);
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: var(--font-size-sm);
+            font-family: 'Courier New', monospace;
+            margin-top: var(--spacing-md);
+            display: none;
+        }
+
+        .log-container.active {
+            display: block;
+        }
+
+        .log-line {
+            margin-bottom: 4px;
+            color: var(--text-secondary);
+        }
+
+        .instructions-card {
+            background-color: rgba(26, 93, 26, 0.05);
+            border: 2px solid rgba(26, 93, 26, 0.2);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-lg);
+            margin-top: var(--spacing-xl);
+        }
+
+        .instructions-card h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .instructions-card ol,
+        .instructions-card ul {
+            margin-left: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .instructions-card li {
+            margin-bottom: var(--spacing-xs);
+            line-height: 1.6;
+        }
+
+        .instructions-card code {
+            background-color: rgba(0, 0, 0, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .instructions-card strong {
+            color: var(--primary-color);
+        }
+
+        .instructions-card a {
+            color: var(--primary-color);
+            text-decoration: underline;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .instructions-card a:hover {
+            color: var(--primary-light);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation (injected via js/sidebar.js) -->
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports & Tools
+                    </a>
+                    <h1 class="page-title">MERGED Course Classlist → Simple Syllabus Use</h1>
+                    <p class="page-subtitle">
+                        This report is specifically designed to support <strong>Simple Syllabus merged enrollments</strong> so that <strong>students</strong> can access the correct syllabus in merged course offerings.
+                    </p>
+                </div>
+            </header>
+
+            <div class="card">
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="semesterSelect">Semester:</label>
+                        <select id="semesterSelect">
+                            <option value="">Loading semesters…</option>
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button id="runBtn" class="btn-primary">
+                            <i class="fas fa-file-csv"></i> Generate CSV
+                        </button>
+                        <span id="status" class="status-message"></span>
+                    </div>
+                </div>
+
+                <div id="log" class="log-container"></div>
+            </div>
+
+            <div class="card instructions-card">
+                <h3><i class="fas fa-info-circle"></i> Purpose and Usage</h3>
+                <p><strong>This report is intended solely for preparing CSV files used to manage Simple Syllabus merged enrollments for students.</strong> It is not a general-purpose enrollment or classlist reporting tool.</p>
+                <ol>
+                    <li><strong>Generate the CSV:</strong> Select a semester and click "Generate CSV". The report will:
+                        <ul>
+                            <li>Find all MERGED course offerings in the selected semester</li>
+                            <li>Extract CRNs from each merged course's sections</li>
+                            <li>Match those CRNs to find the corresponding Primary course</li>
+                            <li>Export <strong>student-only</strong> classlist data with both merged and primary course information</li>
+                        </ul>
+                    </li>
+                    <li><strong>Verify the Content:</strong> Open the downloaded CSV file and review the data:
+                        <ul>
+                            <li>Check that <code>course_section_merged</code> and <code>course_section_merged_name</code> show the merged course information</li>
+                            <li>Verify that <code>primary_section</code> and <code>primary_section_name</code> correctly match the primary course for each row</li>
+                            <li>Ensure <code>person_id</code> (OrgDefinedId) and <code>role_name</code> are correct</li>
+                        </ul>
+                    </li>
+                    <li><strong>Format for Upload:</strong> After verifying the content, you need to format the CSV for upload:
+                        <ul>
+                            <li>Remove the columns: <code>course_section_merged</code>, <code>course_section_merged_name</code>, and <code>primary_section_name</code></li>
+                            <li>Rename <code>primary_section</code> to <code>course_section</code></li>
+                            <li>Keep only these columns: <code>active</code>, <code>role_name</code>, <code>person_id</code>, <code>course_section</code></li>
+                            <li>Save the formatted file with a new name (e.g., <code>merged-classlist-formatted.csv</code>)</li>
+                        </ul>
+                    </li>
+                    <li><strong>Upload the Formatted CSV:</strong> Use the formatted CSV file to upload enrollments. 
+                        <strong>Note:</strong> <a href="../data/Screen Recording 2025-08-27 at 12.31.19 PM (1).mov" target="_blank"><i class="fas fa-video"></i> View screen recording</a> demonstrating the upload process for reference.</li>
+                </ol>
+                <p><strong>Example:</strong> The original CSV has columns: <code>active, role_name, person_id, course_section_merged, course_section_merged_name, primary_section, primary_section_name</code></p>
+                <p>The formatted CSV should have: <code>active, role_name, person_id, course_section</code> (where <code>course_section</code> contains the values from <code>primary_section</code>)</p>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/semester-config.js"></script>
+    <script src="../js/loading-utils.js"></script>
+    <script src="../js/merged-course-classlist.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Issued Awards / Badges - D2L Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/forms.css">
+    <link rel="stylesheet" href="../css/tables.css">
+
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            margin-left: 0;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .back-link:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-2px);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        /* Match other reports: space between stacked cards */
+        .main-content > .card {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .main-content > .card:last-child {
+            margin-bottom: 0;
+        }
+
+        #results .awards-report-meta {
+            margin: 0 0 var(--spacing-md);
+            color: var(--text-primary);
+        }
+
+        #results .table-container {
+            margin-top: 0;
+        }
+
+        #courseNameDisplay {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-xs);
+            min-height: 1.25rem;
+        }
+
+        #courseNameDisplay.is-ok {
+            color: var(--primary-color, #1a5d1a);
+            font-weight: 500;
+        }
+
+        #ignoreListStatus {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-xs);
+        }
+
+        #ignoreListStatus.is-ok {
+            color: var(--primary-color, #1a5d1a);
+        }
+
+        #ignoreListStatus.is-warn {
+            color: #b45309;
+        }
+
+        #log {
+            max-height: 280px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            padding: var(--spacing-md);
+            margin-top: var(--spacing-md);
+            background: var(--bg-color);
+            border-radius: var(--radius-sm);
+            font-family: ui-monospace, monospace;
+            font-size: var(--font-size-sm);
+        }
+
+        #log p {
+            margin: 5px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        #log p:last-child {
+            border-bottom: none;
+        }
+
+        #progressText {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn" type="button"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports & Tools
+                    </a>
+                    <h1 class="page-title">Issued Awards / Badges</h1>
+                    <p class="page-subtitle">Course offering by <strong>Org Unit ID</strong>; classlist is <strong>students only</strong> (role 101). BAS checks use <strong>UserId</strong>; IDs in <code>info/award-ignore-list.csv</code> are skipped. <code>IssuedDate</code> from the API is <strong>UTC</strong>; the report shows issue time in <strong>America/Detroit</strong>. The issued range fields use the <strong>same UTC convention</strong> as the API so filtering matches storage.</p>
+                </div>
+            </header>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fa-solid fa-ribbon"></i> Run report
+                    </h2>
+                </div>
+
+                <div class="border-l-warning mb-4 text-sm">
+                    Run while signed into Brightspace in this browser. Large rosters still require one BAS request per student not on the ignore list.
+                    <strong>Issued on or after / before</strong> are interpreted as <strong>UTC</strong> (matching Brightspace <code>IssuedDate</code>), so they line up with filtering. The table and CSV show each issue in <strong>America/Detroit</strong>.
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="orgUnitId">Course Org Unit ID</label>
+                        <input id="orgUnitId" class="form-control" type="text" inputmode="numeric" placeholder="e.g. 2920769" autocomplete="off">
+                        <div id="courseNameDisplay"></div>
+                        <div class="form-text">Enter the numeric offering ID; the course name loads from Brightspace when you leave this field.</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="awardSelect">Award</label>
+                        <select id="awardSelect" class="form-control"></select>
+                        <div class="form-text">More awards can be added to the list later.</div>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="issuedStart">Issued on or after (UTC)</label>
+                        <input id="issuedStart" class="form-control" type="datetime-local">
+                        <div class="form-text">Same instant convention as API timestamps (e.g. <code>20:01</code> UTC → 4:01 PM Eastern in May).</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="issuedEnd">Issued on or before (UTC)</label>
+                        <input id="issuedEnd" class="form-control" type="datetime-local">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="matchCourseOrg" checked>
+                        <label class="form-check-label" for="matchCourseOrg">Only count issues tied to this course Org Unit ID</label>
+                    </div>
+                </div>
+
+                <div class="form-group mb-0">
+                    <div class="text-sm text-muted">
+                        Ignore list: <code>info/award-ignore-list.csv</code> (Brightspace User IDs, one per line).
+                    </div>
+                    <div id="ignoreListStatus">Loading ignore list…</div>
+                </div>
+
+                <div class="form-actions mt-4">
+                    <button id="runBtn" type="button" class="btn btn-primary">
+                        <i class="fa-solid fa-play"></i> Run report
+                    </button>
+                    <button id="downloadCsvBtn" type="button" class="btn btn-outline" disabled>
+                        <i class="fa-solid fa-download"></i> Download CSV
+                    </button>
+                    <span id="busyLabel" class="text-muted text-sm" hidden>Working…</span>
+                </div>
+                <div id="progressText"></div>
+
+                <h3 class="card-title" style="margin-top: var(--spacing-xl); font-size: 1rem;">
+                    <i class="fa-solid fa-terminal"></i> Process log
+                </h3>
+                <div id="log"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fa-solid fa-table"></i> Results
+                    </h2>
+                </div>
+                <div id="results">
+                    <p class="text-muted text-sm">Results appear here after the run completes.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/issued-awards-report.js"></script>
+</body>
+
+</html>

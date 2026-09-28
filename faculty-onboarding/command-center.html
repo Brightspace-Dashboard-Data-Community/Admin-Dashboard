@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Command Center - D2L Admin</title>
+    <link rel="icon" href="../favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/forms.css">
+    <link rel="stylesheet" href="css/fsp-common.css">
+</head>
+<body>
+    <div class="app-container">
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn" type="button" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <h1 class="page-title">Command Center <span class="beta-badge">Beta</span></h1>
+                    <p class="page-subtitle">Unified onboarding hub for eLearning staff — track lifecycle, meetings, emails, and automation.</p>
+                </div>
+                <div class="header-actions header-actions-row">
+                    <span id="recordCount" class="text-muted"></span>
+                    <button id="refreshBtn" class="btn btn-primary" type="button">
+                        <i class="fa-solid fa-arrows-rotate"></i> Refresh
+                    </button>
+                </div>
+            </header>
+
+            <div id="status" class="status-message" role="status"></div>
+            <div id="loadingSlot"></div>
+
+            <div class="fsp-grid-3" style="margin-bottom: var(--spacing-lg);">
+                <div class="fsp-card card-static">
+                    <h2>Pipeline</h2>
+                    <div class="fsp-grid-3">
+                        <div class="fsp-stat"><div class="fsp-stat-value" id="statNew">—</div><div class="fsp-stat-label">New</div></div>
+                        <div class="fsp-stat"><div class="fsp-stat-value" id="statInProgress">—</div><div class="fsp-stat-label">In Progress</div></div>
+                        <div class="fsp-stat"><div class="fsp-stat-value" id="statFinished">—</div><div class="fsp-stat-label">Finished</div></div>
+                    </div>
+                </div>
+                <div class="fsp-card card-static">
+                    <h2>Action Queue</h2>
+                    <div id="actionQueue"></div>
+                </div>
+                <div class="fsp-card card-static">
+                    <h2>Reminders (14 days)</h2>
+                    <div id="remindersList"></div>
+                </div>
+            </div>
+
+            <div class="fsp-card card-static" style="margin-bottom: var(--spacing-lg);">
+                <h2>Phase Board</h2>
+                <div class="fsp-grid-4" id="phaseBoard"></div>
+            </div>
+
+            <div class="fsp-grid-2">
+                <div class="fsp-card card-static">
+                    <h2>Find Faculty</h2>
+                    <div class="form-group">
+                        <label class="form-label" for="searchInput">Search</label>
+                        <input id="searchInput" class="form-control" type="text" placeholder="Name, org defined ID, or username">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="stageFilter">Show</label>
+                        <select id="stageFilter" class="form-control">
+                            <option value="all">All</option>
+                            <option value="new">New</option>
+                            <option value="started" selected>Started</option>
+                            <option value="finished">Finished</option>
+                        </select>
+                    </div>
+                    <div id="results" class="fsp-results"></div>
+                </div>
+
+                <div class="fsp-card card-static">
+                    <h2>Manage Selected Faculty</h2>
+                    <div class="fsp-grid-2">
+                        <div class="form-group">
+                            <label class="form-label" for="firstName">First Name</label>
+                            <input id="firstName" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="lastName">Last Name</label>
+                            <input id="lastName" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="username">Username</label>
+                            <input id="username" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="orgDefinedId">Org Defined ID</label>
+                            <input id="orgDefinedId" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="email">Email</label>
+                            <input id="email" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="division">Division</label>
+                            <input id="division" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="assignedSpecialist">Assigned Specialist</label>
+                            <input id="assignedSpecialist" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="firstTeachingSemester">First Teaching Semester</label>
+                            <input id="firstTeachingSemester" class="form-control" placeholder="26SP">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="createdDate">Created Date</label>
+                            <input id="createdDate" type="date" class="form-control">
+                        </div>
+                    </div>
+
+                    <div style="margin: var(--spacing-md) 0;">
+                        <div class="fsp-meta">Overall progress: <strong id="overallProgressText">0%</strong></div>
+                        <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-labelledby="overallProgressText">
+                            <div id="overallProgressFill" class="progress-fill" style="width:0%"></div>
+                        </div>
+                        <div id="autoChecksPanel" class="fsp-meta"></div>
+                    </div>
+
+                    <label class="form-label" for="phaseChecklist">Lifecycle Checklist</label>
+                    <div id="phaseChecklist" class="fsp-phase-list"></div>
+
+                    <label class="form-label" for="newNote" style="margin-top: var(--spacing-md);">Notes</label>
+                    <div id="notesList" class="fsp-notes"></div>
+                    <textarea id="newNote" rows="2" class="form-control" placeholder="Add a note"></textarea>
+                    <div class="toolbar" style="margin-top: var(--spacing-md);">
+                        <button id="addNoteBtn" class="btn btn-outline" type="button">Add Note</button>
+                        <button id="runAutoCheckBtn" class="btn btn-outline" type="button">Run Auto-Check</button>
+                        <button id="saveBtn" class="btn btn-success" type="button">Save</button>
+                        <button id="toFinishedBtn" class="btn btn-primary" type="button">Mark Complete</button>
+                    </div>
+
+                    <div style="margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--border-color);">
+                        <label class="form-label">Log Meeting</label>
+                        <div class="toolbar">
+                            <input id="meetingDate" type="date" class="form-control" style="width:auto;">
+                            <input id="meetingNotes" class="form-control" placeholder="Meeting notes" style="flex:1; min-width: 160px;">
+                            <button id="addMeetingBtn" class="btn btn-outline" type="button">Add Meeting</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/loading-utils.js"></script>
+    <script src="js/faculty-record-service.js"></script>
+    <script src="js/onboarding-queue-service.js"></script>
+    <script src="js/automation-checks.js"></script>
+    <script src="js/email-templates.js"></script>
+    <script src="js/command-center.js"></script>
+</body>
+</html>

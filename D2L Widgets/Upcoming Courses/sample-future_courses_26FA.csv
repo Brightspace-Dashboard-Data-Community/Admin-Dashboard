@@ -1,0 +1,7 @@
+stc_course_name,stc_end_date,stc_person_id,stc_section_no,stc_start_date,stc_current_status,stc_current_status_date,stc_term,stc_title,"Combined stc_course_name, stc_section_no, stc_term",faculty_name
+ENG-111,"December 18, 2026, 12:00 AM",1000001,FA802,"August 31, 2026, 12:00 AM",N,"March 5, 2026, 12:00 AM",26/FA,COLLEGE COMP I,ENG-111-FA802-26/FA,"Smith, Jane A"
+PSY-101,"December 18, 2026, 12:00 AM",1000001,FA810,"August 31, 2026, 12:00 AM",A,"April 2, 2026, 12:00 AM",26/FA,Introduction to Psychology,PSY-101-FA810-26/FA,"Jones, Maria"
+BIO-101,"December 18, 2026, 12:00 AM",1000001,FA830,"August 31, 2026, 12:00 AM",N,"March 20, 2026, 12:00 AM",26/FA,Principles of Biology,BIO-101-FA830-26/FA,"Lee, Pat"
+BIO-101,"December 18, 2026, 12:00 AM",1000001,FA830,"August 31, 2026, 12:00 AM",X,"April 15, 2026, 12:00 AM",26/FA,Principles of Biology,BIO-101-FA830-26/FA,"Lee, Pat"
+MTH-122W,"December 18, 2026, 12:00 AM",1000002,FA810,"August 31, 2026, 12:00 AM",N,"May 11, 2026, 12:00 AM",26/FA,College Algebra,MTH-122W-FA810-26/FA,"Lee, Chris"
+FST-301,"December 18, 2026, 12:00 AM",1000003,FA801,"August 31, 2026, 12:00 AM",N,"May 14, 2026, 12:00 AM",26/FA,ICS Resource Mgmt,FST-301-FA801-26/FA,

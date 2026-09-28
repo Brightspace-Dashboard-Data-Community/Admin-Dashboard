@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Access Report - D2L Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
+
+    <style>
+        .page-header {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            margin-left: 0;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            overflow: visible;
+        }
+
+        .back-link:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-2px);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-top: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: var(--spacing-xs);
+        }
+
+        .tab-button {
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: var(--text-secondary);
+            font-size: var(--font-size-base);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: -2px;
+        }
+
+        .tab-button:hover {
+            color: var(--text-primary);
+            background-color: rgba(26, 93, 26, 0.05);
+        }
+
+        .tab-button.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Form Styles */
+        .input-row {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            flex-wrap: wrap;
+        }
+
+        .input-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .input-group select,
+        .input-group input[type="text"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-base);
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+        }
+
+        .input-group select:focus,
+        .input-group input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(26, 93, 26, 0.1);
+        }
+
+        .filter-options {
+            display: flex;
+            gap: var(--spacing-xl);
+            margin: var(--spacing-lg) 0;
+            padding: var(--spacing-md);
+            background-color: var(--bg-color);
+            border-radius: var(--radius-sm);
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-title {
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            font-size: var(--font-size-sm);
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-secondary {
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: var(--bg-color);
+            border-color: var(--text-primary);
+        }
+
+        .btn-primary:disabled,
+        .btn-secondary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Status Messages */
+        .status-message {
+            margin: var(--spacing-md) 0;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-sm);
+            display: none;
+            font-size: var(--font-size-sm);
+        }
+
+        .status-info {
+            background-color: #e8f4fd;
+            border: 1px solid #c5e0fa;
+            color: #0366d6;
+        }
+
+        .status-warning {
+            background-color: #fff8e6;
+            border: 1px solid #ffe8a0;
+            color: #a67c00;
+        }
+
+        .status-error {
+            background-color: #ffdce0;
+            border: 1px solid #ffabb7;
+            color: #d73a49;
+        }
+
+        /* Report Summary */
+        .report-summary {
+            display: flex;
+            gap: var(--spacing-xl);
+            margin-bottom: var(--spacing-lg);
+            padding: var(--spacing-md);
+            background-color: var(--bg-color);
+            border-radius: var(--radius-sm);
+            flex-wrap: wrap;
+        }
+
+        .summary-item {
+            display: flex;
+            flex-direction: column;
+            min-width: 150px;
+        }
+
+        .summary-label {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .summary-value {
+            font-size: var(--font-size-lg);
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 768px) {
+            .input-row {
+                flex-direction: column;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .report-summary {
+                flex-direction: column;
+            }
+
+            .filter-options {
+                flex-direction: column;
+            }
+        }
+
+        /* Card spacing - consistent spacing between cards */
+        .card {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .card:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation (injected via js/sidebar.js) -->
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div style="width: 100%; overflow: visible;">
+                    <a href="../reports-tools.html" class="back-link">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Reports & Tools
+                    </a>
+                    <h1 class="page-title">Course Access Report</h1>
+                    <p class="page-subtitle">Track student access to courses and identify students who haven't logged in.</p>
+                </div>
+            </header>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab-button active" data-tab="report-tab">Access Report</button>
+                <button class="tab-button" data-tab="followup-tab">Follow-Up Check</button>
+            </div>
+
+            <!-- Access Report Tab -->
+            <div id="report-tab" class="tab-content active">
+                <div class="card">
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="semesterSelect">Choose Semester:</label>
+                            <select id="semesterSelect"></select>
+                        </div>
+                        <div class="input-group">
+                            <label for="orgUnitCode">Course Code Filter (optional):</label>
+                            <input type="text" id="orgUnitCode" placeholder="e.g., MTH, ENG">
+                        </div>
+                    </div>
+
+                    <div class="filter-options">
+                        <div class="filter-group">
+                            <div class="filter-title">Access Filters:</div>
+                            <div class="checkbox-group">
+                                <label><input type="checkbox" id="filterNeverAccessed" checked> Never Accessed</label>
+                                <label><input type="checkbox" id="filter7days" checked> No Access in 7+ Days</label>
+                                <label><input type="checkbox" id="filter14days" checked> No Access in 14+ Days</label>
+                                <label><input type="checkbox" id="filter30days"> No Access in 30+ Days</label>
+                            </div>
+                        </div>
+
+                        <div class="filter-group">
+                            <div class="filter-title">Course Type:</div>
+                            <div class="checkbox-group">
+                                <label><input type="radio" name="includeMerged" value="all" checked> All Courses</label>
+                                <label><input type="radio" name="includeMerged" value="noMerged"> Exclude MERGED</label>
+                                <label><input type="radio" name="includeMerged" value="onlyMerged"> Only MERGED</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button id="generateReportBtn" class="btn-primary">
+                            <i class="fas fa-sync-alt"></i> Generate Report
+                        </button>
+                        <button id="downloadCsvBtn" class="btn-secondary" disabled>
+                            <i class="fas fa-download"></i> Download CSV
+                        </button>
+                    </div>
+
+                    <div id="loadingContainer"></div>
+                    <div id="statusMessage" class="status-message"></div>
+                </div>
+
+                <div class="card" id="tableCard" style="display: none;">
+                    <div class="report-summary">
+                        <div class="summary-item">
+                            <span class="summary-label">Total Students:</span>
+                            <span id="totalStudents" class="summary-value">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Inactive Students:</span>
+                            <span id="inactiveStudents" class="summary-value">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Courses Scanned:</span>
+                            <span id="coursesScanned" class="summary-value">0</span>
+                        </div>
+                    </div>
+                    <table id="accessReportTable" class="display" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>OrgUnitId</th>
+                                <th>Course Code</th>
+                                <th>Course Name</th>
+                                <th>Course Start</th>
+                                <th>Course End</th>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>Username</th>
+                                <th>OrgDefinedId</th>
+                                <th>Email</th>
+                                <th>Last Accessed</th>
+                                <th>Days Since Access</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Follow-Up Check Tab -->
+            <div id="followup-tab" class="tab-content">
+                <div class="card">
+                    <h2 style="margin-top: 0;">Follow-Up Check: Student Access After Notification</h2>
+                    <p>Upload a previously downloaded CSV of inactive students to check if they accessed their course since being contacted.</p>
+
+                    <div class="input-group" style="margin-top: var(--spacing-md);">
+                        <label for="followUpCsv">Upload CSV File:</label>
+                        <input type="file" id="followUpCsv" accept=".csv" style="padding: 8px;">
+                    </div>
+
+                    <div class="form-actions">
+                        <button id="checkFollowUpBtn" class="btn-primary">
+                            <i class="fas fa-sync"></i> Check Follow-Up Access
+                        </button>
+                        <button id="downloadFollowUpBtn" class="btn-secondary" style="display: none;">
+                            <i class="fas fa-download"></i> Download CSV
+                        </button>
+                    </div>
+
+                    <div id="followUpLoadingContainer" style="margin-top: var(--spacing-md);"></div>
+
+                    <div class="table-container" style="margin-top: var(--spacing-lg); display: none;" id="followUpTableContainer">
+                        <table id="followUpTable" class="display" style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>OrgUnitId</th>
+                                    <th>OrgDefinedId</th>
+                                    <th>Course Code</th>
+                                    <th>First Name</th>
+                                    <th>Last Name</th>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Previous Access</th>
+                                    <th>Current Access</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <!-- D2L API - Must be loaded first -->
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/semester-config.js"></script>
+    <!-- jQuery and DataTables -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <!-- Moment.js for date handling -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <!-- PapaParse for CSV handling -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <!-- Loading Utilities -->
+    <script src="../js/loading-utils.js"></script>
+    <!-- Main Application Scripts -->
+    <script src="../js/course-access-report.js"></script>
+    <script src="../js/follow-up-check.js"></script>
+</body>
+
+</html>

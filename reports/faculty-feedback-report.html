@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Feedback Timeliness - D2L Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation (injected via ../js/sidebar.js) -->
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <h1 class="page-title">Faculty Feedback Timeliness</h1>
+                    <p class="page-subtitle">Scans submissions for assignments, quizzes, and discussion boards and flags late/missing feedback.</p>
+                </div>
+                <div class="header-actions">
+                    <button id="download-csv-btn" class="btn btn-outline" style="white-space: nowrap;">
+                        <i class="fa-solid fa-download"></i> Download CSV
+                    </button>
+                </div>
+            </header>
+
+            <!-- Controls -->
+            <div class="card" style="margin-bottom: var(--spacing-lg);">
+                <div class="card-body">
+                    <div style="display: flex; gap: var(--spacing-md); align-items: center; flex-wrap: wrap;">
+                        <div style="min-width: 240px;">
+                            <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: 500;">Semester</label>
+                            <select id="semester-select" class="form-control" style="min-width: 240px;">
+                                <option value="">Loading...</option>
+                            </select>
+                        </div>
+
+                        <div style="min-width: 220px;">
+                            <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: 500;">Course Code Filter (ex: WN8)</label>
+                            <input id="course-code-filter" class="form-control" type="text" placeholder="WN8" style="min-width: 220px;">
+                        </div>
+
+                        <div style="min-width: 200px;">
+                            <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: 500;">Department Prefix</label>
+                            <select id="dept-prefix-filter" class="form-control" style="min-width: 200px;">
+                                <option value="">All</option>
+                            </select>
+                        </div>
+
+                        <div style="min-width: 170px;">
+                            <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: 500;">Timely Feedback (days)</label>
+                            <input id="timely-days-input" class="form-control" type="number" value="7" min="0" step="1" style="min-width: 170px;">
+                        </div>
+
+                        <div style="flex: 1;"></div>
+
+                        <div style="min-width: 180px;">
+                            <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: 500;">Include</label>
+                            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                                <label style="display:flex; gap:6px; align-items:center; font-size: 12px;">
+                                    <input type="checkbox" id="include-assignments" checked>
+                                    Assignments
+                                </label>
+                                <label style="display:flex; gap:6px; align-items:center; font-size: 12px;">
+                                    <input type="checkbox" id="include-quizzes" checked>
+                                    Quizzes
+                                </label>
+                                <label style="display:flex; gap:6px; align-items:center; font-size: 12px;">
+                                    <input type="checkbox" id="include-discussions" checked>
+                                    Discussions
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: var(--spacing-md); align-items: center; flex-wrap: wrap; margin-top: var(--spacing-md);">
+                        <div style="min-width: 240px;">
+                            <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: 500;">Load Semester Courses (no API scans)</label>
+                            <button id="load-semester-btn" class="btn btn-primary" style="width: 100%;">
+                                <i class="fa-solid fa-database"></i> Load Semester Courses
+                            </button>
+                        </div>
+
+                        <div style="min-width: 240px;">
+                            <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: 500;">Run Feedback Scan (filtered)</label>
+                            <button id="run-scan-btn" class="btn btn-primary" style="width: 100%;" disabled>
+                                <i class="fa-solid fa-magnifying-glass"></i> Run Scan for Filtered Courses
+                            </button>
+                        </div>
+
+                        <div style="min-width: 200px;">
+                            <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: 500;">Max Courses per Run</label>
+                            <input id="max-courses-input" class="form-control" type="number" value="25" min="1" step="1">
+                        </div>
+
+                        <div style="min-width: 200px;">
+                            <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: 500;">Courses Concurrency</label>
+                            <input id="course-concurrency-input" class="form-control" type="number" value="3" min="1" step="1">
+                        </div>
+                    </div>
+
+                    <div style="margin-top: var(--spacing-md); color: var(--text-secondary); font-size: 12px;">
+                        Tip: after loading a semester, the console will show the loaded courses. Then set the filter (for example `WN8`) and run the scan.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Feedback Flags</h3>
+                    <div id="results-count" class="text-muted" style="font-size: 14px; margin-left: auto;">Not run yet.</div>
+                </div>
+                <div class="card-body">
+                    <div id="loading-indicator" style="text-align: center; padding: 40px; display: none;">
+                        <i class="fa-solid fa-spinner fa-spin"></i> Running scan...
+                    </div>
+
+                    <div id="results-container" style="display: none;">
+                        <table id="results-table" class="display" style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th style="display:none;">OrgUnitId</th>
+                                    <th>Course Code</th>
+                                    <th>Course Name</th>
+                                    <th>Assignments (late/missing)</th>
+                                    <th>Quizzes (late/missing)</th>
+                                    <th>Discussions (late/missing)</th>
+                                    <th>Total (late/missing)</th>
+                                    <th>Worst Lateness (days)</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+
+                    <div id="empty-message" style="text-align: center; padding: 40px; color: var(--text-secondary); display: block;">
+                        1) Select a semester and click <b>Load Semester Courses</b>.
+                        <br>
+                        2) Set filters (for example `WN8`), then click <b>Run Scan</b>.
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- jQuery (required for DataTables) -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+    <!-- Core Scripts -->
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/d2l-api.js"></script>
+    <script src="../js/semester-config.js"></script>
+    <script src="../js/loading-utils.js"></script>
+    <script src="../js/faculty-feedback-report.js"></script>
+</body>
+</html>
+

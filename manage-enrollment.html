@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Enrollment - D2L Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <link rel="stylesheet" href="css/tables.css">
+
+    <style>
+        .tabs { display: flex; gap: 20px; border-bottom: 2px solid var(--border-color); margin-bottom: 20px; }
+        .tab-button { background: none; border: none; padding: 10px 0; font-size: 14px; font-weight: 600; color: var(--text-secondary); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: color 0.2s; }
+        .tab-button:hover { color: var(--primary-color); }
+        .tab-button.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .back-link { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background-color: #f0f0f0; color: var(--text-primary); text-decoration: none; border-radius: 4px; font-size: 13px; font-weight: 500; margin-bottom: var(--spacing-sm); }
+        #error-container .error-msg, .error-msg { color: #721c24; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; padding: 12px; margin-bottom: 12px; }
+        #info-container .info-msg, .info-msg { color: #0c5460; background: #d1ecf1; border: 1px solid #bee5eb; border-radius: 4px; padding: 12px; margin-bottom: 12px; }
+        .loading-spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(0,0,0,0.1); border-radius: 50%; border-top-color: var(--primary-color); animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 8px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
+        .modal-content { background: #fff; padding: 24px; border-radius: 8px; max-width: 480px; width: 90%; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+        .modal-content.wide { max-width: 720px; }
+        .modal-content h3 { margin-top: 0; margin-bottom: 16px; }
+        .modal-content .form-group { margin-bottom: 12px; }
+        .modal-content .form-group label { display: block; margin-bottom: 4px; font-weight: 600; }
+        .modal-content .form-group input, .modal-content .form-group select { width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 4px; }
+        .course-enrollments-row { background: var(--surface-secondary); }
+        .course-enrollments-container { padding: 16px; border: 1px solid var(--border-color); border-radius: 6px; margin: 8px 0; }
+        .course-enrollments-container h4 { margin-top: 0; margin-bottom: 12px; }
+        .enrollments-table { width: 100%; margin: 8px 0; }
+        .action-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+        .bulk-unenroll-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 12px 0 16px; }
+        .bulk-unenroll-toolbar .left, .bulk-unenroll-toolbar .right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .bulk-unenroll-user-summary { background: var(--surface-secondary); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px 16px; margin-bottom: 12px; font-size: 14px; line-height: 1.5; }
+        .bulk-unenroll-hint { color: var(--text-secondary); font-size: 13px; margin: 0 0 16px; }
+        #shared-search-results-heading, #shared-search-results { transition: opacity 0.15s; }
+        .checkbox-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+        .checkbox-row input { width: auto; }
+        .btn-danger { background: #c62828; color: #fff; border: 1px solid #b71c1c; }
+        .btn-danger:hover:not(:disabled) { background: #b71c1c; }
+        .btn-danger:disabled { opacity: 0.55; cursor: not-allowed; }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+                    <h1 class="page-title">Manage Enrollment</h1>
+                    <p class="page-subtitle">Enroll users in courses, manage existing enrollments, or bulk unenroll by role</p>
+                </div>
+            </header>
+
+            <div class="form-container">
+                <div id="error-container"></div>
+                <div id="info-container"></div>
+
+                <!-- Role Change Confirmation -->
+                <div id="roleChangeConfirmation" style="display: none; background: rgba(76,175,80,0.1); border-left: 4px solid var(--primary-color); padding: 16px; margin-bottom: 20px; border-radius: 4px;">
+                    <h3 style="color: var(--primary-color); margin-top: 0;">Role Change Successful</h3>
+                    <p id="roleChangeConfirmationMessage" style="margin-bottom: 12px;"></p>
+                    <p><a id="roleCourseLink" href="#" target="_blank" rel="noopener" style="color: var(--primary-color); font-weight: 600;">View Course in D2L</a></p>
+                    <button type="button" id="closeRoleConfirmation" class="btn btn-outline"><i class="fa-solid fa-xmark"></i> Close</button>
+                </div>
+
+                <!-- Delete Enrollment Confirmation -->
+                <div id="deleteEnrollmentConfirmation" style="display: none; background: rgba(244,67,54,0.1); border-left: 4px solid #f44336; padding: 16px; margin-bottom: 20px; border-radius: 4px;">
+                    <h3 style="color: #c62828; margin-top: 0;">Enrollment Deleted</h3>
+                    <p id="deleteEnrollmentConfirmationMessage" style="margin-bottom: 12px;"></p>
+                    <p><a id="deletedCourseLink" href="#" target="_blank" rel="noopener" style="color: #c62828; font-weight: 600;">View Course in D2L</a></p>
+                    <button type="button" id="closeDeleteConfirmation" class="btn btn-outline"><i class="fa-solid fa-xmark"></i> Close</button>
+                </div>
+
+                <div class="tabs">
+                    <button class="tab-button active" data-tab="user">Search by User</button>
+                    <button class="tab-button" data-tab="course">Search by Course Code</button>
+                    <button class="tab-button" data-tab="course-id">Search by Course ID</button>
+                    <button class="tab-button" data-tab="bulk-unenroll">Bulk Unenroll by Role</button>
+                </div>
+
+                <!-- User tab -->
+                <div id="user-tab" class="tab-content active">
+                    <form id="user-search-form" class="form-section">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label" for="userSearchQuery">Search User</label>
+                                <input type="text" id="userSearchQuery" class="form-control" placeholder="Enter ID number, username, or user ID...">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="userSearchType">Search Type</label>
+                                <select id="userSearchType" class="form-control">
+                                    <option value="orgDefinedId">ID Number</option>
+                                    <option value="userName">Username</option>
+                                    <option value="userId">User ID</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+                            <button type="reset" class="btn btn-outline"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Course Code tab -->
+                <div id="course-tab" class="tab-content">
+                    <form id="course-search-form" class="form-section">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label" for="courseSearchQuery">Search Course Code</label>
+                                <input type="text" id="courseSearchQuery" class="form-control" placeholder="Enter course code...">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="term">Select Semester</label>
+                                <select id="term" class="form-control">
+                                    <option value="">Loading semesters...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+                            <button type="reset" class="btn btn-outline"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Course ID tab -->
+                <div id="course-id-tab" class="tab-content">
+                    <form id="course-id-search-form" class="form-section">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label" for="courseId">Enter Course ID</label>
+                                <input type="text" id="courseId" class="form-control" placeholder="Enter Course ID...">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+                            <button type="reset" class="btn btn-outline"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Bulk Unenroll by Role tab -->
+                <div id="bulk-unenroll-tab" class="tab-content">
+                    <p class="bulk-unenroll-hint">Find all enrollments for a user with a specific role (e.g. Associate Dean) and remove them in bulk. Use the cascading filter when those enrollments were set as cascading.</p>
+                    <form id="bulk-unenroll-form" class="form-section">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label" for="bulkUnenrollUserQuery">Search User</label>
+                                <input type="text" id="bulkUnenrollUserQuery" class="form-control" placeholder="Enter ID number, username, or user ID...">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="bulkUnenrollSearchType">Search Type</label>
+                                <select id="bulkUnenrollSearchType" class="form-control">
+                                    <option value="orgDefinedId">ID Number</option>
+                                    <option value="userName">Username</option>
+                                    <option value="userId">User ID</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="bulkUnenrollRole">Role</label>
+                                <select id="bulkUnenrollRole" class="form-control">
+                                    <option value="">Loading roles...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="bulkUnenrollCascading">Cascading</label>
+                                <select id="bulkUnenrollCascading" class="form-control">
+                                    <option value="all">All (cascading and non-cascading)</option>
+                                    <option value="cascading">Cascading only</option>
+                                    <option value="non-cascading">Non-cascading only</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="checkbox-row">
+                            <input type="checkbox" id="bulkUnenrollIncludeNonCourse">
+                            <label for="bulkUnenrollIncludeNonCourse">Include non-course org units (departments, semesters, etc. — where cascading is often set)</label>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Find Enrollments</button>
+                            <button type="reset" class="btn btn-outline"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+                        </div>
+                    </form>
+
+                    <div id="bulkUnenrollResultBanner" style="display: none; background: rgba(76,175,80,0.1); border-left: 4px solid var(--primary-color); padding: 16px; margin-bottom: 20px; border-radius: 4px;">
+                        <h3 style="color: var(--primary-color); margin-top: 0;">Bulk Unenroll Complete</h3>
+                        <div id="bulkUnenrollResultMessage" style="margin-bottom: 12px;"></div>
+                        <div class="form-actions" style="margin: 0; gap: 8px;">
+                            <button type="button" id="bulkUnenrollDownloadResultCsvBtn" class="btn btn-outline"><i class="fa-solid fa-download"></i> Download Results CSV</button>
+                            <button type="button" id="closeBulkUnenrollResult" class="btn btn-outline"><i class="fa-solid fa-xmark"></i> Close</button>
+                        </div>
+                    </div>
+
+                    <div id="bulk-unenroll-results" style="display: none;">
+                        <div id="bulkUnenrollUserSummary" class="bulk-unenroll-user-summary">Search for a user and select a role to see matching enrollments.</div>
+                        <div class="bulk-unenroll-toolbar">
+                            <div class="left">
+                                <label style="display:flex; align-items:center; gap:8px; font-weight:600; cursor:pointer;">
+                                    <input type="checkbox" id="bulkUnenrollSelectAll" disabled>
+                                    Select all
+                                </label>
+                                <span style="font-size:13px; color: var(--text-secondary);"><span id="bulkUnenrollSelectedCount">0</span> selected</span>
+                            </div>
+                            <div class="right">
+                                <button type="button" id="bulkUnenrollDownloadCsvBtn" class="btn btn-outline" disabled>
+                                    <i class="fa-solid fa-download"></i> Download CSV
+                                </button>
+                                <button type="button" id="bulkUnenrollActionBtn" class="btn btn-danger" disabled>
+                                    <i class="fa-solid fa-user-minus"></i> Remove Selected Enrollments
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table" id="bulk-unenroll-results-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:40px;"></th>
+                                        <th>Org Unit ID</th>
+                                        <th>Name</th>
+                                        <th>Code</th>
+                                        <th>Type</th>
+                                        <th>Role</th>
+                                        <th>Cascading</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bulkUnenrollResultsBody">
+                                    <tr><td colspan="7" class="text-center">Search for a user to see matching enrollments.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <h2 id="shared-search-results-heading" style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin: var(--spacing-lg) 0 var(--spacing-md);">Search Results</h2>
+
+                <div id="shared-search-results" class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>User ID</th>
+                                <th>Name</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>ID Number</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userSearchResults">
+                            <tr><td colspan="6" class="text-center">Enter a search term to find users.</td></tr>
+                        </tbody>
+                    </table>
+                    <table class="data-table" id="course-results-table" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>Org Unit ID</th>
+                                <th>Course Name</th>
+                                <th>Course Code</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="courseSearchResults">
+                            <tr><td colspan="6" class="text-center">Use the search box and select a semester to find courses.</td></tr>
+                        </tbody>
+                    </table>
+                    <table class="data-table" id="course-id-results-table" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>Org Unit ID</th>
+                                <th>Course Name</th>
+                                <th>Course Code</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="courseIdSearchResults">
+                            <tr><td colspan="6" class="text-center">Enter a Course ID above to search.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Change Role Modal -->
+    <div id="changeRoleModal" class="modal">
+        <div class="modal-content">
+            <h3>Change User Role</h3>
+            <div class="form-group">
+                <label>User</label>
+                <input type="text" id="changeRoleUser" readonly class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Course</label>
+                <input type="text" id="changeRoleCourse" readonly class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="changeRoleSelect">New Role</label>
+                <select id="changeRoleSelect" class="form-control"></select>
+            </div>
+            <div class="form-actions">
+                <button type="button" id="changeRoleConfirmBtn" class="btn btn-primary"><i class="fa-solid fa-check"></i> Confirm</button>
+                <button type="button" id="changeRoleCancelBtn" class="btn btn-outline"><i class="fa-solid fa-xmark"></i> Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Enrollment Modal -->
+    <div id="deleteEnrollmentModal" class="modal">
+        <div class="modal-content">
+            <h3>Delete Enrollment</h3>
+            <div class="form-group">
+                <label>User</label>
+                <input type="text" id="deleteEnrollmentUser" readonly class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Course</label>
+                <input type="text" id="deleteEnrollmentCourse" readonly class="form-control">
+            </div>
+            <p>Are you sure you want to delete this enrollment? This cannot be undone.</p>
+            <div class="form-actions">
+                <button type="button" id="deleteEnrollmentConfirmBtn" class="btn btn-primary"><i class="fa-solid fa-check"></i> Confirm</button>
+                <button type="button" id="deleteEnrollmentCancelBtn" class="btn btn-outline"><i class="fa-solid fa-xmark"></i> Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Unenroll Confirm Modal -->
+    <div id="bulkUnenrollConfirmModal" class="modal">
+        <div class="modal-content">
+            <h3>Confirm Bulk Unenroll</h3>
+            <div id="bulkUnenrollConfirmSummary"></div>
+            <div class="form-actions" style="margin-top: 16px;">
+                <button type="button" id="bulkUnenrollConfirmBtn" class="btn btn-danger"><i class="fa-solid fa-check"></i> Confirm Remove</button>
+                <button type="button" id="bulkUnenrollCancelBtn" class="btn btn-outline"><i class="fa-solid fa-xmark"></i> Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/sidebar.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/semester-config.js"></script>
+    <script src="js/auth.js" type="module"></script>
+    <script src="js/modal-utils.js" type="module"></script>
+    <script src="js/change-role-modal.js" type="module"></script>
+    <script src="js/delete-enrollment-modal.js" type="module"></script>
+    <script src="js/inline-enrollment-handlers.js" type="module"></script>
+    <script src="js/manage-enrollment-tabbed.js" type="module"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            function showTableForTab(tab) {
+                var sharedHeading = document.getElementById('shared-search-results-heading');
+                var sharedResults = document.getElementById('shared-search-results');
+                var isBulk = tab === 'bulk-unenroll';
+
+                if (sharedHeading) sharedHeading.style.display = isBulk ? 'none' : '';
+                if (sharedResults) sharedResults.style.display = isBulk ? 'none' : '';
+
+                if (isBulk) return;
+
+                var userTable = document.querySelector('#shared-search-results .data-table:not(#course-results-table):not(#course-id-results-table)');
+                var courseTable = document.getElementById('course-results-table');
+                var courseIdTable = document.getElementById('course-id-results-table');
+                if (userTable) userTable.style.display = (tab === 'user') ? '' : 'none';
+                if (courseTable) courseTable.style.display = (tab === 'course') ? '' : 'none';
+                if (courseIdTable) courseIdTable.style.display = (tab === 'course-id') ? '' : 'none';
+            }
+            document.querySelectorAll('.tab-button').forEach(function(btn) {
+                btn.addEventListener('click', function() { showTableForTab(this.dataset.tab); });
+            });
+            showTableForTab('user');
+        });
+    </script>
+</body>
+
+</html>

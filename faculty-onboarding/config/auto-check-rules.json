@@ -1,0 +1,47 @@
+{
+  "checks": {
+    "hasLoggedIn": {
+      "label": "Has logged in to D2L",
+      "lifecycleMappings": [
+        { "phase": "phase1", "item": "D2L account verification" }
+      ]
+    },
+    "profileComplete": {
+      "label": "Profile setup complete",
+      "lifecycleMappings": [
+        { "phase": "phase1", "item": "Verify profile setup" }
+      ]
+    },
+    "orientationEnrolled": {
+      "label": "Enrolled in faculty orientation",
+      "lifecycleMappings": [
+        { "phase": "phase1", "item": "Orientation course enrollment" }
+      ]
+    },
+    "orientationComplete": {
+      "label": "Faculty orientation completed",
+      "lifecycleMappings": []
+    },
+    "sandboxExists": {
+      "label": "Sandbox course exists",
+      "lifecycleMappings": [
+        { "phase": "phase1", "item": "Sandbox course creation" }
+      ]
+    },
+    "recentActivity": {
+      "label": "Recent course activity",
+      "lifecycleMappings": [
+        { "phase": "phase3", "item": "Inactive course alerts" },
+        { "phase": "phase4", "item": "Course activity analysis" }
+      ],
+      "invertForPass": true
+    },
+    "coursesNotEmpty": {
+      "label": "Teaching courses have content",
+      "lifecycleMappings": [
+        { "phase": "phase2", "item": "Broken links check" },
+        { "phase": "phase3", "item": "Empty gradebook alerts" }
+      ]
+    }
+  }
+}

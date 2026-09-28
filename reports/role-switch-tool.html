@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Role Switch Tool - D2L Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            margin-left: 0;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            overflow: visible;
+        }
+
+        .back-link:hover {
+            background-color: #e0e0e0;
+            transform: translateX(-2px);
+        }
+
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .tabs {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin: var(--spacing-md) 0 var(--spacing-lg);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .tab-button {
+            padding: 10px 20px;
+            background: var(--surface-color);
+            border: none;
+            border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+        }
+
+        .tab-button.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .field {
+            margin-bottom: var(--spacing-md);
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .field input[type="text"],
+        .field input[type="file"],
+        .field select {
+            width: 100%;
+            max-width: 400px;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-base);
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+        }
+
+        /* Button Styles - Consistent with design system */
+        .btn-primary,
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: var(--bg-color);
+            border-color: var(--text-primary);
+        }
+
+        .btn-secondary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        /* Card spacing - consistent spacing between cards */
+        .card {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .card:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle"><button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button></div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Reports & Tools</a>
+                    <h1 class="page-title">D2L Role Switcher Tool</h1>
+                    <p class="page-subtitle">Change user roles in courses - either for a single user or in bulk via CSV upload.</p>
+                </div>
+            </header>
+            <div class="tabs">
+                <button class="tab-button active" onclick="switchTab('single')">Single User</button>
+                <button class="tab-button" onclick="switchTab('bulk')">Bulk Upload</button>
+            </div>
+            <div id="tab-single" class="tab-content active">
+                <div class="card">
+                    <h2>Role Switcher Tool - Single User</h2>
+                    <div class="field"><label for="orgIdInput">Enter OrgDefinedId:</label><input id="orgIdInput" type="text" placeholder="e.g., 1200009" /></div>
+                    <button onclick="searchUser()" class="btn-primary">Search</button>
+                    <div class="card" id="results" style="display:none;">
+                        <h3>User Enrollments</h3>
+                        <p><strong>User:</strong> <span id="userName"></span> (<span id="userId"></span>)</p>
+                        <table id="enrollmentTable" class="display" style="width:100%">
+                            <thead><tr><th>Course Code</th><th>OrgUnitId</th><th>Current Role</th><th>Switch To</th><th>Action</th></tr></thead>
+                            <tbody id="enrollmentTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div id="tab-bulk" class="tab-content">
+                <div class="card">
+                    <h2>Bulk Role Switch via CSV</h2>
+                    <div class="field"><label for="csvInput">Upload CSV (OrgDefinedId, OrgUnitId):</label><input type="file" id="csvInput" accept=".csv"></div>
+                    <div class="field"><label for="bulkRoleSelect">Select Role to Assign:</label><select id="bulkRoleSelect"><option value="">Loading...</option></select></div>
+                    <button onclick="processBulkRoleSwitch()" class="btn-primary">Process CSV</button>
+                    <div class="card" id="bulkResults" style="display:none;">
+                        <h3>Results</h3>
+                        <table id="bulkResultsTable" class="display" style="width:100%">
+                            <thead><tr><th>OrgDefinedId</th><th>OrgUnitId</th><th>Status</th></tr></thead>
+                            <tbody id="bulkResultsBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/d2l-api.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <script src="../js/loading-utils.js"></script>
+    <script src="../js/role-switch-tool.js"></script>
+</body>
+</html>

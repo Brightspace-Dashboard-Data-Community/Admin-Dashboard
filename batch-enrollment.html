@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk Enrollment - D2L Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/forms.css">
+
+    <style>
+        .tabs {
+            display: flex;
+            gap: 20px;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 10px 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: color 0.2s;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary-color);
+        }
+
+        .tab-btn.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-sm);
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation (injected via js/sidebar.js) -->
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+                    <h1 class="page-title">Bulk Enrollment</h1>
+                    <p class="page-subtitle">Enroll users in courses and manage auditors using CSV files</p>
+                </div>
+            </header>
+
+            <div class="form-container">
+
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="batch" onclick="switchTab('batch')">Bulk Enrollment</button>
+                    <button class="tab-btn" data-tab="course-specific" onclick="switchTab('course-specific')">Course-Specific Bulk
+                        Enrollment</button>
+                    <button class="tab-btn" data-tab="course-role" onclick="switchTab('course-role')">Bulk Enrollment by Course & Role</button>
+                    <button class="tab-btn" data-tab="bulk-group" onclick="switchTab('bulk-group')">Bulk Group Enrollment</button>
+                    <button class="tab-btn" data-tab="bulk-auditor" onclick="switchTab('bulk-auditor')">Bulk Auditor Management</button>
+                </div>
+
+                <div class="form-section">
+
+                    <!-- Tab 1: Bulk Enrollment -->
+                    <div id="tab-batch" class="tab-content active">
+                        <form id="batch-enrollment-form">
+                            <div class="form-grid">
+                                <div class="form-group form-grid-full">
+                                    <label class="form-label" for="csvFile">Upload CSV (OrgDefinedId or Username only):</label>
+                                    <input type="file" id="csvFile" class="form-control" accept=".csv" style="padding: 8px;">
+                                </div>
+
+                                <div class="form-group form-grid-full">
+                                    <label class="form-label" for="idType">Select ID Type:</label>
+                                    <select id="idType" class="form-control">
+                                        <option value="orgDefinedId">OrgDefinedId</option>
+                                        <option value="username">Username</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group form-grid-full">
+                                    <label class="form-label" for="roleId">Select Role:</label>
+                                    <select id="roleId" class="form-control">
+                                        <option value="101">Student</option>
+                                        <option value="102">Instructor</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group form-grid-full">
+                                    <label class="form-label" for="courseId">Course OrgUnitId:</label>
+                                    <input type="text" id="courseId" class="form-control" required placeholder="e.g., 2901369">
+                                </div>
+
+                                <div class="form-group form-grid-full">
+                                    <div class="form-check">
+                                        <input type="checkbox" id="sendEmail" class="form-check-input">
+                                        <label for="sendEmail" class="form-check-label">Send enrollment email</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                                    Process Enrollments
+                                </button>
+                                <button type="button" id="downloadReportBtn" class="btn btn-outline" style="width: 100%; margin-top: 8px;">
+                                    <i class="fa-solid fa-file-arrow-down"></i> Download Report
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Tab 2: Course-Specific Bulk Enrollment -->
+                    <div id="tab-course-specific" class="tab-content">
+                        <form id="enrollment-by-course-form">
+                            <div class="form-grid">
+                                <div class="form-group form-grid-full">
+                                    <label class="form-label" for="csvCourseFile">Upload CSV (OrgDefinedId + OrgUnitId):</label>
+                                    <input type="file" id="csvCourseFile" class="form-control" accept=".csv" style="padding: 8px;">
+                                </div>
+
+                                <div class="form-group form-grid-full">
+                                    <label class="form-label" for="csvCourseIdType">Select ID Type:</label>
+                                    <select id="csvCourseIdType" class="form-control">
+                                        <option value="orgDefinedId">OrgDefinedId</option>
+                                        <option value="username">Username</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group form-grid-full">
+                                    <label class="form-label" for="csvCourseRole">Select Role:</label>
+                                    <select id="csvCourseRole" class="form-control">
+                                        <option value="101">Student</option>
+                                        <option value="102">Instructor</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group form-grid-full">
+                                    <div class="form-check">
+                                        <input type="checkbox" id="csvCourseSendEmail" class="form-check-input">
+                                        <label for="csvCourseSendEmail" class="form-check-label">Send enrollment email</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                                    Process Course-Specific Enrollments
+                                </button>
+                                <button type="button" id="downloadCourseReportBtn" class="btn btn-outline" style="width: 100%; margin-top: 8px;">
+                                    <i class="fa-solid fa-file-arrow-down"></i> Download Report
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Tab 3: Bulk Enrollment by Course & Role -->
+                    <div id="tab-course-role" class="tab-content">
+                        <form id="enrollment-by-course-role-form">
+                            <div class="form-grid">
+                                <div class="form-group form-grid-full">
+                                    <label class="form-label" for="csvCourseRoleFile">Upload CSV (OrgDefinedId + OrgUnitId + RoleId):</label>
+                                    <input type="file" id="csvCourseRoleFile" class="form-control" accept=".csv" style="padding: 8px;">
+                                </div>
+
+                                <div class="form-group form-grid-full">
+                                    <label class="form-label" for="csvCourseRoleIdType">Select ID Type:</label>
+                                    <select id="csvCourseRoleIdType" class="form-control">
+                                        <option value="orgDefinedId">OrgDefinedId</option>
+                                        <option value="username">Username</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group form-grid-full">
+                                    <div class="form-check">
+                                        <input type="checkbox" id="csvCourseRoleSendEmail" class="form-check-input">
+                                        <label for="csvCourseRoleSendEmail" class="form-check-label">Send enrollment email</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                                    Process Enrollments
+                                </button>
+                                <button type="button" id="downloadCourseRoleReportBtn" class="btn btn-outline" style="width: 100%; margin-top: 8px;">
+                                    <i class="fa-solid fa-file-arrow-down"></i> Download Report
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Tab 4: Bulk Group Enrollment -->
+                    <div id="tab-bulk-group" class="tab-content">
+                        <form id="batch-group-form">
+                            <div class="form-grid">
+                                <div class="form-group form-grid-full">
+                                    <label class="form-label" for="groupCsv">Upload CSV (OrgDefinedId or Username only):</label>
+                                    <input type="file" id="groupCsv" class="form-control" accept=".csv" style="padding: 8px;">
+                                </div>
+
+                                <div class="form-group form-grid-full">
+                                    <label class="form-label" for="groupIdType">Select ID Type:</label>
+                                    <select id="groupIdType" class="form-control">
+                                        <option value="orgDefinedId">OrgDefinedId</option>
+                                        <option value="username">Username</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group form-grid-full">
+                                    <label class="form-label" for="groupCourseId">Course OrgUnitId:</label>
+                                    <div style="display: flex; gap: 8px; align-items: center;">
+                                        <input type="text" id="groupCourseId" class="form-control" required placeholder="e.g., 2901369">
+                                        <button type="button" id="loadGroupsBtn" class="btn btn-primary">Load Groups</button>
+                                    </div>
+                                </div>
+
+                                <div class="form-group form-grid-full">
+                                    <label class="form-label" for="groupSelector">Select Group:</label>
+                                    <select id="groupSelector" class="form-control" required>
+                                        <option value="">-- Load a course first --</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                                    Assign to Group
+                                </button>
+                                <button type="button" id="downloadGroupReportBtn" class="btn btn-outline" style="width: 100%; margin-top: 8px;">
+                                    <i class="fa-solid fa-file-arrow-down"></i> Download Report
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Tab 5: Bulk Auditor Management -->
+                    <div id="tab-bulk-auditor" class="tab-content">
+                        <form id="bulk-auditor-form">
+                            <div class="form-grid">
+                                <div class="form-group form-grid-full">
+                                    <label class="form-label" for="auditorCsvFile">Upload CSV (student OrgDefinedId only):</label>
+                                    <input type="file" id="auditorCsvFile" class="form-control" accept=".csv,.txt,text/csv,text/plain" style="padding: 8px;">
+                                </div>
+
+                                <div class="form-group form-grid-full">
+                                    <label class="form-label" for="auditorOrgDefinedId">Auditor OrgDefinedId:</label>
+                                    <input type="text" id="auditorOrgDefinedId" class="form-control" required placeholder="e.g., A1234567">
+                                </div>
+
+                                <div class="form-group form-grid-full">
+                                    <label class="form-label" for="auditorAction">Select Action:</label>
+                                    <select id="auditorAction" class="form-control">
+                                        <option value="CREATE">Create (assign auditor to students)</option>
+                                        <option value="REMOVE">Remove (unassign auditor from students)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                                    Process Auditors
+                                </button>
+                                <button type="button" id="downloadAuditorReportBtn" class="btn btn-outline" style="width: 100%; margin-top: 8px;">
+                                    <i class="fa-solid fa-file-arrow-down"></i> Download Report
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function BrightspaceFetch(endpoint, method, body) {
+            method = method || 'GET';
+            var options = { method: method, headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': localStorage.getItem('XSRF.Token') } };
+            if (body) options.body = JSON.stringify(body);
+            return fetch(endpoint, options).then(function(res) {
+                if (!res.ok) throw new Error('Fetch failed: ' + endpoint + ' (' + res.status + ')');
+                var ct = res.headers.get('content-type');
+                if (ct && ct.indexOf('application/json') !== -1) return res.json();
+                if (ct) return res.text();
+                return null;
+            });
+        }
+    </script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/bulkenrollment.js"></script>
+    <script src="js/bulkgroup-enrollment.js"></script>
+    <script src="js/bulkenrollment-by-course.js"></script>
+    <script src="js/bulkenrollment-by-course-role.js"></script>
+    <script src="js/bulk-auditor-management.js"></script>
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.toggle('active', el.getAttribute('data-tab') === tabId);
+            });
+            const panel = document.getElementById('tab-' + tabId);
+            if (panel) panel.classList.add('active');
+        }
+    </script>
+</body>
+
+</html>
