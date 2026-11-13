@@ -293,37 +293,31 @@
                         <i class="fa-solid fa-arrow-left"></i> Back to Reports & Tools
                     </a>
                     <h1 class="page-title">System Usage Analytics</h1>
-                    <p class="page-subtitle">Quantify adoption and activity across Brightspace for a selected semester. Use tabs to switch summaries.</p>
+                    <p class="page-subtitle">See which students have opened a course this semester. Overview groups people by the day they were last in a course. By Course shows each offering.</p>
                 </div>
             </header>
 
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fa-solid fa-circle-info"></i> About this report
+                    </h2>
+                </div>
+                <div class="muted-text" style="margin-top: var(--spacing-xs);">
+                    Reads each course classlist for the semester and keeps student roles only. The account running the report is left out, so opening this page does not mark every course as accessed today.
+                    A date is the newest time that student opened that course, in Eastern time. It is not a login count, and it is not content views, quiz attempts, discussion posts, or assignment submissions. Those are not on the classlist.
+                    Select a semester and click <b>Run</b>. A full term still takes a few minutes, because each course is a separate classlist.
+                </div>
+            </div>
+
             <!-- Tabs -->
             <div class="tabs" role="tablist">
-                <button class="tab-button active" data-tab="usage-overview" role="tab">Overview</button>
-                <button class="tab-button" data-tab="usage-bycourse" role="tab">By Course</button>
+                <button class="tab-button active" data-tab="usage-overview" role="tab" aria-selected="true">Overview</button>
+                <button class="tab-button" data-tab="usage-bycourse" role="tab" aria-selected="false">By Course</button>
             </div>
 
             <!-- Overview Tab -->
             <section id="usage-overview" class="tab-content active">
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">
-                            <i class="fa-solid fa-circle-info"></i> About this report
-                        </h2>
-                    </div>
-                    <div class="status-message" id="usageStatus">
-                        <div>
-                            <strong>What this pulls:</strong>
-                            <div class="muted-text" style="margin-top: var(--spacing-xs);">
-                                • Unique logins by day (from login/last-access sources).<br/>
-                                • Active courses accessed per day.<br/>
-                                • Recency buckets (≤7d, >30d) for user logins.<br/>
-                                • Optional tool indicators: Content views, Quiz attempts, Discussion posts.<br/>
-                                <span>Select a semester and click <b>Run</b> to populate the table.</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 <div class="card">
                     <div class="card-header">
@@ -350,24 +344,20 @@
                             </div>
                         </div>
                     </div>
-
+                    <div id="usageStatus" class="status-message" hidden></div>
                 </div>
 
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="card-title">Daily Usage Summary</h2>
+                        <h2 class="card-title">Students last seen</h2>
                     </div>
+                    <p class="muted-text">Each student is listed on the day of their newest course access. Courses are listed on the day of that course’s newest student access.</p>
                     <table id="usageTable" class="display" style="width:100%">
                         <thead>
                             <tr>
                                 <th>Date</th>
-                                <th>Unique Users</th>
-                                <th>Active Courses</th>
-                                <th>Content Views</th>
-                                <th>Quiz Attempts</th>
-                                <th>Discussion Posts</th>
-                                <th>Assignments</th>
-                                <th>Other</th>
+                                <th>Students last seen</th>
+                                <th>Courses last active</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -402,23 +392,23 @@
                             </div>
                         </div>
                     </div>
-
+                    <div id="usageStatus2" class="status-message" hidden></div>
                 </div>
 
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">Usage by Course</h2>
                     </div>
+                    <p class="muted-text">Students is the classlist headcount. Opened the course is how many of those students have a last-access date.</p>
                     <table id="usageCourseTable" class="display" style="width:100%">
                         <thead>
                             <tr>
                                 <th>OrgUnitId</th>
                                 <th>Course Code</th>
                                 <th>Course Name</th>
-                                <th>Unique Users</th>
-                                <th>Last Activity</th>
-                                <th>Content Views</th>
-                                <th>Quiz Attempts</th>
+                                <th>Students</th>
+                                <th>Opened the course</th>
+                                <th>Last student access</th>
                             </tr>
                         </thead>
                         <tbody></tbody>

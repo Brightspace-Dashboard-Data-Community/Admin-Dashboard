@@ -11,6 +11,7 @@
  * To add/remove a semester for ALL dashboards, edit ALLOWED below.
  *
  * Source: semester_list_2026-05-12.csv
+ * 27/WI added 2026-09-30 from the Brightspace semester org unit (3017014).
  */
 (function (global) {
     'use strict';
@@ -26,7 +27,8 @@
         { Identifier: 2993948, Name: 'FALL 2025',   Code: '25/FA' },
         { Identifier: 3000199, Name: 'WINTER 2026', Code: '26/WI' },
         { Identifier: 3007631, Name: 'SPRING 2026', Code: '26/SP' },
-        { Identifier: 3010530, Name: 'FALL 2026',   Code: '26/FA' }
+        { Identifier: 3010530, Name: 'FALL 2026',   Code: '26/FA', current: true },
+        { Identifier: 3017014, Name: 'WINTER 2027', Code: '27/WI' }
     ];
 
     // ---- Derived lookups -------------------------------------------------------
@@ -116,6 +118,17 @@
         const sorted = sortByRecency(list);
         if (opts.excludeSandbox) return sorted.filter(s => s.Code !== 'Sandbox');
         return sorted;
+    }
+
+    /**
+     * Semester shown as the current term on the home page.
+     * Mark exactly one ALLOWED row with `current: true`.
+     * A newly released semester stays off this label until that flag moves.
+     */
+    function getCurrent() {
+        const list = getAll({ excludeSandbox: true });
+        const marked = list.find(s => s.current);
+        return marked || list[0] || null;
     }
 
     /**
@@ -238,6 +251,7 @@
         filterAllowed,
         sortByRecency,
         getAll,
+        getCurrent,
         populateSelect,
         attachHistoricalInput,
         getEffectiveSemesterId

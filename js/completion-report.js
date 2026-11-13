@@ -70,10 +70,33 @@ async function loadSemesters() {
         } else {
             data.sort((a, b) => String(b.Name).localeCompare(String(a.Name)));
         }
-        const html = data.map(s => `<option value="${s.Identifier}">${s.Name} (${s.Identifier})</option>`).join('');
-        document.getElementById('semester').innerHTML = html;
+        fillSemesterSelect(data);
     } catch (error) {
         console.error('Error loading semesters:', error);
+        fillSemesterSelect([]);
+    }
+}
+
+function fillSemesterSelect(data) {
+    const select = document.getElementById('semester');
+    if (!select) return;
+
+    let list = Array.isArray(data) ? data : [];
+    if (!list.length && typeof SemesterConfig !== 'undefined' && SemesterConfig.getAll) {
+        list = SemesterConfig.sortByRecency(SemesterConfig.getAll());
+    }
+
+    if (!list.length) {
+        select.innerHTML = '<option value="">Could not load semesters</option>';
+        return;
+    }
+
+    select.innerHTML = list.map(s => `<option value="${s.Identifier}">${s.Name} (${s.Identifier})</option>`).join('');
+    const current = (typeof SemesterConfig !== 'undefined' && SemesterConfig.getCurrent)
+        ? SemesterConfig.getCurrent()
+        : null;
+    if (current && list.some(s => String(s.Identifier) === String(current.Identifier))) {
+        select.value = String(current.Identifier);
     }
 }
 
@@ -235,6 +258,7 @@ async function runReport() {
         completionTable = null;
     }
     
+    try {
     // Use loading modal with cancel support
     LoadingUtils.showLoadingModal('Initializing report...', 'loadingModal', () => {
         // Cancel callback - will be checked in the loop

@@ -1,13 +1,25 @@
 /**
- * System Usage Analytics Report
- * Quantifies adoption and activity across Brightspace for a selected semester
+ * System Usage Analytics
+ * Student last-access for one semester, from course classlists.
+ * Brightspace classlist users use Identifier, not UserId.
  */
 
 const LP_VER = '1.52';
 let LE_VER = '1.86';
 const LE_CANDIDATES = ['1.86', '1.85', '1.82', '1.78', '1.71'];
+const STUDENT_ROLE_IDS = new Set(['101', '107', '112', '3', '5']);
+const SCAN_CONCURRENCY = 4;
 
-// Tab functionality
+const EASTERN_DATE = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Detroit',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+});
+
+let overviewRows = [];
+let courseRows = [];
+
 document.addEventListener('DOMContentLoaded', () => {
     const tabs = document.querySelectorAll('.tab-button');
     tabs.forEach(btn => {
@@ -25,9 +37,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // No loading containers needed - using modals
-
-    // Load semesters
     loadSemesters();
 });
 
@@ -44,354 +53,446 @@ async function resolveLeVersionFor(ouId) {
     throw new Error('No supported LE version found for classlist endpoints.');
 }
 
-const fmtDate = (d) => new Date(d).toISOString().slice(0, 10);
-const sleep = (ms) => new Promise(r => setTimeout(r, ms));
-
 function setStatus(elId, html) {
     const el = document.getElementById(elId);
     if (!el) return;
-    const strong = el.querySelector('div > strong');
-    if (strong) strong.textContent = 'Status';
-    const body = el.querySelector('div .muted-text');
-    if (body) body.innerHTML = html;
+    el.innerHTML = html || '';
+    el.hidden = !html;
+}
+
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+function parseAccessDate(value) {
+    if (value == null || value === '' || typeof value === 'object') return null;
+    const dt = new Date(value);
+    if (isNaN(dt.getTime())) return null;
+    if (dt.getTime() > Date.now() + 24 * 60 * 60 * 1000) return null;
+    return dt;
+}
+
+function fmtDate(value) {
+    const dt = value instanceof Date ? value : parseAccessDate(value);
+    if (!dt) return '';
+    return EASTERN_DATE.format(dt);
+}
+
+function isStudentEnrollment(roleId, roleName) {
+    const name = String(roleName || '');
+    if (/instructor|designer|admin|faculty|teacher|grader|auditor/i.test(name) && !/student/i.test(name)) {
+        return false;
+    }
+    if (/\bta\b|teaching assistant/i.test(name)) return false;
+    if (/student|learner|incomplete/i.test(name)) return true;
+    const id = roleId == null || roleId === '' ? '' : String(roleId);
+    if (STUDENT_ROLE_IDS.has(id)) return true;
+    if (!id) return true;
+    return false;
+}
+
+function summarizeClasslist(cls, selfId) {
+    const students = new Set();
+    const accessed = new Set();
+    let lastActivity = null;
+    const visits = [];
+    const selfKey = selfId ? String(selfId) : '';
+
+    for (const u of cls || []) {
+        const uid = String(
+            u?.Identifier || u?.UserId || u?.Id ||
+            u?.User?.Identifier || u?.User?.UserId || u?.User?.Id ||
+            ''
+        );
+        if (!uid || uid === selfKey) continue;
+        const roleId = u?.RoleId != null ? u.RoleId : u?.Role?.Id;
+        const roleName = u?.ClasslistRoleDisplayName || u?.Role?.Name || '';
+        if (!isStudentEnrollment(roleId, roleName)) continue;
+        students.add(uid);
+        const dt = parseAccessDate(u?.LastAccessed || u?.LastAccessedDate || u?.LastAccessDate || u?.LastAccess);
+        if (!dt) continue;
+        accessed.add(uid);
+        visits.push({ uid, dt });
+        if (!lastActivity || dt > lastActivity) lastActivity = dt;
+    }
+
+    return { students, accessed, lastActivity, visits };
+}
+
+async function currentUserId() {
+    try {
+        const me = await D2LApi._fetch('/d2l/api/lp/1.45/users/whoami');
+        return String(me?.Identifier || me?.UserId || '');
+    } catch (e) {
+        return '';
+    }
+}
+
+async function fetchPagedItems(firstUrl) {
+    const acc = [];
+    const seen = new Set();
+    let url = firstUrl;
+
+    for (let i = 0; i < 100 && url; i++) {
+        if (seen.has(url)) break;
+        seen.add(url);
+        const page = await D2LApi._fetch(url);
+        acc.push(...classlistItems(page));
+        if (Array.isArray(page)) break;
+        const paging = page?.PagingInfo || {};
+        const more = !!(paging.HasMoreItems || paging.hasMoreItems);
+        const bookmark = paging.Bookmark || paging.bookmark || '';
+        const next = page?.Next || paging.Next || '';
+        if (next && !seen.has(next)) {
+            url = next;
+            continue;
+        }
+        if (more && bookmark) {
+            const join = firstUrl.includes('?') ? '&' : '?';
+            url = `${firstUrl}${join}bookmark=${encodeURIComponent(bookmark)}`;
+            continue;
+        }
+        break;
+    }
+
+    return acc;
 }
 
 async function loadSemesters() {
     try {
         const orgInfo = await D2LApi.getOrganizationInfo();
         const rootOrgUnitId = orgInfo.Identifier;
-        
         let data = [];
         if (typeof D2LApi.fetchPaginatedData === 'function') {
             data = await D2LApi.fetchPaginatedData(
                 `/d2l/api/lp/${LP_VER}/orgstructure/${rootOrgUnitId}/descendants/?ouTypeId=5`
             );
         } else {
-            const response = await D2LApi._fetch(
+            data = await fetchPagedItems(
                 `/d2l/api/lp/${LP_VER}/orgstructure/${rootOrgUnitId}/descendants/?ouTypeId=5&pageSize=100`
             );
-            if (response.Objects && Array.isArray(response.Objects)) {
-                data = response.Objects;
-            } else if (Array.isArray(response)) {
-                data = response;
-            }
         }
-        
+        if (!Array.isArray(data)) data = [];
+
         if (typeof SemesterConfig !== 'undefined' && SemesterConfig.filterAllowed) {
             data = SemesterConfig.sortByRecency(SemesterConfig.filterAllowed(data));
         } else {
             data.sort((a, b) => String(b.Name).localeCompare(String(a.Name)));
         }
-        const opts = data.map(s => `<option value="${s.Identifier}">${s.Name} (${s.Identifier})</option>`).join('');
-        document.getElementById('usageSemester').innerHTML = opts;
-        document.getElementById('usageSemester2').innerHTML = opts;
+        fillSemesterSelects(data);
     } catch (error) {
         console.error('Error loading semesters:', error);
+        fillSemesterSelects([]);
+    }
+}
+
+function fillSemesterSelects(data) {
+    let list = Array.isArray(data) ? data : [];
+    if (!list.length && typeof SemesterConfig !== 'undefined' && SemesterConfig.getAll) {
+        list = SemesterConfig.sortByRecency(SemesterConfig.getAll());
+    }
+
+    const markup = list.length
+        ? list.map(s => `<option value="${s.Identifier}">${escapeHtml(s.Name)} (${s.Identifier})</option>`).join('')
+        : '<option value="">Could not load semesters</option>';
+    const current = (typeof SemesterConfig !== 'undefined' && SemesterConfig.getCurrent)
+        ? SemesterConfig.getCurrent()
+        : null;
+
+    for (const id of ['usageSemester', 'usageSemester2']) {
+        const select = document.getElementById(id);
+        if (!select) continue;
+        select.innerHTML = markup;
+        if (current && list.some(s => String(s.Identifier) === String(current.Identifier))) {
+            select.value = String(current.Identifier);
+        }
     }
 }
 
 async function getCoursesForSemester(semesterId) {
-    let children = [];
-    if (typeof D2LApi.fetchPaginatedData === 'function') {
-        children = await D2LApi.fetchPaginatedData(
-            `/d2l/api/lp/${LP_VER}/orgstructure/${semesterId}/children/`
-        );
-    } else {
-        const response = await D2LApi._fetch(
-            `/d2l/api/lp/${LP_VER}/orgstructure/${semesterId}/children/?pageSize=100`
-        );
-        if (response.Objects && Array.isArray(response.Objects)) {
-            children = response.Objects;
-        } else if (Array.isArray(response)) {
-            children = response;
-        }
-    }
-    
+    const children = await fetchPagedItems(
+        `/d2l/api/lp/${LP_VER}/orgstructure/${semesterId}/children/?pageSize=200`
+    );
+
     return children.filter(c => {
         const code = c?.Code || '';
-        return c?.Type?.Id === 3 && !/^(CXLD|MERGED)\s*-/i.test(code);
+        const typeId = c?.Type?.Id;
+        const typeCode = c?.Type?.Code || '';
+        const isCourse = typeId === 3 || /course offering/i.test(typeCode);
+        return isCourse && !/^(CXLD|MERGED)\s*-/i.test(code);
     });
 }
 
-async function getClasslistWithLastAccess(orgUnitId) {
-    const base = `/d2l/api/le/${LE_VER}/${orgUnitId}/classlist`;
-    
-    // Try paged first
+function classlistItems(page) {
+    if (Array.isArray(page)) return page;
+    if (Array.isArray(page?.Items)) return page.Items;
+    if (Array.isArray(page?.Objects)) return page.Objects;
+    return [];
+}
+
+async function getClasslist(orgUnitId) {
     try {
-        let bookmark = '';
-        const acc = [];
-        for (let i = 0; i < 50; i++) {
-            const url = `${base}/paged/?pageSize=100${bookmark ? `&bookmark=${encodeURIComponent(bookmark)}` : ''}`;
-            const page = await D2LApi._fetch(url);
-            if (Array.isArray(page?.Items)) {
-                acc.push(...page.Items);
-            }
-            const bm = page?.PagingInfo?.Bookmark;
-            if (!bm) break;
-            bookmark = bm;
-            await sleep(150);
-        }
-        if (acc.length) return acc;
+        const items = await fetchPagedItems(
+            `/d2l/api/le/${LE_VER}/${orgUnitId}/classlist/paged/?pageSize=100`
+        );
+        if (items.length) return items;
     } catch (e) {
         console.warn('Paged classlist failed', orgUnitId, e);
     }
-    
-    // Fallback: unpaged
+
     try {
-        const data = await D2LApi._fetch(`${base}/?pageSize=1000`);
-        return Array.isArray(data) ? data : (data?.Items || []);
+        const data = await D2LApi._fetch(`/d2l/api/le/${LE_VER}/${orgUnitId}/classlist/`);
+        return classlistItems(data);
     } catch (e) {
-        console.warn('Unpaged classlist failed', orgUnitId, e);
+        console.warn('Classlist failed', orgUnitId, e);
         return [];
     }
 }
 
-async function runOverview(semesterId) {
-    setStatus('usageStatus', '');
-    LoadingUtils.showLoadingModal('Initializing report...', 'loadingModal', () => {
-        // Cancel callback
+async function mapPool(items, limit, worker) {
+    let next = 0;
+    const runners = Array.from({ length: Math.min(limit, items.length) }, async () => {
+        while (next < items.length) {
+            const index = next++;
+            await worker(items[index], index);
+        }
     });
-    LoadingUtils.updateLoadingModal(10, 'Loading courses...', 'loadingModal');
-    
+    await Promise.all(runners);
+}
+
+async function scanSemester(semesterId, modalId, statusId) {
+    setStatus(statusId, '');
+    LoadingUtils.showLoadingModal('Initializing report...', modalId, () => {});
+    LoadingUtils.updateLoadingModal(5, 'Loading courses...', modalId);
+
     const courses = await getCoursesForSemester(semesterId);
     if (!courses.length) {
-        setStatus('usageStatus', 'No course offerings found for this semester.');
-        LoadingUtils.hideLoadingModal('loadingModal');
-        return;
+        LoadingUtils.hideLoadingModal(modalId);
+        return { courses: [], results: [], empty: true };
     }
-    
-    // Resolve LE version
+
     try {
         await resolveLeVersionFor(courses[0].Identifier);
     } catch (e) {
-        setStatus('usageStatus', 'Could not resolve a supported LE version: ' + e.message);
-        LoadingUtils.hideLoadingModal('loadingModal');
+        LoadingUtils.hideLoadingModal(modalId);
+        throw e;
+    }
+
+    const selfId = await currentUserId();
+    const results = new Array(courses.length);
+    let processed = 0;
+    let failed = 0;
+
+    await mapPool(courses, SCAN_CONCURRENCY, async (course, index) => {
+        if (LoadingUtils.isCancelled(modalId)) return;
+        let summary = summarizeClasslist([], selfId);
+        try {
+            const cls = await getClasslist(course.Identifier);
+            summary = summarizeClasslist(cls, selfId);
+        } catch (e) {
+            failed++;
+            console.warn('Classlist error', course.Identifier, e);
+        }
+        results[index] = { course, summary };
+        processed++;
+        if (LoadingUtils.isCancelled(modalId)) return;
+        const pct = 10 + Math.round((processed / courses.length) * 85);
+        const label = course.Code || course.Name || course.Identifier;
+        LoadingUtils.updateLoadingModal(pct, `Reading classlists ${processed}/${courses.length}: ${label}`, modalId);
+        setStatus(statusId, `Reading classlists (${processed}/${courses.length}).`);
+    });
+
+    if (LoadingUtils.isCancelled(modalId)) {
+        LoadingUtils.hideLoadingModal(modalId);
+        setStatus(statusId, 'Report cancelled.');
+        return null;
+    }
+
+    return { courses, results: results.filter(Boolean), failed, selfId };
+}
+
+function renderDataTable(selector, options) {
+    if (!(window.jQuery && $.fn.DataTable)) return;
+    if ($.fn.DataTable.isDataTable(selector)) {
+        $(selector).DataTable().destroy();
+    }
+    $(selector).DataTable(Object.assign({
+        pageLength: 25,
+        lengthMenu: [[10, 25, 50, 100, 200, -1], [10, 25, 50, 100, 200, 'All']],
+        dom: '<"top"lf>rt<"bottom"ip><"clear">',
+        language: {
+            search: 'Search:',
+            lengthMenu: 'Show _MENU_ entries',
+            info: 'Showing _START_ to _END_ of _TOTAL_ entries',
+            infoEmpty: 'No entries to show',
+            infoFiltered: '(filtered from _MAX_ total entries)',
+            paginate: {
+                first: 'First',
+                last: 'Last',
+                next: 'Next',
+                previous: 'Previous'
+            }
+        },
+        responsive: true,
+        scrollX: true
+    }, options));
+}
+
+function finishModal(modalId) {
+    LoadingUtils.updateLoadingModal(100, 'Complete!', modalId);
+    setTimeout(() => LoadingUtils.hideLoadingModal(modalId), 600);
+}
+
+function daysSince(date) {
+    return Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+async function runOverview(semesterId) {
+    const scan = await scanSemester(semesterId, 'loadingModal', 'usageStatus');
+    if (!scan) return;
+    if (scan.empty) {
+        setStatus('usageStatus', 'No course offerings found for this semester.');
+        overviewRows = [];
+        renderDataTable('#usageTable', { order: [[0, 'desc']] });
         return;
     }
-    
-    // Aggregate by date and by user
-    const dailyUsers = new Map(); // date -> Set(userId)
-    const seenUsers = new Map();  // userId -> most recent access date
-    
-    let processed = 0;
-    
-    for (const c of courses) {
-        // Check for cancellation
-        if (LoadingUtils.isCancelled('loadingModal')) {
-            LoadingUtils.hideLoadingModal('loadingModal');
-            setStatus('usageStatus', 'Report cancelled.');
-            return;
+
+    const studentLast = new Map();
+    const dailyCourses = new Map();
+    let neverAccessed = 0;
+    let coursesQuiet = 0;
+
+    for (const row of scan.results) {
+        const { summary } = row;
+        if (!summary.lastActivity) coursesQuiet++;
+        else {
+            const day = fmtDate(summary.lastActivity);
+            dailyCourses.set(day, (dailyCourses.get(day) || 0) + 1);
         }
-        
-        processed++;
-        setStatus('usageStatus', `Processing classlists (${processed}/${courses.length})… <br><span class="muted-text">${c.Code || c.Name} — OU ${c.Identifier}</span>`);
-        LoadingUtils.updateLoadingModal(10 + Math.round((processed / courses.length) * 85), `Processing ${processed}/${courses.length}: ${c.Code || c.Name}...`, 'loadingModal');
-        
-        let cls = [];
-        try {
-            cls = await getClasslistWithLastAccess(c.Identifier);
-        } catch (e) {
-            console.warn('Classlist error', c.Identifier, e);
+        const latestByStudent = new Map();
+        for (const visit of summary.visits) {
+            const prev = latestByStudent.get(visit.uid);
+            if (!prev || visit.dt > prev) latestByStudent.set(visit.uid, visit.dt);
+        }
+        for (const uid of summary.students) {
+            const dt = latestByStudent.get(uid) || null;
+            if (!studentLast.has(uid)) studentLast.set(uid, dt);
+            else if (dt && (!studentLast.get(uid) || dt > studentLast.get(uid))) studentLast.set(uid, dt);
+        }
+    }
+
+    const dailyUsers = new Map();
+    let within7 = 0;
+    let olderThan30 = 0;
+    for (const [, last] of studentLast) {
+        if (!last) {
+            neverAccessed++;
             continue;
         }
-        
-        // Aggregate users
-        for (const u of cls) {
-            const uid = u?.UserId || u?.Identifier || u?.OrgDefinedId;
-            const last = u?.LastAccessed || u?.LastAccessDate || u?.LastAccess || null;
-            
-            if (uid) {
-                const prev = seenUsers.get(uid);
-                if (!prev || (last && new Date(last) > new Date(prev))) {
-                    seenUsers.set(uid, last || prev || null);
-                }
-            }
-            if (uid && last) {
-                const d = fmtDate(last);
-                if (!dailyUsers.has(d)) dailyUsers.set(d, new Set());
-                dailyUsers.get(d).add(uid);
-            }
-        }
-        
-        await sleep(120);
+        const age = daysSince(last);
+        if (age <= 7) within7++;
+        else if (age > 30) olderThan30++;
+        const day = fmtDate(last);
+        dailyUsers.set(day, (dailyUsers.get(day) || 0) + 1);
     }
-    
-    // Build rows for table
-    const dates = Array.from(dailyUsers.keys()).sort();
-    const rows = [];
-    for (const d of dates) {
-        const uniq = dailyUsers.get(d).size;
-        rows.push([d, uniq, '-', '-', '-', '-', '-', '-']);
-    }
-    
-    // Recency buckets
-    const now = new Date();
-    let le7 = 0, gt30 = 0;
-    for (const [, last] of seenUsers) {
-        if (!last) continue;
-        const days = Math.floor((now - new Date(last)) / (1000 * 60 * 60 * 24));
-        if (days <= 7) le7++;
-        else if (days > 30) gt30++;
-    }
-    
-    // Populate table
+
+    const dates = Array.from(new Set([...dailyUsers.keys(), ...dailyCourses.keys()])).sort().reverse();
+    overviewRows = dates.map(day => [day, dailyUsers.get(day) || 0, dailyCourses.get(day) || 0]);
+
     const tbody = document.querySelector('#usageTable tbody');
-    tbody.innerHTML = rows.map(r => '<tr>' + r.map(c => '<td>' + c + '</td>').join('') + '</tr>').join('');
-    
-    // Initialize DataTable with better configuration
-    if (window.jQuery && $.fn.DataTable) {
-        if ($.fn.DataTable.isDataTable('#usageTable')) {
-            $('#usageTable').DataTable().destroy();
-        }
-        $('#usageTable').DataTable({
-            pageLength: 25,
-            lengthMenu: [[10, 25, 50, 100, 200, -1], [10, 25, 50, 100, 200, "All"]],
-            order: [[0, 'asc']],
-            dom: '<"top"lf>rt<"bottom"ip><"clear">',
-            language: {
-                search: "Search:",
-                lengthMenu: "Show _MENU_ entries",
-                info: "Showing _START_ to _END_ of _TOTAL_ entries",
-                infoEmpty: "No entries to show",
-                infoFiltered: "(filtered from _MAX_ total entries)",
-                paginate: {
-                    first: "First",
-                    last: "Last",
-                    next: "Next",
-                    previous: "Previous"
-                }
-            },
-            responsive: true,
-            scrollX: true
-        });
+    if (window.jQuery && $.fn.DataTable && $.fn.DataTable.isDataTable('#usageTable')) {
+        $('#usageTable').DataTable().destroy();
     }
-    
-    setStatus('usageStatus', `Unique active users observed: <b>${seenUsers.size}</b>. Users active in ≤7 days: <b>${le7}</b>. Users inactive >30 days: <b>${gt30}</b>.`);
-    LoadingUtils.updateLoadingModal(100, 'Complete!', 'loadingModal');
-    setTimeout(() => {
-        LoadingUtils.hideLoadingModal('loadingModal');
-    }, 1000);
+    tbody.innerHTML = overviewRows.length
+        ? overviewRows.map(r => '<tr>' + r.map(c => '<td>' + escapeHtml(c) + '</td>').join('') + '</tr>').join('')
+        : '<tr><td colspan="3">No student access dates were returned.</td></tr>';
+    if (overviewRows.length) renderDataTable('#usageTable', { order: [[0, 'desc']] });
+
+    const failedNote = scan.failed ? ` ${scan.failed} course classlist${scan.failed === 1 ? '' : 's'} could not be read.` : '';
+    setStatus(
+        'usageStatus',
+        `Scanned <b>${scan.results.length}</b> courses and <b>${studentLast.size}</b> students. ` +
+        `Opened a course in the last 7 days: <b>${within7}</b>. ` +
+        `Last access more than 30 days ago: <b>${olderThan30}</b>. ` +
+        `No course access on record: <b>${neverAccessed}</b>. ` +
+        `Courses with no student access: <b>${coursesQuiet}</b>.${failedNote}`
+    );
+    finishModal('loadingModal');
 }
 
 async function runByCourse(semesterId) {
-    setStatus('usageStatus', '');
-    LoadingUtils.showLoadingModal('Initializing report...', 'loadingModal2', () => {
-        // Cancel callback
-    });
-    LoadingUtils.updateLoadingModal(10, 'Loading courses...', 'loadingModal2');
-    
-    const courses = await getCoursesForSemester(semesterId);
-    if (!courses.length) {
-        const tbody = document.querySelector('#usageCourseTable tbody');
-        tbody.innerHTML = '<tr><td colspan="7">No course offerings found.</td></tr>';
-        LoadingUtils.hideLoadingModal('loadingModal2');
-        return;
-    }
-    
-    // Resolve LE version
-    try {
-        await resolveLeVersionFor(courses[0].Identifier);
-    } catch (e) {
-        setStatus('usageStatus', 'Could not resolve a supported LE version: ' + e.message);
-        LoadingUtils.hideLoadingModal('loadingModal2');
-        return;
-    }
-    
+    const scan = await scanSemester(semesterId, 'loadingModal2', 'usageStatus2');
+    if (!scan) return;
+
     const tbody = document.querySelector('#usageCourseTable tbody');
-    tbody.innerHTML = '';
-    
-    let idx = 0;
-    for (const c of courses) {
-        // Check for cancellation
-        if (LoadingUtils.isCancelled('loadingModal2')) {
-            LoadingUtils.hideLoadingModal('loadingModal2');
-            setStatus('usageStatus', 'Report cancelled.');
-            return;
-        }
-        
-        idx++;
-        setStatus('usageStatus', `Fetching classlist (${idx}/${courses.length})… <br><span class="muted-text">${c.Code || c.Name} — OU ${c.Identifier}</span>`);
-        LoadingUtils.updateLoadingModal(10 + Math.round((idx / courses.length) * 85), `Processing ${idx}/${courses.length}: ${c.Code || c.Name}...`, 'loadingModal2');
-        
-        let cls = [];
-        try {
-            cls = await getClasslistWithLastAccess(c.Identifier);
-        } catch (e) {
-            console.warn('Classlist error', c.Identifier, e);
-            continue;
-        }
-        
-        // Unique users & last activity
-        const uniqUsers = new Set();
-        let lastActivity = null;
-        for (const u of cls) {
-            if (u?.UserId) uniqUsers.add(u.UserId);
-            const last = u?.LastAccessed || u?.LastAccessDate || u?.LastAccess || null;
-            if (last) {
-                const dt = new Date(last);
-                if (!lastActivity || dt > lastActivity) lastActivity = dt;
-            }
-        }
-        
-        const row = [
-            c.Identifier,
-            c.Code || c.Name || '-',
-            c.Name || '-',
-            uniqUsers.size,
-            lastActivity ? fmtDate(lastActivity) : '-',
-            '-',
-            '-'
-        ];
-        
-        const tr = document.createElement('tr');
-        tr.innerHTML = row.map(cell => '<td>' + cell + '</td>').join('');
-        tbody.appendChild(tr);
-        
-        await sleep(120);
+    if (window.jQuery && $.fn.DataTable && $.fn.DataTable.isDataTable('#usageCourseTable')) {
+        $('#usageCourseTable').DataTable().destroy();
     }
-    
-    // Initialize DataTable with better configuration
-    if (window.jQuery && $.fn.DataTable) {
-        if ($.fn.DataTable.isDataTable('#usageCourseTable')) {
-            $('#usageCourseTable').DataTable().destroy();
-        }
-        $('#usageCourseTable').DataTable({
-            pageLength: 25,
-            lengthMenu: [[10, 25, 50, 100, 200, -1], [10, 25, 50, 100, 200, "All"]],
-            order: [[0, 'asc']],
-            dom: '<"top"lf>rt<"bottom"ip><"clear">',
-            language: {
-                search: "Search:",
-                lengthMenu: "Show _MENU_ entries",
-                info: "Showing _START_ to _END_ of _TOTAL_ entries",
-                infoEmpty: "No entries to show",
-                infoFiltered: "(filtered from _MAX_ total entries)",
-                paginate: {
-                    first: "First",
-                    last: "Last",
-                    next: "Next",
-                    previous: "Previous"
-                }
-            },
-            responsive: true,
-            scrollX: true
-        });
+
+    if (scan.empty) {
+        courseRows = [];
+        tbody.innerHTML = '<tr><td colspan="6">No course offerings found.</td></tr>';
+        setStatus('usageStatus2', 'No course offerings found for this semester.');
+        return;
     }
-    
-    LoadingUtils.updateLoadingModal(100, 'Complete!', 'loadingModal2');
-    setTimeout(() => {
-        LoadingUtils.hideLoadingModal('loadingModal2');
-    }, 1000);
+
+    courseRows = scan.results.map(({ course, summary }) => [
+        course.Identifier,
+        course.Code || course.Name || '',
+        course.Name || '',
+        summary.students.size,
+        summary.accessed.size,
+        summary.lastActivity ? fmtDate(summary.lastActivity) : 'None'
+    ]);
+
+    tbody.innerHTML = courseRows.map(r => '<tr>' + r.map(c => '<td>' + escapeHtml(c) + '</td>').join('') + '</tr>').join('');
+    renderDataTable('#usageCourseTable', { order: [[1, 'asc']] });
+
+    const opened = courseRows.reduce((sum, row) => sum + Number(row[4] || 0), 0);
+    const quiet = courseRows.filter(row => row[5] === 'None').length;
+    const failedNote = scan.failed ? ` ${scan.failed} course classlist${scan.failed === 1 ? '' : 's'} could not be read.` : '';
+    setStatus(
+        'usageStatus2',
+        `<b>${courseRows.length}</b> courses. Students who have opened their course (counted once per course): <b>${opened}</b>. ` +
+        `Courses with no student access: <b>${quiet}</b>.${failedNote}`
+    );
+    finishModal('loadingModal2');
 }
 
-// Event listeners
+function downloadCsv(filename, headers, rows) {
+    if (!rows.length) {
+        alert('Run the report before downloading.');
+        return;
+    }
+    const lines = [headers, ...rows].map(row => row.map(value => '"' + String(value ?? '').replace(/"/g, '""') + '"').join(','));
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+}
+
 document.getElementById('usageRun').addEventListener('click', async () => {
     const semesterId = document.getElementById('usageSemester').value;
     if (!semesterId) {
         alert('Please select a semester.');
         return;
     }
-    await runOverview(semesterId);
+    try {
+        await runOverview(semesterId);
+    } catch (e) {
+        console.error(e);
+        LoadingUtils.hideLoadingModal('loadingModal');
+        setStatus('usageStatus', 'Error building the overview: ' + escapeHtml(e.message));
+    }
 });
 
 document.getElementById('usageRun2').addEventListener('click', async () => {
@@ -400,14 +501,27 @@ document.getElementById('usageRun2').addEventListener('click', async () => {
         alert('Please select a semester.');
         return;
     }
-    await runByCourse(semesterId);
+    try {
+        await runByCourse(semesterId);
+    } catch (e) {
+        console.error(e);
+        LoadingUtils.hideLoadingModal('loadingModal2');
+        setStatus('usageStatus2', 'Error building the course list: ' + escapeHtml(e.message));
+    }
 });
 
-// CSV download handlers (simplified - would need to collect data)
 document.getElementById('usageDownload').addEventListener('click', () => {
-    alert('CSV download functionality coming soon.');
+    downloadCsv(
+        'system-usage-analytics.csv',
+        ['Date', 'Students last seen', 'Courses last active'],
+        overviewRows
+    );
 });
 
 document.getElementById('usageDownload2').addEventListener('click', () => {
-    alert('CSV download functionality coming soon.');
+    downloadCsv(
+        'system-usage-by-course.csv',
+        ['OrgUnitId', 'Course Code', 'Course Name', 'Students', 'Opened the course', 'Last student access'],
+        courseRows
+    );
 });

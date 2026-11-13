@@ -220,6 +220,20 @@
             .filter((c) => c.id);
     }
 
+    /**
+     * The historical-semester note is inserted inside the semester field.
+     * That makes the field taller than the Org Unit field, so flex-end
+     * drops the other controls. Keep the note on its own line under the row.
+     */
+    function placeHistoricalNote(selectEl) {
+        if (!selectEl || !selectEl.parentElement) return;
+        const wrap = selectEl.parentElement.querySelector('.sc-historical-wrap');
+        const row = selectEl.closest('.controls-row');
+        if (!wrap || !row || !row.parentElement) return;
+        if (wrap.previousElementSibling === row) return;
+        row.parentElement.insertBefore(wrap, row.nextSibling);
+    }
+
     async function populateSemesterSelect(selectEl) {
         const orgInfo = await D2LApi.getOrganizationInfo();
         if (!orgInfo || !orgInfo.Identifier) throw new Error('Could not read organization info.');
@@ -237,6 +251,7 @@
             });
             if (SemesterConfig.attachHistoricalInput) {
                 SemesterConfig.attachHistoricalInput(selectEl);
+                placeHistoricalNote(selectEl);
             }
         } else {
             selectEl.innerHTML = '';
@@ -328,13 +343,300 @@
         return String(action == null ? '' : action);
     }
 
+    const SECTION_MONTHS = {
+        jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6,
+        jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12
+    };
+    const SECTION_MONTH_LABELS = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    /** 26/FA → 26fa.csv. Same pattern for 27/WI → 27wi.csv. */
+    function semesterDatesFileName(termCode) {
+        const match = /^(\d{2})\/(WI|SP|FA|SU|SM|SS)$/i.exec(String(termCode || '').trim());
+        if (!match) return '';
+        return match[1] + match[2].toLowerCase() + '.csv';
+    }
+
+    function normalizeOfferingCode(code) {
+        return String(code || '')
+            .trim()
+            .toUpperCase()
+            .replace(/[\u2010-\u2015\u2212]/g, '-')
+            .replace(/[\u2044\u2215]/g, '/')
+            .replace(/\s+/g, '')
+            .replace(/-COURSE$/, '');
+    }
+
+    function looseOfferingCode(code) {
+        return normalizeOfferingCode(code).replace(/[^A-Z0-9]/g, '');
+    }
+
+    function shellOfferingCode(code) {
+        const full = normalizeOfferingCode(code);
+        const match = /^(.+)-(\d{2})\/(WI|SP|FA|SU|SM|SS)$/.exec(full);
+        return match ? match[1] : full;
+    }
+
+    function termCodeFromOffering(code) {
+        const full = normalizeOfferingCode(code);
+        const match = /-(\d{2})\/(WI|SP|FA|SU|SM|SS)$/.exec(full);
+        return match ? match[1] + '/' + match[2] : '';
+    }
+
+    function monthNumber(token) {
+        const word = String(token || '').toLowerCase();
+        if (word.indexOf('sept') === 0) return 9;
+        return SECTION_MONTHS[word.slice(0, 3)] || 0;
+    }
+
+    function dateParts(day, month, yearRaw) {
+        const d = parseInt(day, 10);
+        const m = typeof month === 'number' ? month : parseInt(month, 10);
+        let year = parseInt(yearRaw, 10);
+        if (String(yearRaw).length <= 2) year += 2000;
+        if (!m || m < 1 || m > 12 || d < 1 || d > 31 || year < 2000 || year > 2100) return null;
+        return { year: year, month: m, day: d };
+    }
+
+    /** Calendar date from a section file. Accepts 1-Sep-26 and the usual export variants. */
+    function parseSectionStart(raw) {
+        let text = String(raw || '').trim();
+        if (!text) return null;
+        text = text.replace(/\u00a0/g, ' ').replace(/[\u2010-\u2015\u2212]/g, '-');
+        text = text.replace(/\s+\d{1,2}:\d{2}(:\d{2})?(\s*[AP]M)?$/i, '').replace(/,/g, '').trim();
+
+        let match = /^(\d{1,2})-([A-Za-z]{3,9})-(\d{2,4})$/.exec(text);
+        if (match) return dateParts(match[1], monthNumber(match[2]), match[3]);
+
+        match = /^([A-Za-z]{3,9})\s+(\d{1,2})\s+(\d{2,4})$/.exec(text);
+        if (match) return dateParts(match[2], monthNumber(match[1]), match[3]);
+
+        match = /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/.exec(text);
+        if (match) return dateParts(match[2], parseInt(match[1], 10), match[3]);
+
+        match = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(text);
+        if (match) return dateParts(match[3], parseInt(match[2], 10), match[1]);
+
+        return null;
+    }
+
+    function sectionDateKey(parts) {
+        if (!parts) return '';
+        return String(parts.year) + String(parts.month).padStart(2, '0') + String(parts.day).padStart(2, '0');
+    }
+
+    function formatSectionStart(parts) {
+        if (!parts) return '';
+        return SECTION_MONTH_LABELS[parts.month] + ' ' + parts.day + ', ' + parts.year;
+    }
+
+    function detroitTodayKey() {
+        const parts = {};
+        new Intl.DateTimeFormat('en-US', {
+            timeZone: DETROIT_TZ,
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        }).formatToParts(new Date()).forEach((part) => {
+            if (part.type !== 'literal') parts[part.type] = part.value;
+        });
+        return String(parts.year || '') + String(parts.month || '') + String(parts.day || '');
+    }
+
+    function sectionStartsAfterToday(parts, todayKey) {
+        const key = sectionDateKey(parts);
+        const today = todayKey || detroitTodayKey();
+        if (!key || !today) return false;
+        return key > today;
+    }
+
+    function csvDelimiter(src) {
+        const line = String(src || '').split(/\r?\n/, 1)[0] || '';
+        const commas = (line.match(/,/g) || []).length;
+        const tabs = (line.match(/\t/g) || []).length;
+        return tabs > commas ? '\t' : ',';
+    }
+
+    function headerKey(value) {
+        return String(value || '').replace(/^\uFEFF/, '').replace(/[^a-z0-9]/gi, '').toLowerCase();
+    }
+
+    function isDateHeaderRow(cells) {
+        const keys = cells.map(headerKey);
+        return keys.indexOf('coursesecterm') !== -1
+            || keys.indexOf('secstartdate') !== -1
+            || keys.indexOf('secenddate') !== -1;
+    }
+
+    function parseCsvTable(text) {
+        const src = String(text || '').replace(/^\uFEFF/, '');
+        const delimiter = csvDelimiter(src);
+        const rows = [];
+        let row = [];
+        let cell = '';
+        let inQuotes = false;
+        for (let i = 0; i < src.length; i++) {
+            const ch = src[i];
+            if (ch === '\u0000') continue;
+            if (inQuotes) {
+                if (ch === '"') {
+                    if (src[i + 1] === '"') {
+                        cell += '"';
+                        i += 1;
+                    } else {
+                        inQuotes = false;
+                    }
+                } else {
+                    cell += ch;
+                }
+            } else if (ch === '"') {
+                inQuotes = true;
+            } else if (ch === delimiter) {
+                row.push(cell);
+                cell = '';
+            } else if (ch === '\n' || ch === '\r') {
+                if (ch === '\r' && src[i + 1] === '\n') i += 1;
+                row.push(cell);
+                rows.push(row);
+                row = [];
+                cell = '';
+            } else {
+                cell += ch;
+            }
+        }
+        if (cell.length || row.length) {
+            row.push(cell);
+            rows.push(row);
+        }
+        const headerAt = rows.findIndex((cells) => isDateHeaderRow(cells));
+        if (headerAt < 0) return [];
+        const headers = rows[headerAt].map((header) => String(header || '').trim());
+        const out = [];
+        for (let r = headerAt + 1; r < rows.length; r++) {
+            if (rows[r].every((value) => String(value || '').trim() === '')) continue;
+            const obj = {};
+            headers.forEach((header, index) => {
+                if (!header) return;
+                obj[header] = rows[r][index] == null ? '' : String(rows[r][index]).trim();
+            });
+            out.push(obj);
+        }
+        return out;
+    }
+
+    function csvField(row, name) {
+        if (!row) return '';
+        const want = String(name || '').replace(/[^a-z0-9]/gi, '').toLowerCase();
+        const keys = Object.keys(row);
+        for (let i = 0; i < keys.length; i++) {
+            if (keys[i].replace(/[^a-z0-9]/gi, '').toLowerCase() === want) {
+                return String(row[keys[i]] == null ? '' : row[keys[i]]).trim();
+            }
+        }
+        return '';
+    }
+
+    function csvFieldAny(row, names) {
+        for (let i = 0; i < names.length; i++) {
+            const value = csvField(row, names[i]);
+            if (value) return value;
+        }
+        return '';
+    }
+
+    function rowSectionCode(row) {
+        const named = csvFieldAny(row, [
+            'course_sec_term',
+            'course code',
+            'CourseCode',
+            'Combined Depts, Course Number, Section, Term'
+        ]);
+        if (named) return named;
+        const dept = csvFieldAny(row, ['depts', 'dept', 'department']);
+        const num = csvFieldAny(row, ['course_number', 'course number', 'course no']);
+        const section = csvFieldAny(row, ['section', 'sec_no']);
+        const term = csvField(row, 'term');
+        if (dept && num && section) {
+            return term ? (dept + '-' + num + '-' + section + '-' + term) : (dept + '-' + num + '-' + section);
+        }
+        return '';
+    }
+
+    function rowStartRaw(row) {
+        return csvFieldAny(row, ['sec_start_date', 'start_date', 'start date', 'StartDate']);
+    }
+
+    function rememberStart(index, key, start) {
+        if (!key) return;
+        const prev = index.get(key);
+        if (!prev || sectionDateKey(start) < sectionDateKey(prev)) index.set(key, start);
+    }
+
+    /**
+     * Index course_sec_term → start date.
+     * Brightspace codes that end in -COURSE match the file code, and so does the code without the term.
+     */
+    function buildSectionStartIndex(rows) {
+        const index = new Map();
+        let sectionCount = 0;
+        let sampleCode = '';
+        let sampleDate = '';
+        const headers = rows && rows[0] ? Object.keys(rows[0]) : [];
+        (rows || []).forEach((row) => {
+            const code = rowSectionCode(row);
+            const rawDate = rowStartRaw(row);
+            if (!sampleCode && code) sampleCode = code;
+            if (!sampleDate && rawDate) sampleDate = rawDate;
+            const start = parseSectionStart(rawDate);
+            if (!code || !start) return;
+            sectionCount += 1;
+            const full = normalizeOfferingCode(code);
+            const shell = shellOfferingCode(full);
+            [full, shell, looseOfferingCode(full), looseOfferingCode(shell)].forEach((key) => {
+                rememberStart(index, key, start);
+            });
+        });
+        return {
+            index: index,
+            sectionCount: sectionCount,
+            rowCount: (rows || []).length,
+            headers: headers,
+            sampleCode: sampleCode,
+            sampleDate: sampleDate
+        };
+    }
+
+    function lookupSectionStart(index, code) {
+        if (!index) return null;
+        const full = normalizeOfferingCode(code);
+        if (!full) return null;
+        const shell = shellOfferingCode(full);
+        const keys = [full, shell, looseOfferingCode(full), looseOfferingCode(shell)];
+        for (let i = 0; i < keys.length; i++) {
+            if (keys[i] && index.has(keys[i])) return index.get(keys[i]);
+        }
+        return null;
+    }
+
+    function lookupCourseStart(index, course) {
+        const direct = lookupSectionStart(index, course && course.code);
+        if (direct) return direct;
+        const name = String((course && course.name) || '').toUpperCase();
+        const embedded = name.match(/[A-Z0-9]+(?:-[A-Z0-9]+)+-\d{2}\/(?:WI|SP|FA|SU|SM|SS)/);
+        if (embedded) return lookupSectionStart(index, embedded[0]);
+        return null;
+    }
+
     /**
      * Wire a semester + OrgUnit ID + checkbox course picker.
      * Expected element ids: semesterSelect, orgUnitId, loadCoursesBtn, hideIgnored,
      * coursePickerWrap, courseFilter, selectVisibleBtn, clearSelectedBtn,
      * selectedCount, coursePickerBody.
+     * options.annotateCourses(courses, semesterId) may add fields before the picker renders.
+     * options.courseHidden(course) hides a row from the picker.
+     * A Starts column is rendered when the table has #pickerStartCol.
      */
-    function bindCoursePicker() {
+    function bindCoursePicker(options) {
+        const opts = options || {};
         const els = {
             semesterSelect: document.getElementById('semesterSelect'),
             orgUnitId: document.getElementById('orgUnitId'),
@@ -354,6 +656,7 @@
             const hide = !!(els.hideIgnored && els.hideIgnored.checked);
             return loaded.filter((c) => {
                 if (hide && isIgnoredCourse(c.name, c.code)) return false;
+                if (opts.courseHidden && opts.courseHidden(c)) return false;
                 if (!q) return true;
                 return (c.code + ' ' + c.name + ' ' + c.id).toLowerCase().indexOf(q) !== -1;
             });
@@ -376,12 +679,17 @@
             if (!els.coursePickerBody) return;
             const rows = visibleCourses();
             const checked = new Set(selectedIds());
+            const showStart = !!document.getElementById('pickerStartCol');
             els.coursePickerBody.innerHTML = rows.map((c) => {
                 const on = checked.has(c.id) ? ' checked' : '';
+                const startCell = showStart
+                    ? '<td>' + escapeHtml(c.startLabel || '') + '</td>'
+                    : '';
                 return '<tr><td><input type="checkbox" value="' + escapeHtml(c.id) + '"' + on + '></td>' +
                     '<td class="mono">' + escapeHtml(c.id) + '</td>' +
                     '<td class="mono">' + escapeHtml(c.code) + '</td>' +
-                    '<td>' + escapeHtml(c.name) + '</td></tr>';
+                    '<td>' + escapeHtml(c.name) + '</td>' +
+                    startCell + '</tr>';
             }).join('');
             els.coursePickerBody.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
                 cb.addEventListener('change', updateCount);
@@ -392,6 +700,10 @@
         async function loadCourses() {
             const semesterId = effectiveSemesterId(els.semesterSelect);
             loaded = await fetchSemesterCourses(semesterId);
+            if (opts.annotateCourses) {
+                const annotated = await opts.annotateCourses(loaded, semesterId);
+                if (Array.isArray(annotated)) loaded = annotated;
+            }
             if (els.coursePickerWrap) els.coursePickerWrap.classList.remove('hidden');
             render();
             return loaded;
@@ -473,12 +785,25 @@
         lookupCourse,
         fetchSemesterCourses,
         populateSemesterSelect,
+        placeHistoricalNote,
         effectiveSemesterId,
         fetchClasslist,
         fetchEnrollmentLogs,
         fetchTrackingLogs,
         mapPool,
         actionLabel,
+        semesterDatesFileName,
+        normalizeOfferingCode,
+        termCodeFromOffering,
+        parseSectionStart,
+        sectionDateKey,
+        formatSectionStart,
+        detroitTodayKey,
+        sectionStartsAfterToday,
+        parseCsvTable,
+        buildSectionStartIndex,
+        lookupSectionStart,
+        lookupCourseStart,
         bindCoursePicker
     };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -30,8 +30,8 @@
                     <a href="../reports-tools.html" class="back-link">
                         <i class="fa-solid fa-arrow-left"></i> Back to Reports &amp; Tools
                     </a>
-                    <h1 class="page-title">End of Semester Course Report <span class="beta-badge">WIP</span></h1>
-                    <p class="page-subtitle">Work-in-Progress. Class-level retrospective of grades, access, content, due dates, quizzes, discussions, and assignments, with next-term suggestions. No student names. Last-access timing is measured from the course end date, not from today. This copy requests Content Progress and Learner Usage from Data Hub (Advanced Data Sets), which faculty cannot execute.</p>
+                    <h1 class="page-title">End of Semester Course Report</h1>
+                    <p class="page-subtitle">Class-level retrospective of grades, access, content, due dates, quizzes, discussions, and assignments, with next-term suggestions. No student names. Last-access timing is measured from the course end date, not from today.</p>
                 </div>
             </header>
 
@@ -46,7 +46,7 @@
                     <strong>FERPA:</strong> Even without names, this is a class education record. Generate and download only for legitimate educational purposes at Your College. Do not post or share the PDF outside that use.
                 </div>
 
-                <form id="eosForm" novalidate>
+                <div id="eosForm">
                     <div class="input-row">
                         <div class="input-group">
                             <label for="eosCourseOu">OrgUnit ID</label>
@@ -55,7 +55,7 @@
                         <div class="input-group action">
                             <label>&nbsp;</label>
                             <div class="cr-actions">
-                                <button type="submit" class="btn-primary" id="eosRunBtn">
+                                <button type="button" class="btn-primary" id="eosRunBtn">
                                     <i class="fas fa-chart-pie" aria-hidden="true"></i>
                                     <span id="eosRunLabel">Generate report</span>
                                 </button>
@@ -66,7 +66,7 @@
                             </div>
                         </div>
                     </div>
-                </form>
+                </div>
                 <p class="course-meta" id="eosCourseMeta"></p>
                 <div id="eosMessage" class="message-container" style="display:none;" role="status"></div>
             </div>

@@ -1,7 +1,53 @@
 /**
  * Universal Sidebar Component
  * Injects the sidebar navigation into the page and handles active states/interactions.
+ *
+ * Training privacy mask loads with the sidebar so names, IDs, and emails can be
+ * hidden before a training screen share. See js/pii-mask.js.
  */
+(function installEarlyPiiHarvest() {
+    if (typeof window.fetch !== "function" || window.fetch.__adPiiWrapped) return;
+    window.__adPiiEarlyBodies = window.__adPiiEarlyBodies || [];
+    var originalFetch = window.fetch.bind(window);
+    function wrappedFetch() {
+        return originalFetch.apply(window, arguments).then(function (response) {
+            try {
+                var clone = response.clone();
+                clone.text().then(function (text) {
+                    if (window.AdminDashboardPiiMask && typeof window.AdminDashboardPiiMask.noteResponseText === "function") {
+                        window.AdminDashboardPiiMask.noteResponseText(text);
+                    } else {
+                        window.__adPiiEarlyBodies.push(text);
+                    }
+                }).catch(function () {});
+            } catch (e) {
+                /* body already used */
+            }
+            return response;
+        });
+    }
+    wrappedFetch.__adPiiWrapped = true;
+    window.fetch = wrappedFetch;
+})();
+
+(function loadTrainingPrivacyMask() {
+    if (window.AdminDashboardPiiMask) return;
+    var current = document.currentScript;
+    var src = "js/pii-mask.js";
+    if (current && current.src) {
+        src = current.src.replace(/sidebar\.js(\?[^#]*)?$/i, "pii-mask.js$1");
+    }
+    // Parser-inserted scripts can write the next script into the stream so it
+    // runs before the page scripts that follow sidebar.js.
+    if (document.readyState === "loading") {
+        document.write('<script src="' + src.replace(/"/g, "%22") + '"><\/script>');
+        return;
+    }
+    var script = document.createElement("script");
+    script.src = src;
+    script.async = false;
+    (document.head || document.documentElement).appendChild(script);
+})();
 
 const sidebarHTML = `
 <nav class="sidebar" id="sidebar">
@@ -107,14 +153,13 @@ const sidebarHTML = `
 
 
     <div class="sidebar-footer">
-        <div class="user-info">
+        <button type="button" class="user-info" id="nav-user-privacy-btn" aria-label="Open training privacy mask" aria-pressed="false" title="Training privacy mask">
             <div class="avatar" id="user-avatar">AD</div>
             <div class="user-details">
                 <span class="user-name" id="user-name">Admin User</span>
                 <span class="user-role" id="user-role">Administrator</span>
             </div>
-        </div>
-
+        </button>
     </div>
 </nav>
     `;
@@ -145,6 +190,10 @@ function initSidebar() {
 
     // Initialize Event Listeners (Toggle & Submenu)
     initSidebarEvents();
+
+    if (window.AdminDashboardPiiMask && typeof window.AdminDashboardPiiMask.wireNavLauncher === "function") {
+        window.AdminDashboardPiiMask.wireNavLauncher(document.getElementById("sidebar"));
+    }
 }
 
 function setActiveState() {

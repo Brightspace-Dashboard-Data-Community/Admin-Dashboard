@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watermark Evaluations - D2L Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/forms.css">
+
+    <style>
+        .page-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-sm);
+            line-height: 1.5;
+            max-width: 860px;
+        }
+
+        .card {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .card:hover {
+            transform: none;
+        }
+
+        .note {
+            background: #f8fafc;
+            border-left: 4px solid var(--primary-color);
+            padding: 12px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 150px;
+        }
+
+        .field label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .field input,
+        .field select {
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: #fff;
+            font: inherit;
+            font-size: 14px;
+        }
+
+        .checks {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px 18px;
+            align-items: center;
+            margin-top: 12px;
+            font-size: 14px;
+        }
+
+        .checks label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .kpis {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .kpi {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px 14px;
+        }
+
+        .kpi-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .kpi-value {
+            font-size: 22px;
+            font-weight: 700;
+            margin-top: 4px;
+            line-height: 1.2;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: var(--spacing-md);
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 10px 16px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: -2px;
+        }
+
+        .tab-btn.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table.data {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        table.data th,
+        table.data td {
+            text-align: left;
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+            vertical-align: top;
+        }
+
+        table.data th {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        table.data th button {
+            background: none;
+            border: none;
+            padding: 0;
+            font: inherit;
+            font-weight: 700;
+            color: inherit;
+            cursor: pointer;
+        }
+
+        table.data th button[aria-sort="ascending"]::after {
+            content: " \2191";
+        }
+
+        table.data th button[aria-sort="descending"]::after {
+            content: " \2193";
+        }
+
+        table.data td.wrap {
+            white-space: normal;
+            min-width: 220px;
+        }
+
+        table.data tbody tr:hover {
+            background: #f7faf7;
+        }
+
+        table.data tbody tr.selected {
+            background: #eef6f0;
+        }
+
+        .score-bar {
+            display: inline-block;
+            height: 8px;
+            border-radius: 99px;
+            background: #e5e7eb;
+            width: 72px;
+            vertical-align: middle;
+            margin-right: 8px;
+            overflow: hidden;
+        }
+
+        .score-bar span {
+            display: block;
+            height: 100%;
+        }
+
+        .score-low { color: #b91c1c; font-weight: 700; }
+        .score-mid { color: #c2410c; font-weight: 700; }
+        .score-ok { color: #a16207; }
+        .score-high { color: #166534; }
+        .fill-low { background: #ef4444; }
+        .fill-mid { background: #f97316; }
+        .fill-ok { background: #eab308; }
+        .fill-high { background: #22c55e; }
+
+        .band {
+            display: grid;
+            grid-template-columns: 110px 1fr 72px;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .band-track {
+            background: #eef2ef;
+            border-radius: 99px;
+            height: 10px;
+            overflow: hidden;
+        }
+
+        .band-track span {
+            display: block;
+            height: 100%;
+            background: var(--primary-color);
+        }
+
+        .row-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .pager {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .linkish {
+            background: none;
+            border: none;
+            padding: 0;
+            color: var(--primary-color);
+            font: inherit;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .status-line {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        .split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 800px) {
+            .split {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .file-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .file-btn input {
+            display: none;
+        }
+
+        .comment {
+            margin: 0 0 8px;
+            white-space: normal;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="mobile-toggle">
+                    <button id="mobile-menu-btn" type="button"><i class="fa-solid fa-bars"></i></button>
+                </div>
+                <div>
+                    <a href="../reports-tools.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Reports</a>
+                    <h1 class="page-title">Watermark Evaluations</h1>
+                    <p class="page-subtitle">Load the combined course-evaluation CSV to find low scores. Division and discipline come from the course prefix, the same list Yuja Accessibility uses. A faculty list can mark full-time and adjunct so that role can be filtered. Files stay in this browser session.</p>
+                </div>
+            </header>
+
+            <div class="note" id="sourceNote">Load watermark-evaluations.csv. Means use questions 1–22 on the 1–5 scale. Question 22 is also shown on its own as satisfaction. Written comments are questions 23–25.</div>
+
+            <div class="card">
+                <div class="toolbar">
+                    <div class="field">
+                        <label for="divisionFilter">Division</label>
+                        <select id="divisionFilter">
+                            <option value="">All divisions</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="disciplineFilter">Discipline</label>
+                        <select id="disciplineFilter">
+                            <option value="">All disciplines</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="roleFilter">Role</label>
+                        <select id="roleFilter">
+                            <option value="">All roles</option>
+                            <option value="Full-time">Full-time</option>
+                            <option value="Adjunct">Adjunct</option>
+                            <option value="Not listed">Not on faculty list</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="searchFilter">Course, instructor, or code</label>
+                        <input id="searchFilter" type="search" placeholder="ENG-111 or a name">
+                    </div>
+                    <div class="field">
+                        <label for="maxMean">Mean at or below</label>
+                        <input id="maxMean" type="number" min="1" max="5" step="0.1" value="4">
+                    </div>
+                    <div class="field">
+                        <label for="minResponses">Minimum responses</label>
+                        <input id="minResponses" type="number" min="0" step="1" value="1">
+                    </div>
+                    <label class="file-btn">
+                        <i class="fa-solid fa-file-arrow-up"></i> Evaluations CSV
+                        <input id="fileInput" type="file" accept=".csv,text/csv">
+                    </label>
+                    <label class="file-btn">
+                        <i class="fa-solid fa-user-group"></i> Faculty list
+                        <input id="facultyInput" type="file" accept=".csv,text/csv">
+                    </label>
+                    <button type="button" class="btn-primary" id="exportBtn">Download this view</button>
+                </div>
+                <div class="checks">
+                    <label><input type="checkbox" id="hideSandbox" checked> Hide sandboxes</label>
+                    <label><input type="checkbox" id="hideMergedCxld" checked> Hide MERGED and CXLD</label>
+                    <label><input type="checkbox" id="mappedOnly" checked> Only prefixes on the division list</label>
+                </div>
+                <p class="status-line" id="statusLine">No evaluation file loaded.</p>
+            </div>
+
+            <div class="kpis" id="kpis"></div>
+
+            <div class="tabs" role="tablist">
+                <button type="button" class="tab-btn active" data-tab="summary">Summary</button>
+                <button type="button" class="tab-btn" data-tab="divisions">Divisions</button>
+                <button type="button" class="tab-btn" data-tab="disciplines">Disciplines</button>
+                <button type="button" class="tab-btn" data-tab="courses">Courses</button>
+            </div>
+
+            <section id="panel-summary"></section>
+            <section id="panel-divisions" hidden></section>
+            <section id="panel-disciplines" hidden></section>
+            <section id="panel-courses" hidden></section>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/watermark-evaluations.js"></script>
+</body>
+
+</html>

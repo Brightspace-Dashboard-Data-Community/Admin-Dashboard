@@ -27,7 +27,7 @@
                     <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
                 </div>
                 <div>
-                    <a href="../reports-tools.html#june-enrollment-monitoring" class="back-link">
+                    <a href="../reports-tools.html#roster-enrollment" class="back-link">
                         <i class="fa-solid fa-arrow-left"></i> Back to Reports &amp; Tools
                     </a>
                     <h1 class="page-title">Recently enrolled, never logged in</h1>
@@ -35,6 +35,7 @@
                         Incremental check: students with an <strong>Enroll</strong> event in the selected window
                         and <strong>no Brightspace system login</strong> in the last 31 days
                         (June 2026 enrollment-log + tracking-log APIs).
+                        Sections that have not started are skipped using the semester date file.
                         This is not the Data Hub lifetime
                         <a href="never-logged-in.html">Never Logged In</a> extract,
                         not a course-section merge, and not Office Hours Chat.
@@ -68,6 +69,16 @@
                     <input type="checkbox" id="hideIgnored" checked>
                     <span>Hide Sandbox / CXLD course names from the picker</span>
                 </label>
+                <label class="checkbox-option">
+                    <input type="checkbox" id="hideNotStarted" checked>
+                    <span>Skip courses that have not started</span>
+                </label>
+                <p class="hint" id="dateFileHint">
+                    Start dates come from <code>content/semester-courses-w-dates/26fa.csv</code> for 26/FA,
+                    and the same pattern for other terms (<code>27wi.csv</code> for 27/WI).
+                    A section is skipped when <code>sec_start_date</code> is after today.
+                    A course that is not in the file stays in the scan.
+                </p>
                 <div id="coursePickerWrap" class="hidden">
                     <div class="controls-row" style="margin-top: var(--spacing-md);">
                         <div class="field" style="flex: 2;">
@@ -86,6 +97,7 @@
                                     <th>OrgUnitId</th>
                                     <th>Code</th>
                                     <th>Name</th>
+                                    <th id="pickerStartCol">Starts</th>
                                 </tr>
                             </thead>
                             <tbody id="coursePickerBody"></tbody>

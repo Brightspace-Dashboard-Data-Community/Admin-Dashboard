@@ -39,6 +39,7 @@ let rootOrgUnitId = null;
 const COURSE_RESULTS_PAGE_SIZE = 25;
 let currentCourseResults = [];
 let currentCourseResultsPage = 1;
+let currentCourseInstructors = new Map();
 
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('✅ search-course.js loaded');
@@ -530,7 +531,7 @@ async function displayCourseSearchResults(courses) {
         </tr>
     `;
 
-    const instructorMap = await fetchInstructorsForCourses(courses);
+    currentCourseInstructors = await fetchInstructorsForCourses(courses);
 
     currentCourseResults = courses.slice();
     currentCourseResultsPage = 1;
@@ -571,7 +572,7 @@ function renderCourseResultsPage(page = currentCourseResultsPage) {
             const courseId = course.Identifier || course.Id;
             const courseCode = course.Code || 'N/A';
             const courseName = course.Name || 'Unnamed Course';
-            const instructorNames = instructorMap.get(courseId) ?? '—';
+            const instructorNames = currentCourseInstructors.get(courseId) ?? '—';
 
             const startDate = formatDate(course.StartDate);
             const endDate = formatDate(course.EndDate);

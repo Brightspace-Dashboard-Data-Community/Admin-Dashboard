@@ -8,10 +8,12 @@
 
     const J = () => window.JuneLogs;
     const MODAL = 'loadingModal';
+    const DATE_FOLDER = '/content/semester-courses-w-dates/';
 
     let picker = null;
     let lastRows = [];
     let dataTable = null;
+    const dateFileCache = new Map();
 
     function setStatus(message, isError) {
         const el = document.getElementById('statusLine');
@@ -67,6 +69,242 @@
         return typeof LoadingUtils !== 'undefined' && LoadingUtils.isCancelled(MODAL);
     }
 
+    function hideNotStartedChecked() {
+        const box = document.getElementById('hideNotStarted');
+        return !box || box.checked;
+    }
+
+    function selectedTermCode(semesterId, courses) {
+        const api = J();
+        const select = document.getElementById('semesterSelect');
+        const histId = select && select.dataset.scHistoricalInputId;
+        const hist = histId ? document.getElementById(histId) : null;
+        const usingHistorical = !!(hist && hist.value && hist.value.trim());
+        if (!usingHistorical && select) {
+            const opt = select.options[select.selectedIndex];
+            if (opt && opt.dataset.code && (!semesterId || opt.value === String(semesterId))) {
+                return opt.dataset.code;
+            }
+        }
+        if (typeof SemesterConfig !== 'undefined' && SemesterConfig.match && semesterId) {
+            const entry = SemesterConfig.match(semesterId);
+            if (entry && entry.Code && entry.Code !== 'Sandbox') return entry.Code;
+        }
+        const counts = new Map();
+        (courses || []).forEach((course) => {
+            const term = api.termCodeFromOffering(course.code);
+            if (!term) return;
+            counts.set(term, (counts.get(term) || 0) + 1);
+        });
+        let best = '';
+        let bestCount = 0;
+        counts.forEach((count, term) => {
+            if (count > bestCount) {
+                best = term;
+                bestCount = count;
+            }
+        });
+        return best;
+    }
+
+    function updateDateFileHint() {
+        const hint = document.getElementById('dateFileHint');
+        if (!hint) return;
+        const term = selectedTermCode('', []);
+        const name = J().semesterDatesFileName(term);
+        if (!name) {
+            hint.innerHTML = 'Start dates come from <code>content/semester-courses-w-dates/26fa.csv</code> for 26/FA, and the same pattern for other terms. A section is skipped when <code>sec_start_date</code> is after today. A course that is not in the file stays in the scan.';
+            return;
+        }
+        hint.innerHTML = 'Start dates for ' + J().escapeHtml(term) + ' come from <code>content/semester-courses-w-dates/' + J().escapeHtml(name) + '</code>. A section is skipped when <code>sec_start_date</code> is after today. A course that is not in the file stays in the scan.';
+    }
+
+    async function loadDateFile(termCode, force) {
+        const api = J();
+        const name = api.semesterDatesFileName(termCode);
+        if (!name) {
+            return {
+                ok: false,
+                name: '',
+                term: termCode || '',
+                index: new Map(),
+                sectionCount: 0,
+                message: 'This semester has no date file name. Expected a code like 26/FA.'
+            };
+        }
+        if (!force && dateFileCache.has(name)) return dateFileCache.get(name);
+        const url = DATE_FOLDER + name;
+        let result;
+        try {
+            const response = await fetch(url, { cache: 'no-store', credentials: 'include' });
+            if (!response.ok) {
+                result = {
+                    ok: false,
+                    name: name,
+                    term: termCode,
+                    index: new Map(),
+                    sectionCount: 0,
+                    message: name + ' was not found in content/semester-courses-w-dates/ (HTTP ' + response.status + '). Courses that have not started were not filtered.'
+                };
+                } else {
+                    const text = await csvTextFromResponse(response);
+                    const trimmed = String(text || '').replace(/^\uFEFF/, '').trim();
+                    if (!trimmed || trimmed.charAt(0) === '<') {
+                        result = {
+                            ok: false,
+                            name: name,
+                            term: termCode,
+                            index: new Map(),
+                            sectionCount: 0,
+                            rowCount: 0,
+                            message: name + ' did not return a CSV. Sign in to Brightspace and confirm the file is in content/semester-courses-w-dates/.'
+                        };
+                    } else {
+                        const built = api.buildSectionStartIndex(api.parseCsvTable(text));
+                        const unread = !built.sectionCount;
+                        let message = '';
+                        if (unread) {
+                            message = name + ' loaded (' + built.rowCount + ' rows) but no start dates were recognized.';
+                            if (built.sampleDate) message += ' First date value was "' + built.sampleDate + '".';
+                            else message += ' No sec_start_date column was found.';
+                            if (built.headers && built.headers.length) message += ' Columns: ' + built.headers.slice(0, 12).join(', ') + '.';
+                        }
+                        result = {
+                            ok: true,
+                            name: name,
+                            term: termCode,
+                            index: built.index,
+                            sectionCount: built.sectionCount,
+                            rowCount: built.rowCount,
+                            sampleCode: built.sampleCode,
+                            sampleDate: built.sampleDate,
+                            message: message
+                        };
+                    }
+                }
+        } catch (error) {
+            result = {
+                ok: false,
+                name: name,
+                term: termCode,
+                index: new Map(),
+                sectionCount: 0,
+                message: 'Could not load ' + name + ' from content/semester-courses-w-dates/. ' + ((error && error.message) || '')
+            };
+        }
+        if (result.ok) dateFileCache.set(name, result);
+        else dateFileCache.delete(name);
+        return result;
+    }
+
+    async function csvTextFromResponse(response) {
+        const buffer = await response.arrayBuffer();
+        const bytes = new Uint8Array(buffer);
+        if (bytes.length >= 2 && bytes[0] === 0xFF && bytes[1] === 0xFE) {
+            return new TextDecoder('utf-16le').decode(bytes);
+        }
+        if (bytes.length >= 2 && bytes[0] === 0xFE && bytes[1] === 0xFF) {
+            return new TextDecoder('utf-16be').decode(bytes);
+        }
+        let text = new TextDecoder('utf-8').decode(bytes);
+        if (text.indexOf('\u0000') !== -1) text = new TextDecoder('utf-16le').decode(bytes);
+        return text;
+    }
+
+    function applyStartDate(course, file) {
+        const api = J();
+        course.dateFileName = file.name || '';
+        course.dateFileOk = !!file.ok;
+        if (!file.ok) {
+            course.startLabel = 'Date file missing';
+            course.startKnown = false;
+            course.notStarted = false;
+            return;
+        }
+        if (!file.sectionCount) {
+            course.startLabel = 'Date not read';
+            course.startKnown = false;
+            course.notStarted = false;
+            return;
+        }
+        const start = api.lookupCourseStart(file.index, course);
+        if (!start) {
+            course.startLabel = 'Not in date file';
+            course.startKnown = false;
+            course.notStarted = false;
+            return;
+        }
+        course.startLabel = api.formatSectionStart(start);
+        course.startKnown = true;
+        course.notStarted = api.sectionStartsAfterToday(start);
+    }
+
+    async function attachStartDates(courses, semesterId, force) {
+        const groups = new Map();
+        (courses || []).forEach((course) => {
+            const term = J().termCodeFromOffering(course.code) || selectedTermCode(semesterId, courses);
+            const key = term || '';
+            if (!groups.has(key)) groups.set(key, []);
+            groups.get(key).push(course);
+        });
+        let primary = null;
+        const keys = [...groups.keys()];
+        for (let i = 0; i < keys.length; i++) {
+            const file = await loadDateFile(keys[i], force);
+            groups.get(keys[i]).forEach((course) => applyStartDate(course, file));
+            if (!primary || groups.get(keys[i]).length > (groups.get(primary.term || '') || []).length) {
+                primary = file;
+            }
+        }
+        return primary || {
+            ok: false,
+            name: '',
+            term: '',
+            index: new Map(),
+            sectionCount: 0,
+            message: 'No courses to match against a date file.'
+        };
+    }
+
+    function dateLoadSummary(courses, file) {
+        const future = courses.filter((course) => course.notStarted).length;
+        const matched = courses.filter((course) => course.startKnown).length;
+        if (!file || !file.ok) return (file && file.message) || 'Date file was not loaded.';
+        if (!file.sectionCount) return file.message || (file.name + ' did not include any start dates.');
+        if (!matched && courses.length) {
+            const example = courses[0].code || courses[0].name || 'a Brightspace course';
+            return file.name + ' lists ' + file.sectionCount + ' sections, but none matched these course codes. Brightspace example: ' +
+                example + '. File example: ' + (file.sampleCode || 'none') + '.';
+        }
+        let message = 'Loaded ' + courses.length + ' courses. ' + file.name + ' lists ' + file.sectionCount + ' sections. ';
+        message += matched + ' matched a start date. ';
+        message += future + ' have not started' + (hideNotStartedChecked() ? ' and are hidden. ' : '. ');
+        const unknown = courses.filter((course) => course.dateFileOk && !course.startKnown).length;
+        if (unknown) message += unknown + ' are not in that file and stay in the scan.';
+        return message.trim();
+    }
+
+    async function annotateCourses(courses, semesterId) {
+        const file = await attachStartDates(courses, semesterId, true);
+        const matched = courses.filter((course) => course.startKnown).length;
+        const failed = !(file && file.ok && file.sectionCount) || (courses.length > 0 && matched === 0);
+        setStatus(dateLoadSummary(courses, file), failed);
+        return courses;
+    }
+
+    function filterUnstarted(courses) {
+        const skipped = courses.filter((course) => course.notStarted);
+        const kept = courses.filter((course) => !course.notStarted);
+        const unknown = kept.filter((course) => course.dateFileOk && !course.startKnown);
+        let note = '';
+        if (skipped.length) note += 'Skipped ' + skipped.length + ' course(s) that have not started. ';
+        if (unknown.length) {
+            const name = unknown[0].dateFileName || 'the date file';
+            note += unknown.length + ' course(s) are not in ' + name + ' and were still scanned. ';
+        }
+        return { courses: kept, note: note };
+    }
+
     async function runReport() {
         const api = J();
         lastRows = [];
@@ -78,6 +316,18 @@
         } catch (error) {
             setStatus(error.message, true);
             return;
+        }
+
+        let dateNote = '';
+        if (hideNotStartedChecked()) {
+            const file = await attachStartDates(courses, api.effectiveSemesterId(document.getElementById('semesterSelect')), false);
+            const filtered = filterUnstarted(courses);
+            courses = filtered.courses;
+            dateNote = (file.ok ? '' : file.message + ' ') + filtered.note;
+            if (!courses.length) {
+                setStatus('Nothing to scan. ' + dateNote.trim(), !file.ok);
+                return;
+            }
         }
 
         if (courses.length > 40 && !window.confirm(
@@ -203,6 +453,7 @@
                 ? (courses[0].code || courses[0].id)
                 : courses.length + ' courses';
             setStatus(
+                dateNote +
                 hits.length + ' student(s) enrolled in the last ' + days + ' day(s) in ' +
                 courseLabel + ' with no system login in the last 31 days. ' +
                 'Scanned ' + uniqueUserIds.length + ' classlist student(s); ' +
@@ -246,11 +497,25 @@
     }
 
     async function init() {
-        picker = J().bindCoursePicker();
+        picker = J().bindCoursePicker({
+            annotateCourses: annotateCourses,
+            courseHidden: function (course) {
+                return hideNotStartedChecked() && !!course.notStarted;
+            }
+        });
+        const semesterSelect = document.getElementById('semesterSelect');
         try {
-            await J().populateSemesterSelect(document.getElementById('semesterSelect'));
+            await J().populateSemesterSelect(semesterSelect);
         } catch (error) {
             setStatus('Could not load semesters: ' + (error.message || error), true);
+        }
+        updateDateFileHint();
+        if (semesterSelect) semesterSelect.addEventListener('change', updateDateFileHint);
+        const hideNotStarted = document.getElementById('hideNotStarted');
+        if (hideNotStarted) {
+            hideNotStarted.addEventListener('change', function () {
+                if (picker) picker.render();
+            });
         }
         document.getElementById('runBtn').addEventListener('click', runReport);
         document.getElementById('csvBtn').addEventListener('click', downloadCsv);

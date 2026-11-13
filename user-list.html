@@ -41,6 +41,33 @@
             display: block;
         }
 
+        .data-table th.sortable {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .data-table th.select-col,
+        .data-table td.select-col {
+            width: 42px;
+            min-width: 42px;
+            max-width: 42px;
+            text-align: center;
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+
+        .bulk-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        #bulk-delete-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .search-bar-container {
             display: flex;
             align-items: center;
@@ -136,6 +163,7 @@
 
                 <span class="role-counter-note">Note: All available roles from the system are listed in the
                     dropdown</span>
+                <span class="role-counter-note" id="last-access-note" hidden>Last Visited is blank because this Users file has CreationDate and no last-access column. Brightspace moved last access to the System Access Summary extract.</span>
 
                 <!-- Search Filter -->
                 <div class="search-bar-container">
@@ -144,24 +172,33 @@
                     <button class="btn-clear"><i class="fa-solid fa-xmark"></i> Clear</button>
                 </div>
 
+                <div class="bulk-actions">
+                    <button type="button" id="bulk-delete-btn" class="btn btn-outline" disabled
+                        style="background-color: #dc3545; color: white; border-color: #dc3545;">
+                        <i class="fa-solid fa-trash"></i> Delete selected
+                    </button>
+                    <span id="bulk-select-count" class="role-counter-note" style="margin: 0;"></span>
+                </div>
+
                 <!-- Data Table -->
                 <div class="table-container">
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>User ID</th>
-                                <th>First Name</th>
-                                <th>Last Name</th>
-                                <th>Username</th>
-                                <th>Created Date</th>
-                                <th>Last Visited</th>
+                                <th class="select-col"><input type="checkbox" id="select-all-users" title="Select all on this page" aria-label="Select all on this page"></th>
+                                <th data-sort="0">User ID</th>
+                                <th data-sort="1">First Name</th>
+                                <th data-sort="2">Last Name</th>
+                                <th data-sort="3">Username</th>
+                                <th data-sort="4">Created Date</th>
+                                <th data-sort="5">Last Visited</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <!-- Empty / Placeholder State -->
                             <tr class="table-message-row">
-                                <td colspan="7" class="table-message">
+                                <td colspan="8" class="table-message">
                                     Select a Role and click "View Users" to see data
                                 </td>
                             </tr>
@@ -199,7 +236,7 @@
 
     <script src="js/sidebar.js"></script>
     <script src="js/app.js"></script>
-    <script src="js/user-list.js" type="module"></script>
+    <script src="js/user-list.js?v=20261113e" type="module"></script>
 </body>
 
 </html>

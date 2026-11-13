@@ -9,7 +9,9 @@
     const INTRO_KEY = 'admin-home-intro-seen';
 
     function currentSemester() {
-        if (typeof SemesterConfig === 'undefined' || !SemesterConfig.getAll) return null;
+        if (typeof SemesterConfig === 'undefined') return null;
+        if (SemesterConfig.getCurrent) return SemesterConfig.getCurrent();
+        if (!SemesterConfig.getAll) return null;
         const list = SemesterConfig.getAll({ excludeSandbox: true });
         return list && list.length ? list[0] : null;
     }

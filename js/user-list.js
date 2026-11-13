@@ -79,6 +79,9 @@ let currentPage = 1;
 let rowsPerPage = 20;
 let currentSortColumn = 0;
 let currentSortDirection = 'asc';
+let lastAccessInExtract = false;
+const selectedUserIds = new Set();
+const SORT_FIELDS = ['UserId', 'FirstName', 'LastName', 'UserName', 'CreationDate', 'LastAccessed'];
 let availableRoles = {};
 let rolesCache = {}; // Cache for role names from API
 
@@ -173,13 +176,34 @@ function getRoleName(roleId) {
     return roleNames[roleIdStr] || `Role ${roleId}`;
 }
 
+function isDeletedUser(user) {
+    const value = String(user.DateDeleted || '').trim();
+    return value !== '' && value.toLowerCase() !== 'null';
+}
+
+function userDateValue(user, field) {
+    if (field === 'CreationDate') return user.CreationDate || user.SignupDate || '';
+    if (field === 'LastAccessed') return user.LastSystemAccess || user.LastAccessed || user.LastAccessedDate || '';
+    return user[field] == null ? '' : String(user[field]);
+}
+
+// BDS datetimes can include more than 3 fractional digits, which Date rejects.
+function parseBdsDate(dateString) {
+    if (!dateString) return null;
+    const trimmed = String(dateString).trim();
+    if (!trimmed) return null;
+    const normalized = trimmed.replace(/(\.\d{3})\d+/, '$1').replace(' ', 'T');
+    const date = new Date(normalized);
+    return isNaN(date.getTime()) ? null : date;
+}
+
 // Format date for display
 function formatDate(dateString) {
     try {
-        if (!dateString) return 'Never';
-        
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) {
+        if (!dateString) return '';
+
+        const date = parseBdsDate(dateString);
+        if (!date) {
             return 'Invalid date';
         }
         
@@ -301,6 +325,9 @@ function parseUserData(csvContent, datasetType = 'unknown') {
         if (users.length > 0) {
             console.log('Sample user:', users[0]);
         }
+        lastAccessInExtract = users.some(user => userDateValue(user, 'LastAccessed'));
+        const lastAccessNote = document.getElementById('last-access-note');
+        if (lastAccessNote) lastAccessNote.hidden = lastAccessInExtract;
         return users;
     } catch (error) {
         console.error(`Error parsing ${datasetType} user data:`, error);
@@ -314,27 +341,24 @@ async function loadUserData() {
         console.log('Loading user data from datasets...');
         updateStatus('Fetching full dataset extract list...');
         
-        // Directly use fetch with credentials for API calls
-        const fullDataResponse = await fetch('/d2l/api/lp/1.43/datasets/bds/b21a6414-38f8-4da8-9a65-8b5586f9fe3b/plugins/1d6d722e-b572-456f-97c1-d526570daa6b/extracts?type=full', { 
-            method: 'GET',
-            credentials: 'include'
-        });
-        
-        if (!fullDataResponse.ok) {
-            throw new Error(`Failed to fetch dataset extracts: ${fullDataResponse.status} ${fullDataResponse.statusText}`);
+        // LP 1.50 matches the extracts call that returns this org's full Users file.
+        let fullDataJson;
+        try {
+            fullDataJson = await BrightspaceFetch('/d2l/api/lp/1.50/datasets/bds/b21a6414-38f8-4da8-9a65-8b5586f9fe3b/plugins/1d6d722e-b572-456f-97c1-d526570daa6b/extracts?type=full', 'GET');
+        } catch (listError) {
+            throw new Error('Extract list request failed in the browser (' + listError.message + '). Open this page on your-brightspace.example.edu.');
         }
-        
-        const fullDataJson = await fullDataResponse.json();
         console.log('Full dataset response:', fullDataJson);
         
         if (!fullDataJson.Objects || fullDataJson.Objects.length === 0) {
             throw new Error('No full dataset extracts found');
         }
         
-        // Sort by CreatedDate (newest first)
+        // Sort by CreatedDate (newest first) and prefer a Full extract when BdsType is present.
         const sortedExtracts = fullDataJson.Objects.sort((a, b) => new Date(b.CreatedDate) - new Date(a.CreatedDate));
         console.log('Sorted extracts:', sortedExtracts);
-        const latestExtract = sortedExtracts[0];
+        const fullExtracts = sortedExtracts.filter(extract => String(extract.BdsType || 'Full').toLowerCase() === 'full');
+        const latestExtract = (fullExtracts.length ? fullExtracts : sortedExtracts)[0];
         
         updateStatus('Downloading latest full dataset...');
         // Download and process the latest full dataset
@@ -342,11 +366,18 @@ async function loadUserData() {
         if (!downloadUrl) throw new Error('No download URL found for the full extract');
         
         console.log(`Downloading ZIP from: ${downloadUrl}`);
-        const zipResponse = await fetch(downloadUrl, { method: 'GET', credentials: 'include' });
-        if (!zipResponse.ok) throw new Error(`Failed to download full dataset ZIP: ${zipResponse.status} ${zipResponse.statusText}`);
+        // same-origin sends the session cookie. A redirect to the file host must not receive it.
+        let zipBlob;
+        try {
+            const zipResponse = await fetch(downloadUrl, { method: 'GET', credentials: 'same-origin' });
+            if (!zipResponse.ok) throw new Error(`Failed to download full dataset ZIP: ${zipResponse.status} ${zipResponse.statusText}`);
+            zipBlob = await zipResponse.blob();
+        } catch (downloadError) {
+            console.warn('Direct extract download was blocked:', downloadError);
+            zipBlob = await requestExtractZipFromUser(downloadUrl);
+        }
         
         updateStatus('Processing downloaded dataset...');
-        const zipBlob = await zipResponse.blob();
         
         // Make sure JSZip is loaded
         if (!window.JSZip) {
@@ -364,13 +395,16 @@ async function loadUserData() {
         updateStatus('Extracting and parsing CSV data...');
         const csvContent = await csvFile.async('string');
         
-        // Parse the full dataset
+        // Parse the full dataset. Version 11 keeps deleted accounts and marks them with DateDeleted.
         const fullDataUsers = parseUserData(csvContent, 'Full Dataset');
-        console.log(`Parsed ${fullDataUsers.length} users from full dataset`);
+        const currentUsers = fullDataUsers.filter(user => !isDeletedUser(user));
+        const skippedDeleted = fullDataUsers.length - currentUsers.length;
+        console.log(`Parsed ${fullDataUsers.length} users; leaving out ${skippedDeleted} with DateDeleted`);
+        showDeletedSkipNote(skippedDeleted);
         
         // Extract all unique roles from the dataset
         updateStatus('Analyzing user roles...');
-        const roles = extractAvailableRoles(fullDataUsers);
+        const roles = extractAvailableRoles(currentUsers);
         
         // Fetch role names from API and update role names,
         // and ensure we include ALL roles from the system.
@@ -397,7 +431,7 @@ async function loadUserData() {
         });
         
         return { 
-            users: fullDataUsers,
+            users: currentUsers,
             roles: roles
         };
     } catch (error) {
@@ -433,6 +467,81 @@ function extractAvailableRoles(users) {
     
     console.log('Available roles:', roles);
     return roles;
+}
+
+// The extract file is served from another host. A normal link can download it.
+// The page cannot read that response, so the chosen zip is parsed locally.
+function requestExtractZipFromUser(downloadUrl) {
+    return new Promise((resolve, reject) => {
+        const statusContainer = document.getElementById('status-container');
+        if (!statusContainer) {
+            reject(new Error('Dataset download was blocked in the browser.'));
+            return;
+        }
+
+        statusContainer.innerHTML = '';
+        statusContainer.style.backgroundColor = '#fff8e1';
+        statusContainer.style.color = '#5d4037';
+
+        const body = document.createElement('div');
+        body.className = 'card-body';
+
+        const message = document.createElement('p');
+        message.textContent = 'Brightspace stores this extract on another host, so the page cannot read it directly. Download the zip, then choose that file to load the report.';
+
+        const actions = document.createElement('div');
+        actions.style.display = 'flex';
+        actions.style.gap = '8px';
+        actions.style.flexWrap = 'wrap';
+        actions.style.marginTop = '8px';
+
+        const downloadLink = document.createElement('a');
+        downloadLink.href = downloadUrl;
+        downloadLink.target = '_blank';
+        downloadLink.rel = 'noopener';
+        downloadLink.className = 'btn btn-primary';
+        downloadLink.textContent = 'Download Users extract';
+
+        const chooseLabel = document.createElement('label');
+        chooseLabel.className = 'btn btn-outline';
+        chooseLabel.style.cursor = 'pointer';
+        chooseLabel.style.marginBottom = '0';
+        chooseLabel.textContent = 'Choose downloaded zip';
+
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = '.zip,application/zip';
+        fileInput.style.display = 'none';
+        fileInput.addEventListener('change', () => {
+            const file = fileInput.files && fileInput.files[0];
+            if (file) resolve(file);
+        });
+
+        chooseLabel.appendChild(fileInput);
+        actions.appendChild(downloadLink);
+        actions.appendChild(chooseLabel);
+        body.appendChild(message);
+        body.appendChild(actions);
+        statusContainer.appendChild(body);
+    });
+}
+
+function showDeletedSkipNote(count) {
+    let note = document.getElementById('deleted-users-note');
+    if (!count) {
+        if (note) note.hidden = true;
+        return;
+    }
+    if (!note) {
+        note = document.createElement('span');
+        note.id = 'deleted-users-note';
+        note.className = 'role-counter-note';
+        const anchor = document.getElementById('last-access-note') || document.querySelector('.role-counter-note');
+        if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(note, anchor.nextSibling);
+        else return;
+    }
+    note.hidden = false;
+    note.textContent = `${count.toLocaleString()} deleted accounts are still in the Users file and are not listed here.`;
 }
 
 // Update status message
@@ -543,7 +652,7 @@ async function fetchUsersByRole() {
         if (tableBody) {
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="7" class="table-message">
+                    <td colspan="8" class="table-message">
                         <i class="fa-solid fa-spinner fa-spin"></i> Loading users with role ${selectedRoleId}...
                     </td>
                 </tr>
@@ -576,77 +685,72 @@ async function fetchUsersByRole() {
     }
 }
 
+function compareUsers(a, b, field, direction) {
+    const dir = direction === 'asc' ? 1 : -1;
+
+    if (field === 'UserId') {
+        return ((parseInt(a.UserId, 10) || 0) - (parseInt(b.UserId, 10) || 0)) * dir;
+    }
+
+    if (field === 'CreationDate' || field === 'LastAccessed') {
+        const timeA = parseBdsDate(userDateValue(a, field));
+        const timeB = parseBdsDate(userDateValue(b, field));
+        if (!timeA && !timeB) return 0;
+        if (!timeA) return 1;
+        if (!timeB) return -1;
+        return (timeA - timeB) * dir;
+    }
+
+    const valueA = userDateValue(a, field).toLowerCase();
+    const valueB = userDateValue(b, field).toLowerCase();
+    if (valueA < valueB) return -1 * dir;
+    if (valueA > valueB) return 1 * dir;
+    return 0;
+}
+
 // Sort users by column
 function sortUsers(columnIndex, direction) {
-    console.log(`Sorting users by column ${columnIndex} in ${direction} order`);
-    
-    // Define the field to sort by based on column index
-    const fields = ['UserId', 'FirstName', 'LastName', 'UserName', 'SignupDate', 'LastAccessed'];
-    const field = fields[columnIndex];
-    
-    if (!field) {
-        console.warn(`No field defined for column index ${columnIndex}`);
-        return;
-    }
-    
-    filteredUsers.sort((a, b) => {
-        let valueA = a[field] || '';
-        let valueB = b[field] || '';
-        
-        // Special handling for dates
-        if (field === 'SignupDate' || field === 'LastAccessed') {
-            valueA = valueA ? new Date(valueA).getTime() : 0;
-            valueB = valueB ? new Date(valueB).getTime() : 0;
-        }
-        
-        // Special handling for User IDs (numeric comparison)
-        if (field === 'UserId') {
-            valueA = parseInt(valueA) || 0;
-            valueB = parseInt(valueB) || 0;
-        }
-        
-        // Perform comparison
-        if (valueA < valueB) {
-            return direction === 'asc' ? -1 : 1;
-        }
-        if (valueA > valueB) {
-            return direction === 'asc' ? 1 : -1;
-        }
-        return 0;
+    const field = SORT_FIELDS[columnIndex];
+    if (!field) return;
+    filteredUsers.sort((a, b) => compareUsers(a, b, field, direction));
+}
+
+function updateSortIndicators() {
+    document.querySelectorAll('.data-table thead th[data-sort]').forEach(th => {
+        const index = Number(th.dataset.sort);
+        const base = th.dataset.label || th.textContent.replace(/ [↑↓]$/, '').trim();
+        th.dataset.label = base;
+        const mark = index === currentSortColumn ? (currentSortDirection === 'asc' ? ' ↑' : ' ↓') : '';
+        th.textContent = base + mark;
+    });
+}
+
+function setupTableSorting() {
+    document.querySelectorAll('.data-table thead th[data-sort]').forEach(th => {
+        th.classList.add('sortable');
+        th.addEventListener('click', () => sortTable(Number(th.dataset.sort)));
     });
 }
 
 // Handle sorting of user table
 function sortTable(columnIndex) {
-    console.log(`Sorting by column ${columnIndex}`);
-    
+    if (!SORT_FIELDS[columnIndex]) return;
+
     if (currentSortColumn === columnIndex) {
-        // Toggle direction if already sorting by this column
         currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
     } else {
-        // New column, default to ascending
         currentSortColumn = columnIndex;
         currentSortDirection = 'asc';
     }
-    
-    // Clear sort indicators from all headers
-    document.querySelectorAll('.data-table th').forEach(th => {
-        th.innerHTML = th.innerHTML.replace(' ↑', '').replace(' ↓', '');
-    });
-    
-    // Add sort indicator to current column
-    const headers = document.querySelectorAll('.data-table th');
-    if (headers[columnIndex]) {
-        headers[columnIndex].innerHTML += currentSortDirection === 'asc' ? ' ↑' : ' ↓';
-    }
-    
-    // Refresh the display with the new sort
+
+    currentPage = 1;
     displayUsers();
 }
 
 // Display filtered users with pagination
 function displayUsers() {
     console.group('Displaying users');
+    pruneSelection();
     
     const tableBody = document.querySelector('.data-table tbody');
     if (!tableBody) {
@@ -658,16 +762,19 @@ function displayUsers() {
         console.log('No users to display');
         tableBody.innerHTML = `
             <tr>
-                <td colspan="7" class="table-message">No users found with the selected role</td>
+                <td colspan="8" class="table-message">No users found with the selected role</td>
             </tr>
         `;
         updatePaginationControls(0);
+        syncHeaderCheckbox();
+        updateBulkDeleteButton();
         console.groupEnd();
         return;
     }
     
     // Apply current sort
     sortUsers(currentSortColumn, currentSortDirection);
+    updateSortIndicators();
     
     // Calculate pagination
     const totalPages = Math.ceil(filteredUsers.length / rowsPerPage);
@@ -681,11 +788,16 @@ function displayUsers() {
     let tableHTML = '';
     
     pageUsers.forEach(user => {
-        const lastVisited = user.LastAccessed ? formatDate(user.LastAccessed) : 'Never';
-        const createdDate = user.SignupDate ? formatDate(user.SignupDate) : 'Unknown';
+        const createdRaw = userDateValue(user, 'CreationDate');
+        const visitedRaw = userDateValue(user, 'LastAccessed');
+        const createdDate = createdRaw ? formatDate(createdRaw) : '—';
+        const lastVisited = visitedRaw ? formatDate(visitedRaw) : '—';
         
+        const userId = String(user.UserId || '');
+        const checked = selectedUserIds.has(userId) ? 'checked' : '';
         tableHTML += `
             <tr>
+                <td class="select-col"><input type="checkbox" class="user-select-box" data-user-id="${userId}" ${checked} aria-label="Select user ${userId}"></td>
                 <td>${user.UserId || ''}</td>
                 <td>${user.FirstName || ''}</td>
                 <td>${user.LastName || ''}</td>
@@ -764,8 +876,119 @@ function displayUsers() {
             openDeleteUserModal(userId, userName);
         });
     });
+
+    syncHeaderCheckbox();
+    updateBulkDeleteButton();
     
     console.groupEnd();
+}
+
+function pruneSelection() {
+    const visible = new Set(filteredUsers.map(user => String(user.UserId)));
+    for (const id of selectedUserIds) {
+        if (!visible.has(id)) selectedUserIds.delete(id);
+    }
+}
+
+function updateBulkDeleteButton() {
+    const button = document.getElementById('bulk-delete-btn');
+    const countLabel = document.getElementById('bulk-select-count');
+    const count = selectedUserIds.size;
+    if (button) {
+        button.disabled = count === 0;
+        button.innerHTML = `<i class="fa-solid fa-trash"></i> Delete selected${count ? ` (${count})` : ''}`;
+    }
+    if (countLabel) {
+        countLabel.textContent = count ? `${count} selected. The header box selects this page.` : 'The header box selects this page.';
+    }
+}
+
+function syncHeaderCheckbox() {
+    const header = document.getElementById('select-all-users');
+    if (!header) return;
+    const boxes = document.querySelectorAll('.user-select-box');
+    const checked = [...boxes].filter(box => box.checked).length;
+    header.checked = boxes.length > 0 && checked === boxes.length;
+    header.indeterminate = checked > 0 && checked < boxes.length;
+}
+
+function setupBulkSelection() {
+    const table = document.querySelector('.data-table');
+    if (table) {
+        table.addEventListener('change', (event) => {
+            const target = event.target;
+            if (target.id === 'select-all-users') {
+                document.querySelectorAll('.user-select-box').forEach(box => {
+                    box.checked = target.checked;
+                    if (target.checked) selectedUserIds.add(box.dataset.userId);
+                    else selectedUserIds.delete(box.dataset.userId);
+                });
+                target.indeterminate = false;
+                updateBulkDeleteButton();
+                return;
+            }
+            if (target.classList && target.classList.contains('user-select-box')) {
+                if (target.checked) selectedUserIds.add(target.dataset.userId);
+                else selectedUserIds.delete(target.dataset.userId);
+                syncHeaderCheckbox();
+                updateBulkDeleteButton();
+            }
+        });
+    }
+
+    const button = document.getElementById('bulk-delete-btn');
+    if (button) button.addEventListener('click', deleteSelectedUsers);
+    updateBulkDeleteButton();
+}
+
+async function deleteSelectedUsers() {
+    const ids = [...selectedUserIds];
+    if (!ids.length) return;
+
+    const byId = new Map(allUsers.map(user => [String(user.UserId), user]));
+    const chosen = ids.map(id => {
+        const user = byId.get(id);
+        const name = user ? `${user.FirstName || ''} ${user.LastName || ''}`.trim() : '';
+        return { id, name: name || id };
+    });
+    const count = chosen.length;
+    const noun = count === 1 ? 'user' : 'users';
+
+    if (!confirm(`Delete ${count} selected ${noun}? This cannot be undone.`)) return;
+    if (!confirm(`Permanently delete these ${count} ${noun}?`)) return;
+
+    const button = document.getElementById('bulk-delete-btn');
+    if (button) button.disabled = true;
+
+    const deletedIds = [];
+    const failed = [];
+    for (let i = 0; i < chosen.length; i++) {
+        updateStatus(`Deleting ${i + 1} of ${count}...`);
+        try {
+            await BrightspaceFetch(`/d2l/api/lp/1.31/users/${chosen[i].id}`, 'DELETE');
+            deletedIds.push(chosen[i].id);
+            selectedUserIds.delete(chosen[i].id);
+        } catch (error) {
+            failed.push(`${chosen[i].name} (${chosen[i].id}): ${error.message}`);
+        }
+    }
+
+    if (deletedIds.length) {
+        const removed = new Set(deletedIds);
+        allUsers = allUsers.filter(user => !removed.has(String(user.UserId)));
+        filteredUsers = filteredUsers.filter(user => !removed.has(String(user.UserId)));
+        const totalPages = Math.max(1, Math.ceil(filteredUsers.length / rowsPerPage));
+        if (currentPage > totalPages) currentPage = totalPages;
+    }
+
+    displayUsers();
+    const summary = `Deleted ${deletedIds.length} of ${count}.`;
+    if (failed.length) {
+        updateStatus(`${summary} ${failed.length} could not be deleted.`, 'error');
+        alert(`${summary}\n\n${failed.slice(0, 8).join('\n')}`);
+    } else {
+        updateStatus(summary, 'success');
+    }
 }
 
 // Update pagination controls
@@ -830,7 +1053,7 @@ async function initializeUserList() {
         if (tableBody) {
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="7" class="table-message">
+                    <td colspan="8" class="table-message">
                         <i class="fa-solid fa-spinner fa-spin"></i> Loading user data...
                     </td>
                 </tr>
@@ -1661,6 +1884,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
     
+    setupTableSorting();
+    setupBulkSelection();
+
     // Start the initialization process
     await initializeUserList();
 });

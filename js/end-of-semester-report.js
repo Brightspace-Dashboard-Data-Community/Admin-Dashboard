@@ -1,5 +1,5 @@
 /**
- * End of Semester Course Report — Admin Dashboard (Work-in-Progress)
+ * End of Semester Course Report — Admin Dashboard
  * Same class-level retrospective as Faculty, plus Data Hub Content Progress
  * and Learner Usage (Advanced Data Sets). Faculty accounts cannot execute those data sets.
  */
@@ -2006,7 +2006,7 @@
     html +=
       '<p class="cr-muted">Help-seeking is inferred from public and private discussion text (phrases such as “I don’t understand”, “how do I”, “I’m stuck”). It is not a complete record of emails or office hours.</p></div>';
 
-    html += '<div class="eos-section" id="eos-suggestions"><div class="cr-panel"><h3>Feedback and suggestions for next term <span class="beta-badge">Beta</span></h3>';
+    html += '<div class="eos-section" id="eos-suggestions"><div class="cr-panel"><h3>Feedback and suggestions for next term</h3>';
     html += '<p class="cr-muted">Rule-based checklist, not an AI narrative. Last-access suggestions use the course end date, not today, because students usually cannot enter a closed offering.</p>';
     html += '<ul class="eos-suggest-list">';
     for (var i = 0; i < report.suggestions.length; i++) {
@@ -2060,7 +2060,7 @@
     var margin = 44;
     var y = 0;
     var a = report.analytics;
-    var title = "End of Semester Course Report (Beta)";
+    var title = "End of Semester Course Report";
     var PDF_TEXT = [15, 23, 42];
     var PDF_MUTED = [51, 65, 85];
     var PDF_ON_DARK = [255, 255, 255];
@@ -2210,10 +2210,10 @@
     y += 12;
     var accessNote =
       report.access && report.access.ended
-        ? "Beta: last-access timing is measured from the course end date (" +
+        ? "Last-access timing is measured from the course end date (" +
           fmtDate(report.access.asOf) +
           "), not from today. Students typically cannot log in after the offering closes."
-        : "Beta: this course is still open, so last-access timing is measured from today.";
+        : "This course is still open, so last-access timing is measured from today.";
     var accessNoteLines = doc.splitTextToSize(pdfSafe(accessNote), pageW - margin * 2);
     doc.text(accessNoteLines, margin, y);
     y += accessNoteLines.length * 11 + 14;
@@ -2425,7 +2425,7 @@
       [400, 80]
     );
 
-    section("Feedback and suggestions (Beta)");
+    section("Feedback and suggestions");
     para(
       "Rule-based checklist, not an AI narrative. Last-access findings use the course end date, not today, because students usually cannot enter a closed offering."
     );
@@ -2560,9 +2560,16 @@
     var pdfBtn = $("eosPdfBtn");
     if (!form || !ouInput) return;
 
-    setStatus("", "Enter a course OrgUnit ID. This Work-in-Progress report requests Content Progress and Learner Usage from Data Hub, then falls back to Brightspace content APIs if an extract is not permitted.");
+    setStatus("", "Enter a course OrgUnit ID. The report requests Content Progress and Learner Usage from Data Hub, then uses Brightspace content APIs if an extract is not permitted.");
 
-    form.addEventListener("submit", function (ev) {
+    var runBtn = $("eosRunBtn");
+    if (runBtn) {
+      runBtn.addEventListener("click", function () {
+        runReport();
+      });
+    }
+    ouInput.addEventListener("keydown", function (ev) {
+      if (ev.key !== "Enter") return;
       ev.preventDefault();
       runReport();
     });

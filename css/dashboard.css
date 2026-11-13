@@ -468,6 +468,19 @@
     text-decoration: underline;
 }
 
+.orient-section a.launch-tool-btn,
+.orient-section a.launch-tool-btn:hover,
+.orient-section a.launch-tool-btn:focus-visible {
+    color: #fff;
+    text-decoration: none;
+}
+
+.orient-section a.launch-tool-btn-secondary,
+.orient-section a.launch-tool-btn-secondary:hover,
+.orient-section a.launch-tool-btn-secondary:focus-visible {
+    color: var(--primary-color);
+}
+
 .orient-cta-row {
     margin: 1rem 0 0;
 }

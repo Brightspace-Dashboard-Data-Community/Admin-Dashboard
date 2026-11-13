@@ -5,78 +5,461 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Faculty Feedback Timeliness - D2L Admin</title>
 
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-
-    <!-- Styles -->
     <link rel="stylesheet" href="../css/variables.css">
     <link rel="stylesheet" href="../css/reset.css">
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/nav.css">
     <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/forms.css">
+    <style>
+        body.ff-report .card:hover {
+            transform: none;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .ff-match-note {
+            margin-top: var(--spacing-md);
+            color: var(--text-secondary);
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .ff-scan-line {
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.45;
+            margin-bottom: 8px;
+        }
+
+        .ff-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 12px 0;
+        }
+
+        .ff-stat {
+            border: 1px solid var(--border-color);
+            border-left-width: 4px;
+            border-radius: 10px;
+            padding: 12px 14px;
+            background: #fff;
+        }
+
+        .ff-stat--none { border-left-color: #d32f2f; }
+        .ff-stat--late { border-left-color: #ef6c00; }
+
+        .ff-stat-value {
+            display: block;
+            font-size: 28px;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+
+        .ff-stat--none .ff-stat-value { color: #b71c1c; }
+        .ff-stat--late .ff-stat-value { color: #e65100; }
+        .ff-stat-label { font-weight: 600; }
+        .ff-stat-help {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .ff-tool-strip {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .ff-tool-chip {
+            border: 1px solid var(--border-color);
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: 13px;
+            background: #fff;
+        }
+
+        .ff-toolbar {
+            position: sticky;
+            top: 0;
+            z-index: 3;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-end;
+            background: var(--surface-color);
+            padding: 10px 0 12px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .ff-field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 180px;
+            flex: 1;
+        }
+
+        .ff-field span {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .ff-view { display: flex; }
+        .ff-view .ff-view-btn:first-child { border-radius: 4px 0 0 4px; }
+        .ff-view .ff-view-btn:last-child { border-radius: 0 4px 4px 0; margin-left: -1px; }
+        .ff-view-btn.is-active {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: #fff;
+        }
+
+        .ff-patterns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .ff-pattern-col {
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px;
+            background: #fff;
+        }
+
+        .ff-pattern-col h4 { margin: 0 0 4px; font-size: 14px; }
+        .ff-pattern-col p { margin: 0; color: var(--text-secondary); font-size: 13px; }
+
+        .ff-hit {
+            display: grid;
+            grid-template-columns: 36px 1fr;
+            gap: 8px;
+            width: 100%;
+            text-align: left;
+            background: transparent;
+            border: 0;
+            border-top: 1px solid var(--border-color);
+            padding: 8px 0;
+            cursor: pointer;
+            font: inherit;
+            color: inherit;
+        }
+
+        .ff-hit:hover { background: #f7faf7; }
+        .ff-hit b { font-variant-numeric: tabular-nums; }
+        .ff-hit small { display: block; color: var(--text-secondary); }
+
+        .ff-head,
+        .ff-course-row {
+            display: grid;
+            grid-template-columns: 28px minmax(120px, 1.1fr) minmax(180px, 2fr) 108px 108px 108px 108px;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .ff-head {
+            padding: 0 12px 8px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .ff-head button {
+            background: none;
+            border: 0;
+            padding: 0;
+            text-align: left;
+            font: inherit;
+            font-weight: 600;
+            color: inherit;
+            cursor: pointer;
+        }
+
+        .ff-head button.is-sorted { color: var(--primary-color); }
+
+        .ff-course {
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            background: #fff;
+        }
+
+        .ff-course.is-open { border-color: #c8e6c9; }
+
+        .ff-course-row {
+            width: 100%;
+            padding: 10px 12px;
+            cursor: pointer;
+        }
+
+        .ff-course-row:hover { background: #f7faf7; }
+        .ff-course.is-open > .ff-course-row { background: #f3faf3; }
+
+        .ff-chevron {
+            color: var(--text-secondary);
+            transition: transform 0.15s ease;
+        }
+
+        .ff-course.is-open > .ff-course-row .ff-chevron i,
+        .ff-activity.is-open > .ff-activity-row .ff-chevron i {
+            transform: rotate(90deg);
+        }
+
+        .ff-code a {
+            color: var(--primary-color);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .ff-code a:hover { text-decoration: underline; }
+        .ff-title { font-weight: 600; }
+        .ff-meta, .ff-pattern {
+            color: var(--text-secondary);
+            font-size: 12px;
+            line-height: 1.35;
+        }
+
+        .ff-pattern { color: var(--text-primary); }
+
+        .ff-metric b {
+            display: block;
+            font-size: 16px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .ff-metric-label {
+            display: none;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .ff-metric--none b { color: #b71c1c; }
+        .ff-metric--late b { color: #e65100; }
+
+        .ff-course-body { padding: 0 0 10px; }
+
+        .ff-note {
+            font-size: 12px;
+            color: #6d4c41;
+            background: #fff8e1;
+            border-radius: 6px;
+            padding: 6px 8px;
+            margin: 0 12px 8px 40px;
+        }
+
+        .ff-activity {
+            margin: 0 12px 8px 40px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        .ff-activity-row {
+            display: grid;
+            grid-template-columns: 24px 108px minmax(140px, 1fr) 88px 88px;
+            gap: 8px;
+            align-items: center;
+            padding: 8px 10px;
+            cursor: pointer;
+        }
+
+        .ff-activity-row:hover { background: #fafafa; }
+        .ff-activity.is-open > .ff-activity-row { background: #fafafa; }
+        .ff-activity-name { font-weight: 600; }
+        .ff-activity-counts { display: contents; }
+
+        .ff-tool {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+
+        .ff-tool--assignment { background: #e8f5e9; color: #1b5e20; }
+        .ff-tool--quiz { background: #e3f2fd; color: #0d47a1; }
+        .ff-tool--discussion { background: #f3e5f5; color: #6a1b9a; }
+
+        .ff-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .ff-badge--none { background: #fdecea; color: #b71c1c; }
+        .ff-badge--late { background: #fff3e0; color: #e65100; }
+
+        .ff-items-wrap { padding: 0 10px 10px 36px; overflow-x: auto; }
+
+        .ff-items {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .ff-items th {
+            text-align: left;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: var(--text-secondary);
+            padding: 6px 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .ff-items td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #f0f0f0;
+            vertical-align: top;
+        }
+
+        .ff-item--none td:first-child { box-shadow: inset 3px 0 0 #d32f2f; }
+        .ff-item--late td:first-child { box-shadow: inset 3px 0 0 #ef6c00; }
+        .ff-person-sub { display: block; color: var(--text-secondary); font-size: 12px; }
+        .ff-muted { color: var(--text-secondary); }
+        .ff-cap-note, .ff-empty {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin: 8px 0 0;
+        }
+
+        .ff-issues { margin: 8px 0 12px; font-size: 13px; }
+        .ff-issues summary { cursor: pointer; font-weight: 600; }
+        .ff-issues ul { margin: 8px 0 0 18px; }
+
+        .ff-num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .ff-num--none { color: #b71c1c; font-weight: 600; }
+        .ff-num--late { color: #e65100; font-weight: 600; }
+
+        @media (max-width: 980px) {
+            .ff-stats, .ff-patterns { grid-template-columns: 1fr; }
+            .ff-head { display: none; }
+            .ff-metric-label { display: block; }
+            .ff-course-row {
+                grid-template-columns: 28px 1fr 1fr;
+                grid-template-areas:
+                    "chev code name"
+                    "chev none late"
+                    "chev oldest slowest";
+            }
+            .ff-chevron { grid-area: chev; }
+            .ff-code { grid-area: code; }
+            .ff-name { grid-area: name; }
+            .ff-m-none { grid-area: none; }
+            .ff-m-late { grid-area: late; }
+            .ff-m-oldest { grid-area: oldest; }
+            .ff-m-slowest { grid-area: slowest; }
+            .ff-activity { margin-left: 12px; }
+            .ff-activity-row {
+                grid-template-columns: 24px minmax(0, 1fr);
+                grid-template-areas:
+                    "chev name"
+                    "chev tool"
+                    "chev counts";
+            }
+            .ff-activity-row .ff-chevron { grid-area: chev; }
+            .ff-activity-row .ff-tool-cell { grid-area: tool; }
+            .ff-activity-row .ff-activity-name { grid-area: name; }
+            .ff-activity-counts {
+                grid-area: counts;
+                display: flex;
+                gap: 16px;
+            }
+            .ff-items thead { display: none; }
+            .ff-items tr {
+                display: block;
+                padding: 8px 8px 8px 10px;
+                border-bottom: 1px solid #f0f0f0;
+            }
+            .ff-items td {
+                display: block;
+                border: 0;
+                padding: 2px 8px;
+            }
+            .ff-items td::before {
+                content: attr(data-label);
+                display: inline-block;
+                width: 88px;
+                color: var(--text-secondary);
+                font-size: 11px;
+                font-weight: 600;
+                text-transform: uppercase;
+                vertical-align: top;
+            }
+            .ff-items .ff-person-sub { margin-left: 88px; }
+            .ff-item--none { box-shadow: inset 3px 0 0 #d32f2f; }
+            .ff-item--late { box-shadow: inset 3px 0 0 #ef6c00; }
+            .ff-item--none td:first-child,
+            .ff-item--late td:first-child { box-shadow: none; }
+            .ff-items-wrap { overflow: visible; }
+            .ff-note, .ff-items-wrap { margin-left: 12px; }
+        }
+    </style>
 </head>
 
-<body>
+<body class="ff-report">
     <div class="app-container">
-        <!-- Sidebar Navigation (injected via ../js/sidebar.js) -->
-
-        <!-- Main Content -->
         <main class="main-content">
             <header class="top-bar">
                 <div class="mobile-toggle">
-                    <button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                    <button id="mobile-menu-btn" type="button"><i class="fa-solid fa-bars"></i></button>
                 </div>
                 <div>
                     <h1 class="page-title">Faculty Feedback Timeliness</h1>
-                    <p class="page-subtitle">Scans submissions for assignments, quizzes, and discussion boards and flags late/missing feedback.</p>
+                    <p class="page-subtitle">Flags work with no feedback for at least the number of days you set, and work whose feedback took at least that long. The scan includes every course that matches the filter.</p>
                 </div>
                 <div class="header-actions">
-                    <button id="download-csv-btn" class="btn btn-outline" style="white-space: nowrap;">
+                    <button id="download-csv-btn" class="btn btn-outline" type="button" style="white-space: nowrap;">
                         <i class="fa-solid fa-download"></i> Download CSV
                     </button>
                 </div>
             </header>
 
-            <!-- Controls -->
             <div class="card" style="margin-bottom: var(--spacing-lg);">
                 <div class="card-body">
-                    <div style="display: flex; gap: var(--spacing-md); align-items: center; flex-wrap: wrap;">
+                    <div style="display: flex; gap: var(--spacing-md); align-items: flex-end; flex-wrap: wrap;">
                         <div style="min-width: 240px;">
-                            <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: 500;">Semester</label>
+                            <label for="semester-select" style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: 500;">Semester</label>
                             <select id="semester-select" class="form-control" style="min-width: 240px;">
                                 <option value="">Loading...</option>
                             </select>
                         </div>
 
                         <div style="min-width: 220px;">
-                            <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: 500;">Course Code Filter (ex: WN8)</label>
-                            <input id="course-code-filter" class="form-control" type="text" placeholder="WN8" style="min-width: 220px;">
+                            <label for="course-code-filter" style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: 500;">Course Code Filter (ex: FA8)</label>
+                            <input id="course-code-filter" class="form-control" type="text" placeholder="FA8" style="min-width: 220px;" autocomplete="off">
                         </div>
 
                         <div style="min-width: 200px;">
-                            <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: 500;">Department Prefix</label>
+                            <label for="dept-prefix-filter" style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: 500;">Department Prefix</label>
                             <select id="dept-prefix-filter" class="form-control" style="min-width: 200px;">
                                 <option value="">All</option>
                             </select>
                         </div>
 
-                        <div style="min-width: 170px;">
-                            <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: 500;">Timely Feedback (days)</label>
-                            <input id="timely-days-input" class="form-control" type="number" value="7" min="0" step="1" style="min-width: 170px;">
+                        <div style="min-width: 160px;">
+                            <label for="timely-days-input" style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: 500;">Flag after (days)</label>
+                            <input id="timely-days-input" class="form-control" type="number" value="7" min="1" step="1" style="min-width: 160px;">
                         </div>
 
-                        <div style="flex: 1;"></div>
-
                         <div style="min-width: 180px;">
-                            <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: 500;">Include</label>
+                            <span style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: 500;">Include</span>
                             <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
                                 <label style="display:flex; gap:6px; align-items:center; font-size: 12px;">
                                     <input type="checkbox" id="include-assignments" checked>
@@ -94,83 +477,81 @@
                         </div>
                     </div>
 
-                    <div style="display: flex; gap: var(--spacing-md); align-items: center; flex-wrap: wrap; margin-top: var(--spacing-md);">
-                        <div style="min-width: 240px;">
-                            <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: 500;">Load Semester Courses (no API scans)</label>
-                            <button id="load-semester-btn" class="btn btn-primary" style="width: 100%;">
+                    <div style="display: flex; gap: var(--spacing-md); align-items: flex-end; flex-wrap: wrap; margin-top: var(--spacing-md);">
+                        <div>
+                            <button id="load-semester-btn" class="btn btn-primary" type="button">
                                 <i class="fa-solid fa-database"></i> Load Semester Courses
                             </button>
                         </div>
-
-                        <div style="min-width: 240px;">
-                            <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: 500;">Run Feedback Scan (filtered)</label>
-                            <button id="run-scan-btn" class="btn btn-primary" style="width: 100%;" disabled>
-                                <i class="fa-solid fa-magnifying-glass"></i> Run Scan for Filtered Courses
+                        <div>
+                            <button id="run-scan-btn" class="btn btn-primary" type="button" disabled>
+                                <i class="fa-solid fa-magnifying-glass"></i> Run Scan
                             </button>
                         </div>
-
-                        <div style="min-width: 200px;">
-                            <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: 500;">Max Courses per Run</label>
-                            <input id="max-courses-input" class="form-control" type="number" value="25" min="1" step="1">
-                        </div>
-
-                        <div style="min-width: 200px;">
-                            <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: 500;">Courses Concurrency</label>
+                        <div style="min-width: 140px;">
+                            <label for="course-concurrency-input" style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: 500;">Courses at a time</label>
                             <input id="course-concurrency-input" class="form-control" type="number" value="3" min="1" step="1">
                         </div>
                     </div>
 
-                    <div style="margin-top: var(--spacing-md); color: var(--text-secondary); font-size: 12px;">
-                        Tip: after loading a semester, the console will show the loaded courses. Then set the filter (for example `WN8`) and run the scan.
-                    </div>
+                    <p id="match-count" class="ff-match-note">Load a semester. The scan then covers every course that matches the filter. FA8 matches any code that contains FA8, including FA810 and FA820.</p>
                 </div>
             </div>
 
-            <!-- Results -->
-            <div class="card">
+            <div class="card ff-results-card">
                 <div class="card-header">
                     <h3 class="card-title">Feedback Flags</h3>
                     <div id="results-count" class="text-muted" style="font-size: 14px; margin-left: auto;">Not run yet.</div>
                 </div>
                 <div class="card-body">
-                    <div id="loading-indicator" style="text-align: center; padding: 40px; display: none;">
-                        <i class="fa-solid fa-spinner fa-spin"></i> Running scan...
+                    <div id="empty-message" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                        1) Select a semester and click <b>Load Semester Courses</b>.
+                        <br>
+                        2) Filter (for example <b>FA8</b>), then click <b>Run Scan</b>.
+                        <br>
+                        The scan includes every matching course.
                     </div>
 
                     <div id="results-container" style="display: none;">
-                        <table id="results-table" class="display" style="width: 100%;">
-                            <thead>
-                                <tr>
-                                    <th style="display:none;">OrgUnitId</th>
-                                    <th>Course Code</th>
-                                    <th>Course Name</th>
-                                    <th>Assignments (late/missing)</th>
-                                    <th>Quizzes (late/missing)</th>
-                                    <th>Discussions (late/missing)</th>
-                                    <th>Total (late/missing)</th>
-                                    <th>Worst Lateness (days)</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-
-                    <div id="empty-message" style="text-align: center; padding: 40px; color: var(--text-secondary); display: block;">
-                        1) Select a semester and click <b>Load Semester Courses</b>.
-                        <br>
-                        2) Set filters (for example `WN8`), then click <b>Run Scan</b>.
+                        <div id="results-summary"></div>
+                        <div class="ff-toolbar" id="results-toolbar">
+                            <label class="ff-field">
+                                <span>Search results</span>
+                                <input id="results-search" class="form-control" type="search" placeholder="Course, activity, or person" autocomplete="off">
+                            </label>
+                            <label class="ff-field">
+                                <span>Flag type</span>
+                                <select id="flag-filter" class="form-control">
+                                    <option value="all">Both types</option>
+                                    <option value="none">No feedback</option>
+                                    <option value="late">Late feedback</option>
+                                </select>
+                            </label>
+                            <label class="ff-field">
+                                <span>Tool</span>
+                                <select id="tool-filter" class="form-control">
+                                    <option value="all">All tools</option>
+                                    <option value="assignment">Assignments</option>
+                                    <option value="quiz">Quizzes</option>
+                                    <option value="discussion">Discussions</option>
+                                </select>
+                            </label>
+                            <div class="ff-view" role="group" aria-label="Results layout">
+                                <button type="button" id="view-courses" class="btn btn-outline ff-view-btn is-active">Courses</button>
+                                <button type="button" id="view-activities" class="btn btn-outline ff-view-btn">Activities</button>
+                            </div>
+                            <button type="button" id="expand-courses-btn" class="btn btn-outline">Expand courses</button>
+                            <button type="button" id="collapse-courses-btn" class="btn btn-outline">Collapse</button>
+                            <button type="button" id="clear-filters-btn" class="btn btn-outline">Clear filters</button>
+                        </div>
+                        <div id="results-patterns"></div>
+                        <div id="results-list"></div>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- jQuery (required for DataTables) -->
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <!-- DataTables JS -->
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-
-    <!-- Core Scripts -->
     <script src="../js/sidebar.js"></script>
     <script src="../js/app.js"></script>
     <script src="../js/d2l-api.js"></script>
@@ -179,4 +560,3 @@
     <script src="../js/faculty-feedback-report.js"></script>
 </body>
 </html>
-
